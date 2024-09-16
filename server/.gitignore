@@ -26,6 +26,6 @@ yarn.lock
 .eslintignore
 .eslintrc.js
 
-#config
-/config
+# config
+# /config
 

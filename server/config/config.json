@@ -1,0 +1,20 @@
+{
+    "development": {
+      "uri": "mongodb+srv://<db_username>:<db_password>@db-do-an-ecommerce.oyqnx.mongodb.net/?retryWrites=true&w=majority&appName=db-do-an-ecommerce"
+    },
+    "test": {
+      "username": "root",
+      "password": null,
+      "database": "database_test",
+      "dialect": "sqlite",
+      "storage": "./main.sqlite"
+    },
+    "production": {
+      "username": "root",
+      "password": null,
+      "database": "database_production",
+      "dialect": "sqlite",
+      "storage": "./main.sqlite"
+    }
+  }
+  
