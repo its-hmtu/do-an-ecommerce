@@ -1,20 +1,24 @@
 {
-    "development": {
-      "uri": "mongodb+srv://<db_username>:<db_password>@db-do-an-ecommerce.oyqnx.mongodb.net/?retryWrites=true&w=majority&appName=db-do-an-ecommerce"
-    },
-    "test": {
-      "username": "root",
-      "password": null,
-      "database": "database_test",
-      "dialect": "sqlite",
-      "storage": "./main.sqlite"
-    },
-    "production": {
-      "username": "root",
-      "password": null,
-      "database": "database_production",
-      "dialect": "sqlite",
-      "storage": "./main.sqlite"
-    }
+  "development": {
+    "username": "admin",
+    "password": "do_an2024",
+    "database": "do-an-ecommerce",
+    "host": "db-do-an.cf0q6ac06qpg.ap-southeast-2.rds.amazonaws.com",
+    "dialect": "mysql"
+  },
+  "test": {
+    "username": "root",
+    "password": "your_password",
+    "database": "database_test",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "root",
+    "password": "your_password",
+    "database": "database_production",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
   }
+}
   

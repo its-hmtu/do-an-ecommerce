@@ -1,33 +1,17 @@
-// var viewConfig = require('./config/view');
-// var errorConfig = require('./config/error');
-// var utilitiesConfig = require('./config/utilities');
-// var routesConfig = require('./config/routes');
-// const redis = require('redis');
-// const express = require('express');
-// const dotenv = require('dotenv');
-// const connectDb = require('./config/db');
-// const cors = require('cors');
+require('dotenv').config();
+var viewConfig = require('./config/view');
+var errorConfig = require('./config/error');
+var utilitiesConfig = require('./config/utilities');
+var routesConfig = require('./config/routes');
+var Sequelize = require('sequelize');
 
-import viewConfig from './config/view.js';
-import errorConfig from './config/error.js';
-import utilitiesConfig from './config/utilities.js';
-import routesConfig from './config/routes.js';
-import redis from 'redis';
-import express from 'express';
-import dotenv from 'dotenv';
-import connectDb from './config/db.js';
-import cors from 'cors';
+var express = require('express');
 
-dotenv.config();
-
-const app = express();
-const client = redis.createClient(process.env.REDIS_PORT);
-app.use(cors());
-connectDb();
+var app = express();
 
 viewConfig(app);
-utilitiesConfig(app, client);
+utilitiesConfig(app);
 routesConfig(app);
 errorConfig(app);
 
-export default app;
+module.exports = app;

@@ -1,12 +1,6 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
+var path = require('path');
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const viewConfig = (app) => {
+module.exports = (app) => {
     app.set('views', path.join(__dirname,'..', 'views'));
     app.set('view engine', 'ejs');
 };
-
-export default viewConfig;

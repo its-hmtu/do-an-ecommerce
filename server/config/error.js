@@ -1,35 +1,18 @@
-// var createError = require('http-errors');
+var createError = require('http-errors');
 
-const notFound = (req, res, next) => {
-  const error = new Error(`Not Found - ${req.originalUrl}`);
-  res.status(404);
-  next(error);
-};
-
-const errorHandler = (err, req, res, next) => {
-  let statusCode = err.statusCode || 500;
-  let message = err.message;
-
-  // If Mongoose not found error, set to 404 and change message
-  if (err.name === 'CastError' && err.kind === 'ObjectId') {
-    statusCode = 404;
-    message = 'Resource not found';
-  }
-
-  res.status(statusCode).json({
-    success: false,
-    message: message,
-    stack: process.env.NODE_ENV === 'production' ? null : err.stack,
-  });
-
-  res.render('error');
-};
-
-const errorConfig = (app) => {
-    app.use(notFound);
+module.exports = (app) => {
+    app.use(function (req, res, next) {
+        next(createError(404));
+    });
     
     // error handler
-    app.use(errorHandler);
+    app.use(function (err, req, res, next) {
+        // set locals, only providing error in development
+        res.locals.message = err.message;
+        res.locals.error = req.app.get('env') === 'development' ? err : {};
+    
+        // render the error page
+        res.status(err.status || 500);
+        res.render('error');
+    });
 };
-
-export default errorConfig;
