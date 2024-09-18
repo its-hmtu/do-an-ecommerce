@@ -1,0 +1,30 @@
+.idea
+.vscode
+node_modules
+src/client/public/bundle.js
+src/client/public/bundle.js.map
+src/client/public/style.css
+.env
+.DS_Store
+dist/
+dev.env
+desktop.ini
+/logs
+uploads
+
+# production
+/src/client/public/maps
+/src/client/public/*.js*
+
+cypress.json
+cypress.env.json
+package-lock.json
+yarn.lock
+/nbproject/private/
+
+#lint
+.eslintignore
+.eslintrc.js
+
+# config
+# /config
