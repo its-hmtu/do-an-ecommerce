@@ -26,4 +26,15 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
+db.User = require('../models/user.model')(sequelize, Sequelize);
+db.UserRole = require('../models/user_role.model')(sequelize, Sequelize);
+db.Role = require('../models/role.model')(sequelize, Sequelize);
+db.Order = require('../models/order.model')(sequelize, Sequelize);
+db.OrderItem = require('../models/order_item.model')(sequelize, Sequelize);
+db.Product = require('../models/product.model')(sequelize, Sequelize);
+db.Review = require('../models/review.model')(sequelize, Sequelize);
+db.Address = require('../models/address.model')(sequelize, Sequelize);
+
+module.exports = db;
+
 
