@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-
+const jwt = require('jsonwebtoken');
 module.exports = function(sequelize, DataTypes) {
   const User = sequelize.define('users', {
     id: {
@@ -29,18 +29,37 @@ module.exports = function(sequelize, DataTypes) {
     password: {
       type: DataTypes.STRING(255),
       allowNull: false
+    },
+    phone: {
+      type: DataTypes.STRING(15),
+      allowNull: true
+    },
+    is_email_verified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: new Date()
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: new Date()
     }
   }, {
     timestamps: false,
     tableName: 'users',
-    hooks: {
-      beforeCreate: (user, options) => {
-        const salt = bcrypt.genSaltSync(10);
-        const hash = bcrypt.hashSync(user.password, salt);
+    // hooks: {
+    //   beforeCreate: (user, options) => {
+    //     const salt = bcrypt.genSaltSync(10);
+    //     const hash = bcrypt.hashSync(user.password, salt);
 
-        user.password = hash;
-      }
-    }
+    //     user.password = hash;
+    //   }
+    // }
   });
 
   User.associate = function(models) {
@@ -50,8 +69,32 @@ module.exports = function(sequelize, DataTypes) {
     User.hasMany(models.Address);
   };
 
+  User.beforeCreate(user => {
+    console.log(user)
+
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(user.password, salt);
+
+    user.password = hash;
+  })
+
   User.prototype.isValidPassword = function(password) {
     return bcrypt.compareSync(password, this.password);
+  }
+
+  User.prototype.isAdmin = function() {
+    return this.roles != null && this.roles.some(role => role.name === 'ADMIN');
+  }
+
+  User.prototype.generateToken = function() {
+    return jwt.sign({
+      id: this.id,
+      user_name: this.user_name,
+      email: this.email,
+      roles: this.roles.map(role => role.name)
+    }, process.env.JWT_SECRET, {
+      expiresIn: '1h'
+    });
   }
 
   return User;

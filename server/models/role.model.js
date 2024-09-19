@@ -1,4 +1,4 @@
-const { DATE } = require("sequelize")
+
 
 module.exports = (sequelize, DataTypes) => {
   const Role = sequelize.define('roles', {
@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: new Date()
     }
   }, {
-    timestamps: true,
+    timestamps: false,
     tableName: 'roles'
   });
 

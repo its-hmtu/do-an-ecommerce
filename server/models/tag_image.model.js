@@ -1,23 +1,23 @@
-const { Op } = require("sequelize");
+const { Op } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  const CategoryImage = sequelize.define('category_images', {
+  const TagImage = sequelize.define('tag_images', {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
       allowNull: false
     },
-    category_id: {
+    tag_id: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
     file_name: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING,
       allowNull: false
     },
     file_path: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING,
       allowNull: false
     },
     file_size: {
@@ -25,14 +25,14 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     original_name: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING,
       allowNull: false
     },
     mime_type: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING,
       allowNull: false
     },
-    created_at: {
+    create_at: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: new Date()
@@ -44,19 +44,19 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {
     timestamps: false,
-    tableName: 'uploads',
+    tableName: "uploads",
     defaultScope: {
       where: {
-        category_id: {
-          [Op.not]: null
+        tag_id: {
+          [Op.ne]: null
         }
       }
     }
   });
 
-  CategoryImage.associate = (models) => {
-    CategoryImage.belongsTo(models.Category, {onDelete: 'cascade'});
+  TagImage.associate = (models) => {
+    TagImage.belongsTo(models.Tag, {onDelete: 'cascade'})
   }
 
-  return CategoryImage;
+  return TagImage;
 }

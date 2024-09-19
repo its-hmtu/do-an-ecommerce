@@ -7,14 +7,13 @@ var routesConfig = require('./config/routes');
 const db = require('./config/database');
 const cors = require('cors');
 var express = require('express');
-
 var app = express();
 
 app.use(cors());
 
 db.sequelize.authenticate()
-  .then(() => {
-    console.log('Connection has been established successfully.');
+  .then(() =>{
+    console.log('Connected to database: ' + process.env.DB_DATABASE);
   })
   .catch((err) => {
     console.error('Unable to connect to the database:', err);
