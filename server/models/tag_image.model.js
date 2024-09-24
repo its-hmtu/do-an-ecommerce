@@ -32,18 +32,8 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
-    create_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
-    }
   }, {
-    timestamps: false,
+    timestamps: true,
     tableName: "uploads",
     defaultScope: {
       where: {

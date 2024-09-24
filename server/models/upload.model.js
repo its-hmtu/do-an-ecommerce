@@ -7,19 +7,19 @@ module.exports = (sequelize, DataTypes) => {
     },
     tag_id: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: true,
     },
     category_id: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: true
     },
     product_id: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: true
     },
     user_id: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: true
     }, 
     file_name: {
       type: DataTypes.STRING,
@@ -40,25 +40,16 @@ module.exports = (sequelize, DataTypes) => {
     mime_type: {
       type: DataTypes.STRING,
       allowNull: false
-    },
-    create_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
     }
   }, {
+    timestamps: true,
     tableName: 'uploads'
   })
 
   Upload.associate = (models) => {
-    Upload.belongsTo(models.Tag, {onDelete: 'cascade'})
+    Upload.belongsTo(models.Tag, {foreignKey: 'tag_id', onDelete: 'cascade'})
     Upload.belongsTo(models.Product, {foreignKey: 'product_id', onDelete: 'cascade'})
-    Upload.belongsTo(models.Category, {onDelete: 'cascade'})
+    Upload.belongsTo(models.Category, {foreignKey: 'category_id', onDelete: 'cascade'})
     Upload.belongsTo(models.User, {foreignKey: 'user_id',onDelete: 'cascade'})
   }
 

@@ -16,19 +16,9 @@ module.exports = (sequelize, DataTypes) => {
     description: {
       type: DataTypes.STRING(255),
       allowNull: false
-    },
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
     }
   }, {
-    timestamps: false,
+    timestamps: true,
     tableName: 'roles'
   });
 

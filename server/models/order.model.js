@@ -29,19 +29,9 @@ module.exports = (sequelize, DataTypes) => {
         model: 'addresses',
         key: 'id'
       }
-    },
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
     }
   }, {
-    timestamps: false,
+    timestamps: true,
     tableName: 'orders'
   })
 

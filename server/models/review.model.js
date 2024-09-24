@@ -21,19 +21,9 @@ module.exports = (sequelize , DataTypes) => {
     rating: {
       type: DataTypes.INTEGER,
       allowNull: false
-    },
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
     }
   }, {
-    timestamps: false,
+    timestamps: true,
     tableName: 'reviews'
   })
 

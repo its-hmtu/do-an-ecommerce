@@ -5,23 +5,15 @@ module.exports = (sequelize, DataTypes) => {
     }, 
     tag_id: {
       type: DataTypes.INTEGER
-    },
-    create_at: {
-      type: DataTypes.DATE,
-      defaultValue: new Date()
-    }, 
-    update_at: {
-      type: DataTypes.DATE,
-      defaultValue: new Date()
     }
   }, {
     tableName: 'products_tags',
-    timestamps: false
+    timestamps: true
   })
 
   ProductTag.associate = models => {
     ProductTag.belongsTo(models.Product)
-    ProductTag.belongsTo(models.Tag)
+    ProductTag.belongsTo(models.Tag, {foreignKey: 'tag_id'})
   }
 
   return ProductTag

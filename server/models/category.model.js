@@ -14,36 +14,25 @@ module.exports = (sequelize, DataTypes) => {
     slug: {
       type: DataTypes.STRING(50),
       allowNull: false
-    },
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
     }
   }, {
-    timestamps: false,
+    timestamps: true,
     tableName: 'categories',
+    hooks: {
+      beforeValidate: function (category, options) {
+        category.slug = slugify(category.name, { lower: true });
+      }
+    },
     indexes: [
       {
         fields: ['slug']
       }
     ],
-    hooks: {
-      beforeValidate: (category, options) => {
-        category.slug = slugify(category.category_name, { lower: true })
-      }
-    }
   });
 
   Category.associate = (models) => {
-    Category.hasMany(models.CategoryImage, {as: 'images'});
-    Category.belongsToMany(models.Product, {through: models.ProductCategory});
+    Category.hasMany(models.CategoryImage, {as: 'images', foreignKey: 'category_id'});
+    Category.belongsToMany(models.Product, {through: models.ProductCategory, foreignKey: 'category_id'});
   }
-
   return Category;
 }

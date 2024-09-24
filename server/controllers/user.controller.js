@@ -3,10 +3,10 @@ const Op = require('sequelize').Op;
 const sanitizeInput = require('../utils/sanitize').sanitizeInput;
 
 exports.register = async (req, res) => {
-  const {email, password, confirm_password,user_name, first_name, last_name} = req.body;
+  const {email, password, confirm_password,username, first_name, last_name} = req.body;
   const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   
-  if (!user_name || user_name.trim() === '') {
+  if (!username || username.trim() === '') {
     return res.status(400).json({ message: 'Username is required' });
   } 
   if (!first_name || first_name.trim() === '') {
@@ -42,7 +42,7 @@ exports.register = async (req, res) => {
 
   const user = await User.findOne({
     where: {
-      [Op.or]: [{ email }, { user_name }]
+      [Op.or]: [{ email }, { username }]
     }
   });
 
@@ -50,14 +50,14 @@ exports.register = async (req, res) => {
     if (user.email === email) {
       return res.status(400).json({ message: 'Email already exists' });
     }
-    if (user.user_name === user_name) {
+    if (user.username === username) {
       return res.status(400).json({ message: 'Username already exists' });
     }
   }
 
   try {
     const newUser = await User.create({
-      user_name: sanitizeInput(user_name),
+      user_name: sanitizeInput(username),
       first_name: sanitizeInput(first_name),
       last_name: sanitizeInput(last_name),
       email: sanitizeInput(email),
@@ -89,7 +89,7 @@ exports.login = async (req, res) => {
 
   const user = await User.findOne({
     where: {
-      user_name: sanitizeInput(user_name)
+      username: sanitizeInput(user_name)
     },
     include: [
       {

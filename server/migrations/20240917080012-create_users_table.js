@@ -15,7 +15,7 @@ module.exports = {
         primaryKey: true,
         autoIncrement: true
       },
-      user_name: {
+      username: {
         type: Sequelize.STRING,
         allowNull: false
       },
@@ -44,12 +44,12 @@ module.exports = {
         allowNull: false,
         defaultValue: false
       },
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       },
-      updated_at: {
+      updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')

@@ -31,31 +31,23 @@ module.exports = (sequelize, DataTypes) => {
     mime_type: {
       type: DataTypes.STRING(255),
       allowNull: false
-    },
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
     }
   }, {
-    timestamps: false,
+    timestamps: true,
     tableName: 'uploads',
-    defaultScope: {
-      where: {
-        category_id: {
-          [Op.not]: null
-        }
-      }
-    }
+    
   });
 
   CategoryImage.associate = (models) => {
     CategoryImage.belongsTo(models.Category, {onDelete: 'cascade'});
+  }
+
+  CategoryImage.defaultScope = {
+    where: {
+      category_id: {
+        [Op.ne]: null
+      }
+    }
   }
 
   return CategoryImage;

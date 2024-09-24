@@ -11,6 +11,7 @@ exports.verifyToken = (req, res, next) => {
     if (err) {
       return res.status(401).json({ message: 'Invalid token' });
     }
+    console.log(decoded);
     req.user = decoded;
     next();
   });
@@ -20,15 +21,15 @@ exports.isAdmin = (req, res, next) => {
   if (req.user === null) {
     return res.status(403).json({ message: "Forbidden. You're not logged in!" });
   }
-  if (req.user.roles.some(role => role.name === 'ADMIN')) {
-    next();
-  } else {
-    return res.status(403).json({ message: "Forbidden. You're not an admin!" });
-  }
+    if (req.user.roles.some(role => role.name == 'ADMIN')) {
+      next();
+    } else {
+      return res.status(403).json({ message: "Forbidden. You're not an admin!" });
+    }
 }
 
 const getFreshUser = (required) => {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     if (req.user === null || req.user.id === null) {
       if (required) {
         return res.status(403).json({ message: "Permission denied" });
@@ -37,7 +38,7 @@ const getFreshUser = (required) => {
       }
     }
     try {
-      const user = User.findOne({
+      const user = await User.findOne({
         where: {id: req.user.id},
         include: [Role]
       })
@@ -46,6 +47,7 @@ const getFreshUser = (required) => {
         return res.status(401).json({ message: "Unauthorized" });
       } else {
         req.user = user;
+        // console.log("ROLE!@#", req.user.roles.some(role => role.name == 'ADMIN'));
         next();
       }
     } catch (e) {

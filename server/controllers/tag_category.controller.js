@@ -1,5 +1,12 @@
-const {Tag, Category, TagImage, CategoryImage} = require('../models');
-
+const {
+  Tag,
+  Category,
+  TagImage,
+  CategoryImage,
+  sequelize,
+} = require("../models");
+const fs = require("fs");
+const { Op } = require("sequelize");
 exports.getTags = async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   const pageSize = parseInt(req.query.page_size) || 10;
@@ -7,33 +14,89 @@ exports.getTags = async (req, res, next) => {
 
   const tags = await Tag.findAndCountAll({
     limit: pageSize,
-    offset: offset
-  })
+    offset: offset,
+  });
 
   // data pagination
   if (!tags) {
-    return res.status(404).json({message: 'Tags not found'});
+    return res.status(404).json({ message: "Tags not found" });
   }
 
-  const totalItemCount = tags.count
-  const currentItemCount = tags.rows.length
-  const currentPage = page
-  const totalPages = Math.ceil(totalItemCount / pageSize)
-  
+  const totalItemCount = tags.count;
+  const currentItemCount = tags.rows.length;
+  const currentPage = page;
+  const totalPages = Math.ceil(totalItemCount / pageSize);
+
   const pagination = {
     total_item_count: totalItemCount,
     current_item_count: currentItemCount,
     total_pages: totalPages,
-    current_page: currentPage
-  }
+    current_page: currentPage,
+  };
 
   return res.status(200).json({
     data: {
       ...pagination,
-      tags: tags.rows
-    }
+      tags: tags.rows,
+    },
   });
-}
+};
+
+exports.createTag = async (req, res, next) => {
+  const { name, description } = req.body;
+
+  const transaction = await sequelize.transaction({ autocommit: false });
+
+  if (name == null || name.length === 0) {
+    return res.status(400).json({ message: "Name is required" });
+  }
+
+  try {
+    const tag = await Tag.create(
+      {
+        name: name,
+        description: description,
+      },
+      { transaction }
+    );
+
+    let results = [];
+
+    for (let i = 0; req.files !== null && i < req.files.length; i++) {
+      let file = req.files[i];
+      let file_path = file.path.replace(new RegExp("\\\\", "g"), "/");
+      file_path = file_path.replace("public", "");
+      const image = await TagImage.create(
+        {
+          tag_id: tag.id,
+          file_name: file.filename,
+          file_path: file_path,
+          mime_type: file.mimetype,
+          original_name: file.originalname,
+          file_size: file.size,
+        },
+        { transaction }
+      );
+
+      results.push(image);
+    }
+
+    tag.images = results;
+    await transaction.commit();
+
+    return res.status(201).json({ message: "Tag created", tag: tag });
+  } catch (error) {
+    await transaction.rollback();
+    console.log(error);
+    // remove images from disk
+    if (req.files !== null) {
+      for (let i = 0; i < req.files.length; i++) {
+        fs.unlinkSync(req.files[i].path);
+      }
+    }
+    return res.status(400).json({ message: "Tag not created" });
+  }
+};
 
 exports.getCategories = async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
@@ -42,29 +105,114 @@ exports.getCategories = async (req, res, next) => {
 
   const categories = await Category.findAndCountAll({
     limit: pageSize,
-    offset: offset
-  })
+    offset: offset,
+    include: [
+      {
+        model: CategoryImage,
+        as: "images",
+        where: {
+          category_id: {
+            [Op.ne]: null,
+          },
+        },
+        attributes: [
+          "file_name",
+          "file_path",
+          "file_size",
+          "original_name",
+          "mime_type",
+        ],
+      },
+    ],
+  });
 
   if (!categories) {
-    return res.status(404).json({message: 'Categories not found'});
+    return res.status(404).json({ message: "Categories not found" });
   }
 
-  const totalItemCount = categories.count
-  const currentItemCount = categories.rows.length
-  const currentPage = page
-  const totalPages = Math.ceil(totalItemCount / pageSize)
+  const totalItemCount = categories.count;
+  const currentItemCount = categories.rows.length;
+  const currentPage = page;
+  const totalPages = Math.ceil(totalItemCount / pageSize);
 
   const pagination = {
     total_item_count: totalItemCount,
     current_item_count: currentItemCount,
     total_pages: totalPages,
-    current_page: currentPage
-  }
+    current_page: currentPage,
+  };
 
   return res.status(200).json({
     data: {
       ...pagination,
-      categories: categories.rows
-    }
+      categories: categories.rows,
+    },
   });
-}
+};
+
+exports.createCategory = async (req, res, next) => {
+  const { name, description } = req.body;
+  const transaction = await sequelize.transaction({ autocommit: false });
+
+  if (name == null || name.length === 0) {
+    return res.status(400).json({ message: "Name is required" });
+  } 
+
+  const existingCategory = await Category.findOne({
+    where: {
+      name: name,
+    },
+  });
+
+  if (existingCategory) {
+    return res.status(400).json({ message: "Category already exists" });
+  }
+
+  try {
+    const category = await Category.create(
+      {
+        name: name,
+        description: description,
+      },
+      { transaction }
+    );
+
+    let results = [];
+
+    for (let i = 0; req.files !== null && i < req.files.length; i++) {
+      let file = req.files[i];
+      let file_path = file.path.replace(new RegExp("\\\\", "g"), "/");
+      file_path = file_path.replace("public", "");
+      const image = await CategoryImage.create(
+        {
+          category_id: category.id,
+          file_name: file.filename,
+          file_path: file_path,
+          mime_type: file.mimetype,
+          original_name: file.originalname,
+          file_size: file.size,
+        },
+        { transaction }
+      );
+
+      results.push(image);
+    }
+
+    category.images = results;
+    await transaction.commit();
+
+    return res
+      .status(201)
+      .json({ message: "Category created", category: category });
+  } catch (error) {
+    await transaction.rollback();
+    console.log(error);
+    // remove images from disk
+    if (req.files !== null) {
+      for (let i = 0; i < req.files.length; i++) {
+        fs.unlinkSync(req.files[i].path);
+      }
+    }
+    return res.status(400).json({ message: "Category not created" });
+  }
+};

@@ -27,19 +27,9 @@ module.exports = (sequelize, DataTypes) => {
     stock: {
       type: DataTypes.INTEGER(11),
       allowNull: false
-    },
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
     }
   }, {
-    timestamps: false,
+    timestamps: true,
     tableName: 'products',
     indexes: [
       {

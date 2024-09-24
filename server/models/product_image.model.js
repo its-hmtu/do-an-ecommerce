@@ -33,19 +33,10 @@ module.exports = (sequelize, DataTypes) => {
       mime_type: {
         type: DataTypes.STRING(255),
         allowNull: false,
-      },
-      created_at: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: new Date(),
-      },
-      updated_at: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: new Date(),
-      },
+      }
     },
     {
+      timestamps: true,
       tableName: "uploads",
       defaultScope: {
         where: {

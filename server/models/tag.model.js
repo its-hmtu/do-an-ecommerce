@@ -18,19 +18,9 @@ module.exports = (sequelize, DataTypes) => {
     slug: {
       type: DataTypes.STRING(50),
       allowNull: false
-    },
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
     }
   }, {
-    timestamps: false,
+    timestamps: true,
     tableName: "tags",
     hooks: {
       beforeValidate: function (tag, options) {

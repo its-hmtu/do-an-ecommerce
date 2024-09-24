@@ -8,7 +8,7 @@ module.exports = function(sequelize, DataTypes) {
       autoIncrement: true,
       allowNull: false
     },
-    user_name: {
+    username: {
       type: DataTypes.STRING(50),
       allowNull: false,
       unique: true
@@ -38,19 +38,9 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false
-    },
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: new Date()
     }
   }, {
-    timestamps: false,
+    timestamps: true,
     tableName: 'users',
     // hooks: {
     //   beforeCreate: (user, options) => {
@@ -99,3 +89,35 @@ module.exports = function(sequelize, DataTypes) {
 
   return User;
 }
+
+// const mongoose = require('mongoose')
+// const slug = require('slugify')
+
+// const UserSchema = mongoose.Schema({
+//   user_name: {
+//     type: String,
+//     required: true,
+//     unique: true,
+//   },
+//   email: {
+//     type: String,
+//     required: true,
+//     unique: true,
+//   }, 
+//   first_name: {
+//     type: String,
+//     required: true,
+//   },
+//   last_name: {
+//     type: String,
+//     required: true,
+//   },
+//   password: {
+//     type: String,
+//     required: true,
+//     minlength: 6,
+//   },
+//   phone: {
+//     type: String,
+//   }
+// })

@@ -13,7 +13,7 @@ module.exports = {
       });
 
       const [user, userCreated] = await User.findOrCreate({
-        where: { user_name: 'admin' },
+        where: { username: 'admin' },
         include: [Role],
         defaults: {
           first_name: process.env.ADMIN_FNAME || 'Tu',
