@@ -5,10 +5,6 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       autoIncrement: true,
     },
-    tag_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
     category_id: {
       type: DataTypes.INTEGER,
       allowNull: true
@@ -47,7 +43,6 @@ module.exports = (sequelize, DataTypes) => {
   })
 
   Upload.associate = (models) => {
-    Upload.belongsTo(models.Tag, {foreignKey: 'tag_id', onDelete: 'cascade'})
     Upload.belongsTo(models.Product, {foreignKey: 'product_id', onDelete: 'cascade'})
     Upload.belongsTo(models.Category, {foreignKey: 'category_id', onDelete: 'cascade'})
     Upload.belongsTo(models.User, {foreignKey: 'user_id',onDelete: 'cascade'})

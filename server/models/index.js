@@ -72,9 +72,6 @@ db.Address = require('./address.model')(sequelize, Sequelize);
 db.Upload = require('./upload.model')(sequelize, Sequelize);
 db.ProductImage = require('./product_image.model')(sequelize, Sequelize);
 
-db.Tag = require('./tag.model')(sequelize, Sequelize);
-db.ProductTag = require('./product_tag.model')(sequelize, Sequelize);
-db.TagImage = require('./tag_image.model')(sequelize, Sequelize);
 
 db.Category = require('./category.model')(sequelize, Sequelize);
 db.ProductCategory = require('./product_category.model')(sequelize, Sequelize);
@@ -93,9 +90,6 @@ db.Address.associate(db);
 db.Upload.associate(db);
 db.ProductImage.associate(db);
 
-db.Tag.associate(db);
-db.ProductTag.associate(db);
-db.TagImage.associate(db);
 
 db.Category.associate(db);
 db.ProductCategory.associate(db);

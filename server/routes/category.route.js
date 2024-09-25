@@ -7,14 +7,11 @@ const {
 } = require("../middlewares/auth.middleware");
 const { setUploadPath } = require("../middlewares/upload.middleware");
 const {
-  getTags,
   getCategories,
-  createTag,
   createCategory,
-} = require("../controllers/tag_category.controller");
+} = require("../controllers/category.controller");
 
 router.get("/categories", getCategories);
-router.get("/tags", getTags);
 router.post(
   "/categories",
   mustBeAuthenticated,
@@ -23,13 +20,6 @@ router.post(
   upload.array("images", 6),
   createCategory
 );
-router.post(
-  "/tags",
-  mustBeAuthenticated,
-  isAdmin,
-  setUploadPath("./public/images/tags"),
-  upload.array("images", 6),
-  createTag
-);
+
 
 module.exports = router;

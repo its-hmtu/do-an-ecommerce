@@ -40,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
       tableName: "uploads",
       defaultScope: {
         where: {
-          productId: { [Op.ne]: null },
+          product_id: { [Op.ne]: null },
         },
       },
     });

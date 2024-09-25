@@ -1,3 +1,4 @@
+const { Op } = require('sequelize')
 const slugify = require('slugify')
 
 module.exports = (sequelize, DataTypes) => {
@@ -50,23 +51,22 @@ module.exports = (sequelize, DataTypes) => {
           required: false,
           model: models.ProductImage,
           as: 'images',
-          attributes: ['id', 'file_path']
+          attributes: ['id', 'file_path'],
+          where: {
+            product_id: {
+              [Op.ne]: null
+            }
+          }
         }
       ]
     }, { override: true });
 
     Product.hasMany(models.Review);
-    Product.hasMany(models.ProductImage, {as: 'images'});
+    Product.hasMany(models.ProductImage, {as: 'images', foreignKey: 'product_id'});
     Product.belongsToMany(models.Category, {
       through: models.ProductCategory,
       foreignKey: 'product_id',
       otherKey: 'category_id'
-    });
-
-    Product.belongsToMany(models.Tag, {
-      through: models.ProductTag,
-      foreignKey: 'product_id',
-      otherKey: 'tag_id'
     });
   }
 
