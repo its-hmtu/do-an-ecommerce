@@ -221,7 +221,8 @@ exports.deleteProducts = async (req, res, next) => {
 }
 
 exports.updateProduct = async (req, res, next) => {
-  const { id, rm_images, rm_categories } = req.params;
+  const { id } = req.params;
+  const {rm_images, rm_categories } = req.query;
   const { product_name, price, product_description, stock, categories_name } = req.body;
   const transaction = await sequelize.transaction({ autocommit: false });
 
@@ -246,7 +247,10 @@ exports.updateProduct = async (req, res, next) => {
     if (rm_images != null) {
       const images = await ProductImage.findAll({
         where: {
-          id: rm_images.split(",")
+          id: rm_images.split("%2C"),
+        },
+        attributes: {
+          exclude: ['productId']
         },
         transaction
       });
@@ -257,11 +261,24 @@ exports.updateProduct = async (req, res, next) => {
       }
     }
 
+    // remove categories if included in rm_categories
+    if (rm_categories != null) {
+      const categories = await Category.findAll({
+        where: {
+          name: rm_categories.split("%2C")
+        },
+        transaction
+      });
+
+      await product.removeCategories(categories, { transaction });
+    }
+
     await transaction.commit();
 
     return res.status(200).json({ message: "Product updated" });
   } catch (error) {
     await transaction.rollback();
+    console.log(error);
     return res.status(500).json({ message: error.message });
   }
 }

@@ -1,3 +1,5 @@
+const { Op } = require('sequelize')
+
 module.exports = (sequelize, DataTypes) => {
   const Upload = sequelize.define('uploads', {
     id: {
@@ -39,7 +41,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {
     timestamps: true,
-    tableName: 'uploads'
+    tableName: 'uploads',
   })
 
   Upload.associate = (models) => {
