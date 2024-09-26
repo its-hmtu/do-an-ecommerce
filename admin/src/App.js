@@ -1,31 +1,37 @@
-import logo from './logo.svg';
-import './App.css';
-import { useEffect } from 'react';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import MainLayout from 'layouts/MainLayout';
+import LoginPage from 'pages/LoginPage';
+import { CssVarsProvider, CssBaseline, GlobalStyles } from '@mui/joy';
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <MainLayout />,
+    children: [
+
+    ]
+  },
+  {
+    path: '/login',
+    element: <LoginPage />
+  }
+])
 
 function App() {
-  useEffect(() => {
-    fetch("/users").
-      then(response => response.json()).
-      then(data => console.log(data));
-  })
-
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <CssVarsProvider disableTransitionOnChange>
+      <CssBaseline />
+      <GlobalStyles
+        styles={{
+          ':root': {
+            '--Form-maxWidth': '800px',
+            '--Transition-duration': '0.4s', // set to `none` to disable transitions
+          },
+          
+        }}
+      />
+      <RouterProvider router={router}/>
+    </CssVarsProvider>
   );
 }
 

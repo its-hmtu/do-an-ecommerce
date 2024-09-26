@@ -87,6 +87,17 @@ module.exports = function(sequelize, DataTypes) {
     });
   }
 
+  User.prototype.generateRefreshToken = function () {
+    return jwt.sign({
+      id: this.id,
+      user_name: this.user_name,
+      email: this.email,
+      roles: this.roles.map(role => role.name)
+    }, process.env.JWT_REFRESH_SECRET, {
+      expiresIn: '7d'
+    });
+  }
+
   return User;
 }
 
