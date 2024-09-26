@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import MainLayout from 'layouts/MainLayout';
 import LoginPage from 'pages/LoginPage';
+import DashboardPage from 'pages/DashboardPage';
 import { CssVarsProvider, CssBaseline, GlobalStyles } from '@mui/joy';
 
 const router = createBrowserRouter([
@@ -8,7 +9,10 @@ const router = createBrowserRouter([
     path: '/',
     element: <MainLayout />,
     children: [
-
+      {
+        path: '/dashboard',
+        element: <DashboardPage />,
+      }
     ]
   },
   {
