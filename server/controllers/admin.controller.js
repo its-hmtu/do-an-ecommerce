@@ -51,3 +51,31 @@ exports.login = async (req, res, next) => {
       .json({ message: "An error occurred", status: 500});
   }
 };
+
+exports.getRoles = async (req, res, next) => {
+  try {
+    const roles = await Role.findAll();
+    return res.status(200).json({ message: "Roles retrieved", success: true, roles });
+  } catch (error) {
+    return res.status(500).json({ message: "An error occurred", success: false });
+  }
+}
+
+exports.createRole = async (req, res, next) => {
+  const {name, description} = req.body;
+
+  if (!name || name.trim() === "") {
+    return res.status(400).json({ message: "Role name is required", success: false });
+  }
+
+  try {
+    const role = await Role.create({
+      name: sanitizeInput(name.trim()),
+      description: sanitizeInput(description.trim()),
+    });
+
+    return res.status(201).json({ message: "Role created", success: true, role });
+  } catch (error) {
+    return res.status(500).json({ message: "An error occurred", success: false });
+  }
+}

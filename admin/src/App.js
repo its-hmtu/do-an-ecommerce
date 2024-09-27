@@ -3,6 +3,8 @@ import MainLayout from 'layouts/MainLayout';
 import LoginPage from 'pages/LoginPage';
 import DashboardPage from 'pages/DashboardPage';
 import { CssVarsProvider, CssBaseline, GlobalStyles } from '@mui/joy';
+import OrdersPage from 'pages/OrdersPage';
+import RolesPage from 'pages/RolesPage';
 
 const router = createBrowserRouter([
   {
@@ -12,6 +14,22 @@ const router = createBrowserRouter([
       {
         path: '/dashboard',
         element: <DashboardPage />,
+      },
+      {
+        path: '/orders',
+        element: <OrdersPage />
+      },
+      {
+        path: '/users',
+        element: <div>Users</div>
+      },
+      {
+        path: '/profile',
+        element: <div>Profile</div>
+      }, 
+      {
+        path: '/users/roles',
+        element: <RolesPage />
       }
     ]
   },

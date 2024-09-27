@@ -7,7 +7,8 @@ const api = axios.create({
 })
 
 const handleDecode = () => {
-  let storage = sessionStorage.getItem("token");
+  let storage = JSON.parse(sessionStorage.getItem("token"));
+  console.log(storage);
   let decoded = {};
 
   try {
@@ -48,7 +49,17 @@ api.interceptors.request.use(async (config) => {
 );
 
 const refresh = async () => {
-
+  try {
+    const response = await api.get("/api/refresh", {
+      withCredentials: true,
+    });
+    if (response.data.success === false) {
+      throw new Error(response.data.message);
+    }
+    return response.data;
+  } catch (e) {
+    return e.response.data;
+  }
 }
 
 const adminLogin = async ({email, password}) => {
@@ -65,4 +76,16 @@ const adminLogin = async ({email, password}) => {
   }
 }
 
-export { adminLogin };
+const getRoles = async () => {
+  try {
+    const response = await api.get("/admin/roles");
+    if (response.data.success === false) {
+      throw new Error(response.data.message);
+    }
+    return response.data;
+  } catch (e) {
+    return e.response.data;
+  }
+}
+
+export { adminLogin, getRoles };

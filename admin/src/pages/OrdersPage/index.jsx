@@ -1,15 +1,12 @@
 import React from "react";
-import { Box, Breadcrumbs, Typography, Button } from "@mui/joy";
+import { Box, Breadcrumbs, Link, Typography, Button } from "@mui/joy";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
-import Sidebar from "../../layouts/MainLayout/components/Sidebar";
-import Header from "../../layouts/MainLayout/components/Header";
-import OrderList from "../OrdersPage/components/OrderList";
-import OrderTable from "../OrdersPage/components/OrderTable";
-import {Link} from 'react-router-dom'
+import OrderList from "./components/OrderList";
+import OrderTable from "./components/OrderTable";
 
-function DashboardPage() {
+function OrdersPage() {
   return (
     <>
       <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -27,12 +24,16 @@ function DashboardPage() {
           >
             <HomeRoundedIcon />
           </Link>
-          <Typography
+          <Link
             underline="hover"
             color="neutral"
+            href="#some-link"
             sx={{ fontSize: 12, fontWeight: 500 }}
           >
-            <Link to={'/dashboard'}>Dashboard</Link>
+            Dashboard
+          </Link>
+          <Typography color="primary" sx={{ fontWeight: 500, fontSize: 12 }}>
+            Orders
           </Typography>
         </Breadcrumbs>
       </Box>
@@ -57,7 +58,6 @@ function DashboardPage() {
         >
           Download PDF
         </Button>
-        
       </Box>
       <OrderTable />
       <OrderList />
@@ -65,4 +65,4 @@ function DashboardPage() {
   );
 }
 
-export default DashboardPage;
+export default OrdersPage;
