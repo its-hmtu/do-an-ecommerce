@@ -72,6 +72,8 @@ db.Address = require('./address.model')(sequelize, Sequelize);
 db.Upload = require('./upload.model')(sequelize, Sequelize);
 db.ProductImage = require('./product_image.model')(sequelize, Sequelize);
 
+db.Cart = require('./cart.model')(sequelize, Sequelize);
+db.CartItem = require('./cart_item.model')(sequelize, Sequelize);
 
 db.Category = require('./category.model')(sequelize, Sequelize);
 db.ProductCategory = require('./product_category.model')(sequelize, Sequelize);
@@ -90,6 +92,8 @@ db.Address.associate(db);
 db.Upload.associate(db);
 db.ProductImage.associate(db);
 
+db.Cart.associate(db);
+db.CartItem.associate(db);
 
 db.Category.associate(db);
 db.ProductCategory.associate(db);

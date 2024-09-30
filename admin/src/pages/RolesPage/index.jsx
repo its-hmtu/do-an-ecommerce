@@ -5,8 +5,10 @@ import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import AddCircle from '@mui/icons-material/AddCircle';
 import RolesList from './components/RolesList';
 import RolesTable from './components/RolesTable';
+import { useMediaQuery } from '@mui/material';
 
 function RolesPage() {
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
   return (
     <>
       <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -70,7 +72,9 @@ function RolesPage() {
         </Button>
       </Box>
       <RolesTable />
-      <RolesList />
+      {
+        isMobile && <RolesList />
+      }
     </>
   );
 }

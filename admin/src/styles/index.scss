@@ -15,3 +15,17 @@
 .MuiCircularProgress-progress {
   stroke: white!important;
 }
+
+.go2812612974 {
+  z-index: 10001!important;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+
+  &:hover {
+    text-decoration: underline;
+    color: inherit;
+  }
+}

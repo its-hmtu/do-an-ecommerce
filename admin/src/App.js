@@ -5,6 +5,7 @@ import DashboardPage from 'pages/DashboardPage';
 import { CssVarsProvider, CssBaseline, GlobalStyles } from '@mui/joy';
 import OrdersPage from 'pages/OrdersPage';
 import RolesPage from 'pages/RolesPage';
+import { useEffect } from 'react';
 
 const router = createBrowserRouter([
   {
@@ -28,8 +29,14 @@ const router = createBrowserRouter([
         element: <div>Profile</div>
       }, 
       {
-        path: '/users/roles',
-        element: <RolesPage />
+        path: '/roles',
+        element: <RolesPage />,
+        children: [
+          {
+            path: '/create-new-role',
+            element: <div>Role</div>
+          }
+        ]
       }
     ]
   },
@@ -40,6 +47,13 @@ const router = createBrowserRouter([
 ])
 
 function App() {
+  useEffect(() => {
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+      router.navigate('/login');
+    }
+  }, [])
+
   return (
     <CssVarsProvider disableTransitionOnChange>
       <CssBaseline />

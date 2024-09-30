@@ -76,6 +76,19 @@ const adminLogin = async ({email, password}) => {
   }
 }
 
+const getCurrentAdmin = async () => {
+  try {
+    const response = await api.get("/admin/me");
+    if (response.data.success === false) {
+      throw new Error(response.data.message);
+    }
+
+    return response.data;
+  } catch (e) {
+    return e.response.data
+  }
+}
+
 const getRoles = async () => {
   try {
     const response = await api.get("/admin/roles");
@@ -88,4 +101,4 @@ const getRoles = async () => {
   }
 }
 
-export { adminLogin, getRoles };
+export { adminLogin, getRoles, getCurrentAdmin };

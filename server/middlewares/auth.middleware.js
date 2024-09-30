@@ -40,7 +40,8 @@ const getFreshUser = (required) => {
     try {
       const user = await User.findOne({
         where: {id: req.user.id},
-        include: [Role]
+        include: [Role],
+        attributes: { exclude: ['password'] }
       })
   
       if (!user) {

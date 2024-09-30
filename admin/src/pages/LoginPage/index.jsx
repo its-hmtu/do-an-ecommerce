@@ -12,17 +12,21 @@ import {
   Checkbox,
   Button,
   Alert,
-  CircularProgress
+  CircularProgress,
 } from "@mui/joy";
 import { adminLogin } from "api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Error } from "@mui/icons-material";
+import { Error, Visibility, VisibilityOff } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 function LoginPage() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [cred, setCred] = useState({ email: "", password: "" });
   const [error, setError] = useState({});
   const [warning, setWarning] = useState({});
   const [shake, setShake] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   const { mutate, isPending } = useMutation({
     mutationFn: adminLogin,
     onSuccess: (data) => {
@@ -38,7 +42,8 @@ function LoginPage() {
       } else {
         queryClient.setQueryData("admin", data);
         console.log(data);
-        alert(data);
+        // alert(data);
+        navigate("/dashboard");
       }
     },
     onError: (error) => {
@@ -54,8 +59,8 @@ function LoginPage() {
   });
 
   useEffect(() => {
-    console.log(isPending)
-  }, [isPending])
+    console.log(isPending);
+  }, [isPending]);
 
   const handleChange = (e) => {
     setCred({ ...cred, [e.target.name]: e.target.value });
@@ -66,7 +71,11 @@ function LoginPage() {
     const errors = {};
     if (!cred.email) {
       errors.email = "Email is required";
-    } else if (!/^(([^<>()\\[\]\\.,;:\s@"]+(\.[^<>()\\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(cred.email)) {
+    } else if (
+      !/^(([^<>()\\[\]\\.,;:\s@"]+(\.[^<>()\\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+        cred.email
+      )
+    ) {
       errors.email = "Email address is invalid";
     }
     if (!cred.password) {
@@ -75,7 +84,7 @@ function LoginPage() {
       errors.password = "Password must be at least 6 characters";
     }
     return errors;
-  }; 
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -89,7 +98,7 @@ function LoginPage() {
         setShake(false);
       }, 500);
       return;
-    } else {
+    } else if (cred && cred.email && cred.password) {
       mutate(cred);
     }
   };
@@ -171,48 +180,76 @@ function LoginPage() {
               </Stack>
             </Stack>
             <Stack sx={{ gap: 2, mt: 2 }}>
-              {
-                error.message && (
-                  <Alert color={"danger"} sx={{ borderRadius: "md", 
-                    animation: shake ? "shake 0.5s" : "none"
-                  }}>
-                    <Error  />
-                    <Typography color={"danger"}>{error.message}</Typography>
-                  </Alert>
-                )
-              }
-              {
-                warning.email && (
-                  <Alert color={"warning"} sx={{ borderRadius: "md", 
-                    animation: shake ? "shake 0.5s" : "none"
-                  }}>
-                    <Error  />
-                    <Typography color={"warning"}>{warning.email}</Typography>
-                  </Alert>
-                )
-              }
-              {
-                warning.password && (
-                  <Alert color={"warning"} sx={{ borderRadius: "md", 
-                    animation: shake ? "shake 0.5s" : "none"
-                  }}>
-                    <Error  />
-                    <Typography color={"warning"}>{warning.password}</Typography>
-                  </Alert>
-                )
-              }
+              {error.message && (
+                <Alert
+                  color={"danger"}
+                  sx={{
+                    borderRadius: "md",
+                    animation: shake ? "shake 0.5s" : "none",
+                  }}
+                >
+                  <Error />
+                  <Typography color={"danger"}>{error.message}</Typography>
+                </Alert>
+              )}
+              {warning.email && (
+                <Alert
+                  color={"warning"}
+                  sx={{
+                    borderRadius: "md",
+                    animation: shake ? "shake 0.5s" : "none",
+                  }}
+                >
+                  <Error />
+                  <Typography color={"warning"}>{warning.email}</Typography>
+                </Alert>
+              )}
+              {warning.password && (
+                <Alert
+                  color={"warning"}
+                  sx={{
+                    borderRadius: "md",
+                    animation: shake ? "shake 0.5s" : "none",
+                  }}
+                >
+                  <Error />
+                  <Typography color={"warning"}>{warning.password}</Typography>
+                </Alert>
+              )}
               <form>
                 <FormControl required>
                   <FormLabel>Email</FormLabel>
-                  <Input type="email" name="email" value={cred.email} onChange={handleChange} />
+                  <Input
+                    type="email"
+                    name="email"
+                    value={cred.email}
+                    onChange={handleChange}
+                  />
                 </FormControl>
-                <FormControl required>
+                {/* <FormControl required>
                   <FormLabel>Password</FormLabel>
                   <Input
                     type="password"
                     name="password"
                     value={cred.password}
                     onChange={handleChange}
+                  />
+                </FormControl> */}
+                <FormControl required>
+                  <FormLabel>Password</FormLabel>
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={cred.password}
+                    onChange={handleChange}
+                    endDecorator={
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    }
                   />
                 </FormControl>
                 <Stack sx={{ gap: 4, mt: 2 }}>
@@ -228,18 +265,20 @@ function LoginPage() {
                         Forgot your password?
                       </Link>
                     </Box> */}
-                  <Button type="submit" fullWidth onClick={handleSubmit} disabled={isPending}
-                    sx={{ 
+                  <Button
+                    type="submit"
+                    fullWidth
+                    onClick={handleSubmit}
+                    disabled={isPending}
+                    sx={{
                       // disabled background color
                       "&.MuiButton-root.Mui-disabled": {
                         backgroundColor: "rgb(24, 94, 165)",
                         cursor: "not-allowed",
-                      }
+                      },
                     }}
                   >
-                    {
-                      isPending ? <CircularProgress variant="plain"/>: "Login"
-                    }
+                    {isPending ? <CircularProgress variant="plain" /> : "Login"}
                   </Button>
                 </Stack>
               </form>

@@ -5,12 +5,8 @@ import './App.css'
 
 function App() {
   const [count, setCount] = useState(0)
+  const [a, setA] = useState(0)
 
-  useEffect(() => {
-    fetch('/users')
-      .then((res) => res.json())
-      .then(data => console.log(data))
-  }, [])
 
   return (
     <>

@@ -16,6 +16,7 @@ import {
   MenuItem,
   Divider,
   Dropdown,
+  CircularProgress,
 } from "@mui/joy";
 
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
@@ -27,68 +28,7 @@ import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import { useQuery } from "@tanstack/react-query";
 import { getRoles } from "api";
 
-const listItems = [
-  {
-    id: "INV-1234",
-    date: "Feb 3, 2023",
-    status: "Refunded",
-    customer: {
-      initial: "O",
-      name: "Olivia Ryhe",
-      email: "olivia@email.com",
-    },
-  },
-  {
-    id: "INV-1233",
-    date: "Feb 3, 2023",
-    status: "Paid",
-    customer: {
-      initial: "S",
-      name: "Steve Hampton",
-      email: "steve.hamp@email.com",
-    },
-  },
-  {
-    id: "INV-1232",
-    date: "Feb 3, 2023",
-    status: "Refunded",
-    customer: {
-      initial: "C",
-      name: "Ciaran Murray",
-      email: "ciaran.murray@email.com",
-    },
-  },
-  {
-    id: "INV-1231",
-    date: "Feb 3, 2023",
-    status: "Refunded",
-    customer: {
-      initial: "M",
-      name: "Maria Macdonald",
-      email: "maria.mc@email.com",
-    },
-  },
-  {
-    id: "INV-1230",
-    date: "Feb 3, 2023",
-    status: "Cancelled",
-    customer: {
-      initial: "C",
-      name: "Charles Fulton",
-      email: "fulton@email.com",
-    },
-  },
-  {
-    id: "INV-1229",
-    date: "Feb 3, 2023",
-    status: "Cancelled",
-    customer: {
-      initial: "J",
-      name: "Jay Hooper",
-      email: "hooper@email.com",
-    },
-  },
-];
+
 
 function RowMenu() {
   return (
@@ -117,86 +57,95 @@ function RolesList() {
 
   return (
     <Box sx={{ display: { xs: "block", sm: "none" } }}>
-      {data?.roles.map((listItem) => (
-        <List key={listItem.id} size="sm" sx={{ "--ListItem-paddingX": 0 }}>
-          <ListItem
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "start",
-            }}
-          >
-            <ListItemContent
-              sx={{ display: "flex", gap: 2, alignItems: "start" }}
-            >
-              {/* <ListItemDecorator>
-                <Avatar size="sm">{listItem.customer.initial}</Avatar>
-              </ListItemDecorator> */}
-              <div>
-                <Typography gutterBottom sx={{ fontWeight: 600, marginLeft: "4px" }}>
-                  {listItem.name}
-                </Typography>
-                {/* <Typography level="body-xs" gutterBottom>
-                  {listItem.customer.email}
-                </Typography> */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 0.5,
-                    mb: 1,
-                  }}
+      {
+        !isLoading ? (
+          data?.roles.map((listItem) => (
+            <List key={listItem.id} size="sm" sx={{ "--ListItem-paddingX": 0 }}>
+              <ListItem
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "start",
+                }}
+              >
+                <ListItemContent
+                  sx={{ display: "flex", gap: 2, alignItems: "start" }}
                 >
-                  <Chip variant="soft" size="sm">
-                    <Typography level="body-xs">
-                      {new Date(listItem.createdAt).toLocaleString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                        hour: "numeric",
-                        minute: "numeric",
-                        hour12: false,
-                      })}
+                  {/* <ListItemDecorator>
+                    <Avatar size="sm">{listItem.customer.initial}</Avatar>
+                  </ListItemDecorator> */}
+                  <div>
+                    <Typography gutterBottom sx={{ fontWeight: 600, marginLeft: "4px" }}>
+                      {listItem.name}
                     </Typography>
-                  </Chip>
-                  <Typography level="body-xs">&bull;</Typography>
-                  <Typography level="body-xs">{listItem.id}</Typography>
-                </Box>
-                <Box
-                  sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1, marginLeft: "4px" }}
+                    {/* <Typography level="body-xs" gutterBottom>
+                      {listItem.customer.email}
+                    </Typography> */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 0.5,
+                        mb: 1,
+                      }}
+                    >
+                      <Chip variant="soft" size="sm">
+                        <Typography level="body-xs">
+                          {new Date(listItem.createdAt).toLocaleString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                            hour: "numeric",
+                            minute: "numeric",
+                            hour12: false,
+                          })}
+                        </Typography>
+                      </Chip>
+                      <Typography level="body-xs">&bull;</Typography>
+                      <Typography level="body-xs">{listItem.id}</Typography>
+                    </Box>
+                    <Typography level="body-xs">{listItem.description}</Typography>
+                    <Box
+                      sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1, marginLeft: "4px" }}
+                    >
+                      <Link level="body-sm" component="button">
+                        Download
+                      </Link>
+                      <RowMenu />
+                    </Box>
+                  </div>
+                </ListItemContent>
+                {/* <Chip
+                  variant="soft"
+                  size="sm"
+                  startDecorator={
+                    {
+                      Paid: <CheckRoundedIcon />,
+                      Refunded: <AutorenewRoundedIcon />,
+                      Cancelled: <BlockIcon />,
+                    }[listItem.status]
+                  }
+                  color={
+                    {
+                      Paid: 'success',
+                      Refunded: 'neutral',
+                      Cancelled: 'danger',
+                    }[listItem.status]
+                  }
                 >
-                  <Link level="body-sm" component="button">
-                    Download
-                  </Link>
-                  <RowMenu />
-                </Box>
-              </div>
-            </ListItemContent>
-            {/* <Chip
-              variant="soft"
-              size="sm"
-              startDecorator={
-                {
-                  Paid: <CheckRoundedIcon />,
-                  Refunded: <AutorenewRoundedIcon />,
-                  Cancelled: <BlockIcon />,
-                }[listItem.status]
-              }
-              color={
-                {
-                  Paid: 'success',
-                  Refunded: 'neutral',
-                  Cancelled: 'danger',
-                }[listItem.status]
-              }
-            >
-              {listItem.status}
-            </Chip> */}
-          </ListItem>
-          <ListDivider />
-        </List>
-      ))}
+                  {listItem.status}
+                </Chip> */}
+              </ListItem>
+              <ListDivider />
+            </List>
+          ))
+        ) : (
+          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center"}}>
+            <CircularProgress size="sm"/>
+          </Box>
+        )
+      }
       {/* <Box
         className="Pagination-mobile"
         sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', py: 2 }}

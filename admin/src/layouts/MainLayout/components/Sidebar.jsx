@@ -42,7 +42,11 @@ function Toggler({ defaultExpanded = false, renderToggle, children }) {
   const location = window.location.pathname;
 
   useEffect(() => {
-    if (location === "/users" || location === "/profile" || location === "/users/roles") {
+    if (
+      location === "/users" ||
+      location === "/profile" ||
+      location === "/users/roles"
+    ) {
       setOpen(true);
     } else {
       setOpen(false);
@@ -70,15 +74,15 @@ function Toggler({ defaultExpanded = false, renderToggle, children }) {
   );
 }
 
-function Sidebar() {
+function Sidebar({ user }) {
   const navigate = useNavigate();
   const location = window.location.pathname;
   const [selected, setSelected] = React.useState(location);
 
   // get current location
-  useEffect(() => {
-    console.log(location);
-  });
+  // useEffect(() => {
+  //   console.log(location);
+  // });
 
   return (
     <Sheet
@@ -297,8 +301,15 @@ function Sidebar() {
               Settings
             </ListItemButton>
           </ListItem>
+
+          <ListItem>
+            <ListItemButton color="danger">
+              <LogoutRoundedIcon color="danger"/>
+              Logout
+            </ListItemButton>
+          </ListItem>
         </List>
-        <Card
+        {/* <Card
           invertedColors
           variant="soft"
           color="warning"
@@ -326,22 +337,17 @@ function Sidebar() {
           <Button size="sm" variant="solid">
             Upgrade plan
           </Button>
-        </Card>
+        </Card> */}
       </Box>
       <Divider />
       <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-        <Avatar
-          variant="outlined"
-          size="sm"
-          src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=286"
-        />
-        <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography level="title-sm">Siriwat K.</Typography>
-          <Typography level="body-xs">siriwatk@test.com</Typography>
+        <Avatar variant="soft" size="sm" alt={user?.first_name} color="primary"/>
+        <Box sx={{ minWidth: 200, flex: 1 }}>
+          <Typography level="title-sm">
+            {user?.first_name + " " + user?.last_name}
+          </Typography>
+          <Typography level="body-xs">{user?.email}</Typography>
         </Box>
-        <IconButton size="sm" variant="plain" color="neutral">
-          <LogoutRoundedIcon />
-        </IconButton>
       </Box>
     </Sheet>
   );

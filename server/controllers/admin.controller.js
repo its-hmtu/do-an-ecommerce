@@ -46,11 +46,18 @@ exports.login = async (req, res, next) => {
 
     return res.status(200).json({ message: "Login successful", status: 200, token });
   } catch (error) {
+    console.log(error);
     return res
       .status(500)
       .json({ message: "An error occurred", status: 500});
   }
 };
+
+exports.getCurrentAdmin = async (req, res, next) => {
+  const { user } = req;
+
+  return res.status(200).json({ message: "Admin retrieved", success: true, user });
+}
 
 exports.getRoles = async (req, res, next) => {
   try {

@@ -6,11 +6,13 @@ const {
 } = require('../middlewares/auth.middleware');
 const {
   login,
+  getCurrentAdmin,
   getRoles,
-  createRole
+  createRole,
 } = require('../controllers/admin.controller');
 
 router.post('/login', login);
+router.get('/me', mustBeAuthenticated, getCurrentAdmin);
 router.get('/roles', mustBeAuthenticated, isAdmin, getRoles);
 router.post('/roles', mustBeAuthenticated, isAdmin, createRole);
 
