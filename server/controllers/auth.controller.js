@@ -4,9 +4,8 @@ const jwt = require("jsonwebtoken");
 exports.refresh = async (req, res, next) => {
   const refresh_token = req.cookies["da_refresh"];
   if (!refresh_token) {
-    return res
-      .status(401)
-      .json({ message: "Refresh token not provided", success: false });
+    res.status(401);
+    return next(new Error("Token not provided"));
   }
 
   try {
@@ -16,9 +15,8 @@ exports.refresh = async (req, res, next) => {
     });
 
     if (!user) {
-      return res
-        .status(404)
-        .json({ message: "User not found", success: false });
+      res.status(404);
+      return next(new Error("User not found"));
     }
 
     const newToken = user.generateToken();
@@ -27,6 +25,7 @@ exports.refresh = async (req, res, next) => {
       token: newToken,
     });
   } catch (e) {
-    return res.status(500).json({ message: e.message, success: false });
+    res.status(500);
+    return next(e);
   }
 };

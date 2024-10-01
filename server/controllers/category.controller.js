@@ -13,51 +13,57 @@ exports.getCategories = async (req, res, next) => {
   const pageSize = parseInt(req.query.page_size) || 10;
   const offset = (page - 1) * pageSize;
 
-  const categories = await Category.findAndCountAll({
-    limit: pageSize,
-    offset: offset,
-    include: [
-      {
-        model: CategoryImage,
-        as: "images",
-        where: {
-          category_id: {
-            [Op.ne]: null,
+  try {
+    const categories = await Category.findAndCountAll({
+      limit: pageSize,
+      offset: offset,
+      include: [
+        {
+          model: CategoryImage,
+          as: "images",
+          where: {
+            category_id: {
+              [Op.ne]: null,
+            },
           },
+          attributes: [
+            "file_name",
+            "file_path",
+            "file_size",
+            "original_name",
+            "mime_type",
+          ],
         },
-        attributes: [
-          "file_name",
-          "file_path",
-          "file_size",
-          "original_name",
-          "mime_type",
-        ],
+      ],
+    });
+  
+    if (!categories) {
+      res.status(404);
+      return next(new Error("Categories not found"));
+    }
+  
+    const totalItemCount = categories.count;
+    const currentItemCount = categories.rows.length;
+    const currentPage = page;
+    const totalPages = Math.ceil(totalItemCount / pageSize);
+  
+    const pagination = {
+      total_item_count: totalItemCount,
+      current_item_count: currentItemCount,
+      total_pages: totalPages,
+      current_page: currentPage,
+    };
+  
+    return res.status(200).json({
+      data: {
+        ...pagination,
+        categories: categories.rows,
       },
-    ],
-  });
-
-  if (!categories) {
-    return res.status(404).json({ message: "Categories not found" });
+    });
+  } catch (error) {
+    res.status(500);
+    return next(error);
   }
-
-  const totalItemCount = categories.count;
-  const currentItemCount = categories.rows.length;
-  const currentPage = page;
-  const totalPages = Math.ceil(totalItemCount / pageSize);
-
-  const pagination = {
-    total_item_count: totalItemCount,
-    current_item_count: currentItemCount,
-    total_pages: totalPages,
-    current_page: currentPage,
-  };
-
-  return res.status(200).json({
-    data: {
-      ...pagination,
-      categories: categories.rows,
-    },
-  });
 };
 
 exports.createCategory = async (req, res, next) => {
@@ -65,7 +71,8 @@ exports.createCategory = async (req, res, next) => {
   const transaction = await sequelize.transaction({ autocommit: false });
 
   if (name == null || name.length === 0) {
-    return res.status(400).json({ message: "Name is required" });
+    res.status(400)
+    return next(new Error("Category name is required"))
   } 
 
   const existingCategory = await Category.findOne({
@@ -75,7 +82,8 @@ exports.createCategory = async (req, res, next) => {
   });
 
   if (existingCategory) {
-    return res.status(400).json({ message: "Category already exists" });
+    res.status(400);
+    return next(new Error("Category already exists"))
   }
 
   try {
@@ -123,6 +131,7 @@ exports.createCategory = async (req, res, next) => {
         fs.unlinkSync(req.files[i].path);
       }
     }
-    return res.status(400).json({ message: "Category not created" });
+    res.status(500);
+    return next(error);
   }
 };

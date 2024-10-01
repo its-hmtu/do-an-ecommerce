@@ -45,7 +45,7 @@ function Toggler({ defaultExpanded = false, renderToggle, children }) {
     if (
       location === "/users" ||
       location === "/profile" ||
-      location === "/users/roles"
+      location === "/roles"
     ) {
       setOpen(true);
     } else {
@@ -98,7 +98,7 @@ function Sidebar({ user }) {
         height: "100dvh",
         width: "var(--Sidebar-width)",
         top: 0,
-        p: 2,
+        padding: "16px 8px",
         flexShrink: 0,
         display: "flex",
         flexDirection: "column",
@@ -256,10 +256,10 @@ function Sidebar({ user }) {
                     role="menuitem"
                     component="a"
                     onClick={() => {
-                      navigate("/users/roles");
-                      setSelected("/users/roles");
+                      navigate("/roles");
+                      setSelected("/roles");
                     }}
-                    selected={selected === "/users/roles"}
+                    selected={selected === "/roles"}
                   >
                     Roles and permissions
                   </ListItemButton>

@@ -7,6 +7,10 @@ const UserRole = require('../models').UserRole;
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     try {
+      await Role.findOrCreate({
+        where: { name: 'USER' },
+        defaults: { description: 'For regular users' },
+      })
       const [role, created] = await Role.findOrCreate({
         where: { name: 'ADMIN' },
         defaults: { description: 'For Admin users' },

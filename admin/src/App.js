@@ -33,7 +33,7 @@ const router = createBrowserRouter([
         element: <RolesPage />,
         children: [
           {
-            path: '/create-new-role',
+            path: 'roles/create-new-role',
             element: <div>Role</div>
           }
         ]

@@ -51,7 +51,7 @@ function RowMenu() {
 }
 function RolesList() {
   const { data, isLoading } = useQuery({
-    queryKey: "roles",
+    queryKey: ["roles"],
     queryFn: getRoles,
   });
 

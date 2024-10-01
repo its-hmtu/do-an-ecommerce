@@ -16,10 +16,10 @@ function MainLayout() {
   const isUser = sessionStorage.getItem('token');
   
   const {data, isLoading} = useQuery({
-    queryKey: 'admin',
+    queryKey: ['admin'],
     queryFn: getCurrentAdmin,
     onSuccess: (data) => {
-      queryClient.setQueryData('admin', data);
+      queryClient.setQueryData(['admin'], data);
     },
     enabled: !!isUser
   })

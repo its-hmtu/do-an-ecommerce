@@ -40,7 +40,7 @@ function LoginPage() {
           setShake(false);
         }, 500);
       } else {
-        queryClient.setQueryData("admin", data);
+        queryClient.setQueryData(["admin"], data);
         console.log(data);
         // alert(data);
         navigate("/dashboard");
