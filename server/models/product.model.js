@@ -28,6 +28,10 @@ module.exports = (sequelize, DataTypes) => {
     stock: {
       type: DataTypes.INTEGER(11),
       allowNull: false
+    }, 
+    main_image_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true
     }
   }, {
     timestamps: true,

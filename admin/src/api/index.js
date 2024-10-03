@@ -105,4 +105,4 @@ const getRoles = async () => {
   }
 }
 
-export { adminLogin, getRoles, getCurrentAdmin };
+export { adminLogin, getRoles, getCurrentAdmin, api as default };

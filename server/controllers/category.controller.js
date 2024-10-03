@@ -33,6 +33,7 @@ exports.getCategories = async (req, res, next) => {
             "original_name",
             "mime_type",
           ],
+          required: false,
         },
       ],
     });

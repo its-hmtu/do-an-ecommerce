@@ -1,23 +1,31 @@
 const {
   Product,
-  Tag,
   Category,
   ProductImage,
   Review,
   sequelize,
 } = require("../models");
 const fs = require("fs");
+const {Op} = require("sequelize");
 
 exports.getProducts = async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
-  const pageSize = parseInt(req.query.page_size) || 10;
+  const pageSize = parseInt(req.query.limit) || 10;
+  const order = req.query.order || "DESC";
+  const q = req.query.q || "";
+  const sort = req.query.sort || "createdAt";
   const offset = (page - 1) * pageSize;
 
   try {
     const products = await Product.findAndCountAll({
       limit: pageSize,
       offset: offset,
-      order: [["createdAt", "DESC"]],
+      order: [[sort, order.toUpperCase()]],
+      where: {
+        product_name: {
+          [Op.like]: `%${q.replace('%20', ' ')}%`,
+        }
+      },
       attributes: {
         exclude: ["updatedAt"],
       },
@@ -30,12 +38,15 @@ exports.getProducts = async (req, res, next) => {
           model: ProductImage,
           as: "images",
           attributes: ["id", "file_path"],
+          // required: false,
         }
-      ]
+      ],
+      distinct: true
     });
 
     if (!products) {
-      return res.status(404).json({ message: "Products not found" });
+      res.status(404);
+      return next(new Error("Products not found"));
     }
 
     // GET REVIEWS FOR EACH PRODUCT
@@ -83,12 +94,13 @@ exports.getProducts = async (req, res, next) => {
       },
     });
   } catch (e) {
-    return res.status(500).json({ message: e.message });
+    res.status(500);
+    return next(e);
   }
 };
 
 exports.createProduct = async (req, res, next) => {
-  const { product_name, price, product_description, stock, categories_name } =
+  const { product_name, price, product_description, stock, category_ids } =
     req.body;
   const transaction = await sequelize.transaction({ autocommit: false });
   // const promises = [];
@@ -104,27 +116,15 @@ exports.createProduct = async (req, res, next) => {
       { transaction }
     );
 
-    // if categories_name is an array of categories then we can use this to set this product can belong to multiple categories
-    if (categories_name != null && categories_name.length > 0 && Array.isArray(categories_name)) {
-      const categories = [];
-      for (let name of categories_name) {
-        const [category] = await Category.findOrCreate({
-          where: { name },
-          transaction,
-        });
-        categories.push(category);
-      }
-
-      await newProduct.setCategories(categories, { transaction });
-    }
-    // else if categories_name is only a string (or only one category name) then we can use this to set this product can belong to only one category
-    else if (categories_name != null && typeof categories_name === "string") {
-      const category = await Category.findOrCreate({
-        where: { name: categories_name },
+    if (category_ids != null && category_ids.length > 0) {
+      const categories = await Category.findAll({
+        where: {
+          id: category_ids,
+        },
         transaction,
       });
 
-      await newProduct.addCategory(category, { transaction });
+      await newProduct.addCategories(categories, { transaction });
     }
 
     const images = [];
@@ -148,6 +148,7 @@ exports.createProduct = async (req, res, next) => {
     }
 
     newProduct.images = images;
+    newProduct.main_image_id = images[0].id;
     await transaction.commit();
 
     return res
@@ -161,7 +162,8 @@ exports.createProduct = async (req, res, next) => {
         fs.unlinkSync(req.files[i].path);
       }
     }
-    return res.status(400).json({ message: "Product not created" });
+    res.status(500);
+    return next(error);
   }
 };
 
@@ -173,7 +175,8 @@ exports.deleteProduct = async (req, res, next) => {
     const product = await Product.findByPk(id, { transaction });
 
     if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      res.status(404);
+      return next(new Error("Product not found"));
     }
 
     await product.destroy({ transaction });
@@ -183,7 +186,8 @@ exports.deleteProduct = async (req, res, next) => {
     return res.status(200).json({ message: "Product deleted" });
   } catch (error) {
     await transaction.rollback();
-    return res.status(500).json({ message: error.message });
+    res.status(500);
+    return next(error);
   }
 }
 
@@ -193,7 +197,8 @@ exports.deleteProducts = async (req, res, next) => {
   const transaction = await sequelize.transaction({ autocommit: false });
   console.log(product_ids)
   if (!Array.isArray(product_ids) || product_ids.length === 0) {
-    return res.status(400).json({ message: "Product ids are required" });
+    res.status(400);
+    return next(new Error("Product ids are required"));
   }
   try {
     const products = await Product.findAll({
@@ -204,7 +209,8 @@ exports.deleteProducts = async (req, res, next) => {
     });
 
     if (products.length !== product_ids.length) {
-      return res.status(404).json({ message: "Some products not found" });
+      res.status(404);
+      return next(new Error("Some products not found"));
     }
 
     for (let product of products) {
@@ -216,7 +222,8 @@ exports.deleteProducts = async (req, res, next) => {
     return res.status(200).json({ message: "Products deleted" });
   } catch (error) {
     await transaction.rollback();
-    return res.status(500).json({ message: error.message });
+    res.status(500);
+    return next(error);
   }
 }
 
@@ -230,7 +237,8 @@ exports.updateProduct = async (req, res, next) => {
     const product = await Product.findByPk(id, { transaction });
 
     if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      res.status(404);
+      return next(new Error("Product not found"));
     }
 
     await product.update(
@@ -279,6 +287,168 @@ exports.updateProduct = async (req, res, next) => {
   } catch (error) {
     await transaction.rollback();
     console.log(error);
-    return res.status(500).json({ message: error.message });
+    res.status(500);
+    return next(error);
+  }
+}
+
+exports.getSingleProduct = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const product = await Product.findByPk(id, {
+      attributes: {
+        exclude: ["updatedAt"],
+      },
+      include: [
+        {
+          model: Category,
+          attributes: ["id", "name"],
+        },
+        {
+          model: ProductImage,
+          as: "images",
+          attributes: ["id", "file_path"],
+        },
+        {
+          model: Review,
+          attributes: ["id", "comment", "rating"],
+        }
+      ]
+    });
+
+    if (!product) {
+      res.status(404);
+      return next(new Error("Product not found"));
+    }
+
+    return res.status(200).json({ product });
+  } catch (error) {
+    res.status(500);
+    return next(error);
+  }
+}
+
+exports.getProductsByCategory = async (req, res, next) => {
+  const { category_name } = req.params;
+  const page = parseInt(req.query.page) || 1;
+  const pageSize = parseInt(req.query.page_size) || 10;
+  const offset = (page - 1) * pageSize;
+
+  try {
+    const products = await Product.findAndCountAll({
+      limit: pageSize,
+      offset: offset,
+      order: [["createdAt", "DESC"]],
+      attributes: {
+        exclude: ["updatedAt"],
+      },
+      include: [
+        {
+          model: Category,
+          where: {
+            name: category_name,
+          },
+          attributes: ["id", "name"],
+        },
+        {
+          model: ProductImage,
+          as: "images",
+          attributes: ["id", "file_path"],
+        }
+      ]
+    });
+
+    if (!products) {
+      res.status(404);
+      return next(new Error("Products not found"));
+    }
+
+    const totalItemCount = products.count;
+    const currentItemCount = products.rows.length;
+    const currentPage = page;
+    const totalPages = Math.ceil(totalItemCount / pageSize);
+
+    const pagination = {
+      total_item_count: totalItemCount,
+      current_item_count: currentItemCount,
+      total_pages: totalPages,
+      current_page: currentPage,
+    };
+
+    return res.status(200).json({
+      data: {
+        ...pagination,
+        products: products.rows,
+      },
+      message: `Products under ${category_name} category`,
+      success: true
+    });
+  } catch (err) {
+    res.status(500);
+    return next(err);
+  }
+}
+
+exports.getProductsBySearch = async (req, res, next) => {
+  const { q } = req.query;
+  const page = parseInt(req.query.page) || 1;
+  const pageSize = parseInt(req.query.page_size) || 10;
+  const offset = (page - 1) * pageSize;
+
+  try {
+    const products = await Product.findAndCountAll({
+      limit: pageSize,
+      offset: offset,
+      order: [["createdAt", "DESC"]],
+      attributes: {
+        exclude: ["updatedAt"],
+      },
+      where: {
+        product_name: {
+          [Op.like]: `%${q.replace('%20', ' ')}%`,
+        },
+      },
+      include: [
+        {
+          model: Category,
+          attributes: ["id", "name"],
+        },
+        {
+          model: ProductImage,
+          as: "images",
+          attributes: ["id", "file_path"],
+        }
+      ]
+    });
+
+    if (!products) {
+      res.status(404);
+      return next(new Error("Products not found"));
+    }
+
+    const totalItemCount = products.count;
+    const currentItemCount = products.rows.length;
+    const currentPage = page;
+    const totalPages = Math.ceil(totalItemCount / pageSize);
+
+    const pagination = {
+      total_item_count: totalItemCount,
+      current_item_count: currentItemCount,
+      total_pages: totalPages,
+      current_page: currentPage,
+    };
+
+    return res.status(200).json({
+      data: {
+        ...pagination,
+        products: products.rows,
+      },
+      message: `Products with search term: ${q.replace('%20', ' ')}`,
+      success: true
+    });
+  } catch (err) {
+    res.status(500);
+    return next(err);
   }
 }

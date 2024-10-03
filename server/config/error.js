@@ -19,9 +19,9 @@ module.exports = (app) => {
     if (process.env.MODE === "production") {
       delete err.stack;
     }
+    console.log(status === 500 ? err.message : "An error occurred");
     return res.status(status).json({
-      message:
-        process.env.MODE === "production" ? "An error occurred" : err.message,
+      message: status !== 500 ? err.message : "An error occurred",
       success: false,
       stack: err.stack,
     });

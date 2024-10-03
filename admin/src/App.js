@@ -6,6 +6,7 @@ import { CssVarsProvider, CssBaseline, GlobalStyles } from '@mui/joy';
 import OrdersPage from 'pages/OrdersPage';
 import RolesPage from 'pages/RolesPage';
 import { useEffect } from 'react';
+import ProductPage from 'pages/ProductPage';
 
 const router = createBrowserRouter([
   {
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
       {
         path: '/dashboard',
         element: <DashboardPage />,
+      },
+      {
+        path: '/products',
+        element: <ProductPage />
       },
       {
         path: '/orders',

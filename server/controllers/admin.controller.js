@@ -1,4 +1,4 @@
-const { User, Role } = require("../models");
+const { User, Role, sequelize } = require("../models");
 const sanitizeInput = require("../utils/sanitize").sanitizeInput;
 
 exports.login = async (req, res, next) => {
@@ -72,6 +72,7 @@ exports.getRoles = async (req, res, next) => {
 
 exports.createRole = async (req, res, next) => {
   const {name, description} = req.body;
+  const transaction = await sequelize.transaction({ autocommit: false });
 
   if (!name || name.trim() === "") {
     res.status(400);
@@ -86,6 +87,7 @@ exports.createRole = async (req, res, next) => {
     });
 
     if (role) {
+      await transaction.rollback();
       res.status(400);
       return next(new Error("Role already exists"));
     }
@@ -93,10 +95,15 @@ exports.createRole = async (req, res, next) => {
     const newRole = await Role.create({
       name: sanitizeInput(name.trim()),
       description: sanitizeInput(description.trim()),
+    }, {
+      transaction,
     });
+
+    await transaction.commit();
 
     return res.status(201).json({ message: "Role created", success: true, role: newRole });
   } catch (error) {
+    await transaction.rollback();
     res.status(500);
     return next(error);
   }
@@ -105,6 +112,7 @@ exports.createRole = async (req, res, next) => {
 exports.updateRole = async (req, res, next) => {
   const { id } = req.params;
   const {name, description} = req.body;
+  const transaction = await sequelize.transaction({ autocommit: false });
 
   if (!name || name.trim() === "") {
     res.status(400);
@@ -114,6 +122,7 @@ exports.updateRole = async (req, res, next) => {
   try {
     const role = await Role.findByPk(id);
     if (!role) {
+      await transaction.rollback();
       res.status(404);
       return next(new Error("Role not found"));
     }
@@ -121,14 +130,37 @@ exports.updateRole = async (req, res, next) => {
     role.name = sanitizeInput(name.trim()) || role.name;
     role.description = sanitizeInput(description.trim()) || role.description;
     await role.save();
+    await transaction.commit();
 
     return res.status(200).json({ message: "Role updated", success: true, role });
   } catch (error) {
     // console.log(error.stack);
     // return res.status(500).json({ message: "An error occurred", success: false });
+    await transaction.rollback();
     res.status(500);
     return next(error);
   }
 }
 
-// exports.deleteRole = async (req, res)
+exports.deleteRole = async (req, res, next) => {
+  const {id} = req.params;
+  const transaction = await sequelize.transaction({ autocommit: false });
+
+  try {
+    const role = await Role.findByPk(id);
+    if (!role) {
+      await transaction.rollback();
+      res.status(404);
+      return next(new Error("Role not found"));
+    }
+
+    await role.destroy({ transaction });
+    await transaction.commit();
+
+    return res.status(200).json({ message: "Role deleted", success: true });
+  } catch (error) {
+    await transaction.rollback();
+    res.status(500);
+    return next(error);
+  }
+}
