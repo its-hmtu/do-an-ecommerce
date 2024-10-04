@@ -65,15 +65,15 @@ function DashboardPage() {
         }}
       >
         <SumaryCard title="Weekly sales" total="746k" />
-        <Divider orientation="vertical" flexItem sx={{
+        <Divider orientation="vertical" sx={{
           margin: '10px 0'
         }}/>
         <SumaryCard k/>
-        <Divider orientation="vertical" flexItem sx={{
+        <Divider orientation="vertical" sx={{
           margin: '10px 0'
         }}/>
         <SumaryCard />
-        <Divider orientation="vertical" flexItem sx={{
+        <Divider orientation="vertical" sx={{
           margin: '10px 0'
         }}/>
         <SumaryCard />

@@ -1,5 +1,5 @@
 // @import '~bootstrap/scss/bootstrap';
-
+@import "~react-image-gallery/styles/css/image-gallery.css";
 @keyframes shake {
   0% { transform: translateX(0); }
   25% { transform: translateX(-5px); }
@@ -24,4 +24,83 @@ a {
   text-decoration: none;
   color: inherit;
   width: 100%;
+}
+
+.image-gallery-content {
+  width: 400px;
+  max-width: 400px;
+  margin: 0 auto;
+
+  img {
+      border-radius: 10px;
+  }
+}
+
+.image-gallery-thumbnails {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: auto;
+  margin: 30px 0 0 0;
+
+  .image-gallery-thumbnails-container {
+      display: flex;
+      justify-content: space-between; /* Change to space-around */
+      align-items: center;
+      width: 95%; /* Ensure the container takes up the full width */
+  }
+
+  .image-gallery-thumbnail {
+      border: none;
+      width: fit-content;
+      height: auto;
+
+      .image-gallery-thumbnail-image {
+          border: 2px solid transparent;
+
+          &:hover {
+              border: 2px solid #0b6bcb;
+          }
+
+          &:focus {
+              border: 2px solid #0b6bcb;
+              outline: none;
+          }
+
+          &:active {
+              border: 2px solid #0b6bcb;
+          }
+
+          &.active {
+              border: 2px solid #0b6bcb;
+              img {
+                  opacity: 0.3;
+              }
+          }
+      }
+      &:hover {
+          border: none;
+      }
+
+      &:focus {
+          border: none;
+      }
+
+      &:active {
+          border: none;
+      }
+
+      &.active {
+          border: none;
+      }
+
+      .image-gallery-thumbnail-inner {
+          width: 80px;
+          height: auto;
+          img {
+              width: 100%;
+              height: auto;
+          }
+      }
+  }
 }

@@ -1,13 +1,11 @@
 import React from 'react'
-import { Box, Breadcrumbs, Link, Typography, Button } from '@mui/joy'
-import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
-import HomeRoundedIcon from '@mui/icons-material/HomeRounded'
-import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded'
-import ProductTable from './components/ProductTable'
-import { Outlet } from 'react-router-dom'
+import { Box, Breadcrumbs, Typography, Button } from '@mui/joy';
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
+import AddCircle from '@mui/icons-material/AddCircle';
+import { Link } from 'react-router-dom';
 
 
-function ProductPage() {
+function UserPage() {
 
   return (
     <>
@@ -18,24 +16,17 @@ function ProductPage() {
           separator={<ChevronRightRoundedIcon fontSize="sm" />}
           sx={{ pl: 0 }}
         >
-          <Link
-            underline="none"
-            color="neutral"
-            href="#some-link"
-            aria-label="Home"
-          >
-            <HomeRoundedIcon />
-          </Link>
-          <Link
+          <Typography
             underline="hover"
             color="neutral"
-            href="#some-link"
             sx={{ fontSize: 12, fontWeight: 500 }}
           >
+            <Link to="/dashboard" style={{ textDecoration: 'none', color: 'inherit' }}>
             Dashboard
-          </Link>
+            </Link>
+          </Typography>
           <Typography color="primary" sx={{ fontWeight: 500, fontSize: 12 }}>
-            Products
+            Users
           </Typography>
         </Breadcrumbs>
       </Box>
@@ -51,19 +42,24 @@ function ProductPage() {
         }}
       >
         <Typography level="h2" component="h1">
-          Products
+          Roles and Permissions
         </Typography>
         <Button
           color="primary"
-          startDecorator={<DownloadRoundedIcon />}
+          startDecorator={
+            <AddCircle />
+          }
           size="sm"
         >
-          Download PDF
+          Create new user
         </Button>
       </Box>
-      <ProductTable />
+      {/* <RolesTable />
+      {
+        isMobile && <RolesList />
+      } */}
     </>
   )
 }
 
-export default ProductPage
+export default UserPage

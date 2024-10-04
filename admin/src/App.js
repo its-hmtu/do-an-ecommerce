@@ -7,6 +7,8 @@ import OrdersPage from 'pages/OrdersPage';
 import RolesPage from 'pages/RolesPage';
 import { useEffect } from 'react';
 import ProductPage from 'pages/ProductPage';
+import ProductTable from 'pages/ProductPage/components/ProductTable';
+import ProductDetailsPage from 'pages/ProductDetailsPage';
 
 const router = createBrowserRouter([
   {
@@ -19,7 +21,11 @@ const router = createBrowserRouter([
       },
       {
         path: '/products',
-        element: <ProductPage />
+        element: <ProductPage />,
+      },
+      {
+        path: '/products/:id',
+        element: <ProductDetailsPage />
       },
       {
         path: '/orders',
@@ -52,12 +58,12 @@ const router = createBrowserRouter([
 ])
 
 function App() {
-  useEffect(() => {
-    const token = sessionStorage.getItem('token');
-    if (!token) {
-      router.navigate('/login');
-    }
-  }, [])
+  // useEffect(() => {
+  //   const token = sessionStorage.getItem('token');
+  //   if (!token) {
+  //     router.navigate('/login');
+  //   }
+  // }, [])
 
   return (
     <CssVarsProvider disableTransitionOnChange>

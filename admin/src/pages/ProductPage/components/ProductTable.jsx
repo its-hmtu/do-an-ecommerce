@@ -36,7 +36,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import Avatar from "@mui/joy/Avatar";
 import { useQuery } from "@tanstack/react-query";
-import { getProducts } from "api/products";
+import { getProducts } from "api/products.api";
+import { getCategories } from "api/categories.api";
 import { Link as RouterLink } from "react-router-dom";
 
 function RowMenu() {
@@ -73,12 +74,22 @@ function ProductTable() {
   const [sort, setSort] = useState("createdAt");
   const [order, setOrder] = useState("desc");
   const [selected, setSelected] = React.useState([]);
+  const [filterCategory, setFilterCategory] = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["products", { page, pageSize, q, category, sort, order }],
     queryFn: () =>
       getProducts({ page, limit: pageSize, q, category, sort, order }),
   });
+
+  const { data: categories, isLoading: isLoadingCategories } = useQuery({
+    queryKey: ["categories", { page, pageSize }],
+    queryFn: () => getCategories({ page, limit: pageSize }),
+  });
+
+  useEffect(() => {
+    setCategory(filterCategory);
+  }, [filterCategory]);
 
   const [open, setOpen] = React.useState(false);
   const renderFilters = () => (
@@ -99,22 +110,16 @@ function ProductTable() {
       <FormControl size="sm">
         <FormLabel>Category</FormLabel>
         <Select size="sm" placeholder="All">
-          <Option value="all">All</Option>
-          <Option value="refund">Refund</Option>
-          <Option value="purchase">Purchase</Option>
-          <Option value="debit">Debit</Option>
-        </Select>
-      </FormControl>
-      <FormControl size="sm">
-        <FormLabel>Customer</FormLabel>
-        <Select size="sm" placeholder="All">
-          <Option value="all">All</Option>
-          <Option value="olivia">Olivia Rhye</Option>
-          <Option value="steve">Steve Hampton</Option>
-          <Option value="ciaran">Ciaran Murray</Option>
-          <Option value="marina">Marina Macdonald</Option>
-          <Option value="charles">Charles Fulton</Option>
-          <Option value="jay">Jay Hoper</Option>
+          <Option value="">All</Option>
+          {categories?.categories?.map((category) => (
+            <Option
+              key={category.id}
+              value={category.name.toLowerCase()}
+              onSelect={() => setFilterCategory(category.name.toLowerCase())}
+            >
+              {category.name}
+            </Option>
+          ))}
         </Select>
       </FormControl>
     </React.Fragment>
@@ -256,12 +261,17 @@ function ProductTable() {
                   ID
                 </Link>
               </th>
+              <th style={{ width: 80, padding: "12px 6px" }}> </th>
               <th style={{ width: 140, padding: "12px 6px" }}>Name</th>
               <th style={{ width: 140, padding: "12px 6px" }}>Price</th>
               <th style={{ width: 100, padding: "12px 6px" }}>Stock</th>
               <th style={{ width: 140, padding: "12px 6px" }}>Categories</th>
               <th style={{ width: 140, padding: "12px 6px" }}>Created at</th>
-              <th style={{ width: 60, padding: "12px 6px", textAlign: "center" }}> </th>
+              <th
+                style={{ width: 60, padding: "12px 6px", textAlign: "center" }}
+              >
+                {" "}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -288,8 +298,25 @@ function ProductTable() {
                     <Typography level="body-xs">{row.id}</Typography>
                   </td>
                   <td>
-                    <Typography level="body-xs">{row.product_name}</Typography>
+                  <Avatar src={`http://localhost:5000${row?.images[0]?.file_path}`} alt={row.product_name} size="100px" sx={{
+                    borderRadius: "0"
+                  }} />
                   </td>
+                  <td>
+                      <Typography
+                        level="body-xs"
+                        sx={{
+                          "& > a:hover": {
+                            textDecoration: "underline",
+                          },
+                        }}
+                      >
+                        <RouterLink to={`/products/${row.id}`}>
+                          {row.product_name}
+                        </RouterLink>
+                      </Typography>
+                  </td>
+                  
                   <td>
                     <Typography level="body-xs">
                       {new Intl.NumberFormat("en-US", {
@@ -302,24 +329,24 @@ function ProductTable() {
                     <Typography level="body-xs">{row.stock}</Typography>
                   </td>
                   <td>
-                    {
-                      row.categories.filter(item => item.id !== 0).map((category) => (
+                    {row.categories
+                      .filter((item) => item.id !== 0)
+                      .map((category) => (
                         <Chip
                           key={category.id}
                           size="sm"
                           color="primary"
-                          sx={{ 
+                          sx={{
                             mr: 1,
                             // hover underlined
-                            "&:hover": { textDecoration: "underline" }
-                           }} 
+                            "&:hover": { textDecoration: "underline" },
+                          }}
                         >
                           <RouterLink to={`/categories/${category.id}`}>
                             {category.name}
                           </RouterLink>
                         </Chip>
-                      ))
-                    }
+                      ))}
                   </td>
                   <td>
                     <Typography level="body-xs">
@@ -334,7 +361,14 @@ function ProductTable() {
                     </Typography>
                   </td>
                   <td>
-                    <Box sx={{ display: "flex", gap: 2, alignItems: "center", justifyContent: "center"}}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        gap: 2,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
                       <RowMenu />
                     </Box>
                   </td>
@@ -343,11 +377,15 @@ function ProductTable() {
             ) : (
               <tr>
                 <td colSpan="7" style={{ textAlign: "center" }}>
-                  <CircularProgress size="sm" sx={{
-                    ".MuiCircularProgress-progress": {
-                      stroke: "var(--CircularProgress-progressColor)!important",
-                    }
-                  }} />
+                  <CircularProgress
+                    size="sm"
+                    sx={{
+                      ".MuiCircularProgress-progress": {
+                        stroke:
+                          "var(--CircularProgress-progressColor)!important",
+                      },
+                    }}
+                  />
                 </td>
               </tr>
             )}

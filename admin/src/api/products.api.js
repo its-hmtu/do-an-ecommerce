@@ -30,4 +30,18 @@ const getProducts = async ({
   }
 }
 
-export { getProducts };
+const getSingleProduct = async ({id}) => {
+  try {
+    const {data} = await api.get(`/products/${id}`);
+
+    if (data.success === false) {
+      throw new Error(data.message);
+    }
+
+    return data.data;
+  } catch (e) {
+    return e.response.data;
+  }
+}
+
+export { getProducts, getSingleProduct };

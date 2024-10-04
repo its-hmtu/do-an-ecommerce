@@ -309,10 +309,6 @@ exports.getSingleProduct = async (req, res, next) => {
           model: ProductImage,
           as: "images",
           attributes: ["id", "file_path"],
-        },
-        {
-          model: Review,
-          attributes: ["id", "comment", "rating"],
         }
       ]
     });
@@ -322,7 +318,7 @@ exports.getSingleProduct = async (req, res, next) => {
       return next(new Error("Product not found"));
     }
 
-    return res.status(200).json({ product });
+    return res.status(200).json({ data: product, message: "Product found", success: true });
   } catch (error) {
     res.status(500);
     return next(error);
