@@ -7,8 +7,12 @@ import {
   FormLabel,
   Input,
   Stack,
+  Chip,
+  Badge,
+  Tooltip,
+  Table,
 } from "@mui/joy";
-import React, { useEffect } from "react";
+import React, { lazy, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
@@ -109,6 +113,7 @@ function ProductDetailsPage() {
                 ]}
                 showPlayButton={false}
                 showFullscreenButton={false}
+                loading={lazy}
               />
 
               <Stack
@@ -127,6 +132,17 @@ function ProductDetailsPage() {
                     {data?.product_name}
                   </Typography>
                 </FormControl>
+
+                <FormControl>
+                  <FormLabel>Price</FormLabel>
+                  <Typography level="h2" sx={{ fontWeight: 500 }}>
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "USD",
+                    }).format(data?.price)}
+                  </Typography>
+                </FormControl>
+
                 <FormControl>
                   <FormLabel>Product description</FormLabel>
                   {/* <Input value={data?.product_name} /> */}
@@ -134,6 +150,67 @@ function ProductDetailsPage() {
                   <Typography level="" sx={{ fontWeight: 500 }}>
                     {data?.product_description}
                   </Typography>
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Colors</FormLabel>
+                  <Stack direction="row" spacing={2}>
+                    {data?.product_colors.colors.map((color, index) => (
+                      <Chip
+                        key={index}
+                        variant="outlined"
+                        sx={
+                          {
+                            // backgroundColor: color.hex,
+                          }
+                        }
+                      >
+                        {color.name}
+                      </Chip>
+                    ))}
+                  </Stack>
+                </FormControl>
+
+                <Stack direction="row" spacing={2}>
+                  <FormControl>
+                    <FormLabel>Availability</FormLabel>
+                    <Chip
+                      color={
+                        data?.availability === "in-stock" ? "success" : "danger"
+                      }
+                    >
+                      {data?.availability === "in-stock"
+                        ? "In stock"
+                        : "Out of stock"}
+                    </Chip>
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel>Total available</FormLabel>
+                    <Typography level="" sx={{ fontWeight: 500 }}>
+                      {data?.stock}
+                    </Typography>
+                  </FormControl>
+                </Stack>
+
+                <FormControl>
+                  <FormLabel>Available in stock by color</FormLabel>
+                  <Table size="md" borderAxis="bothBetween">
+                    <thead>
+                      <tr>
+                        <th>Color</th>
+                        <th>Stock</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data?.product_colors.colors.map((color, index) => (
+                        <tr key={index}>
+                          <td>{color.name}</td>
+                          <td>{color.stock}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
                 </FormControl>
               </Stack>
             </Box>

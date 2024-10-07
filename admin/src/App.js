@@ -66,7 +66,7 @@ function App() {
   // }, [])
 
   return (
-    <CssVarsProvider disableTransitionOnChange>
+    <CssVarsProvider disableTransitionOnChange defaultMode='dark'>
       <CssBaseline />
       <GlobalStyles
         styles={{

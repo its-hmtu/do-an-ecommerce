@@ -27,12 +27,20 @@ a {
 }
 
 .image-gallery-content {
-  width: 400px;
-  max-width: 400px;
+  width: 500px;
+  max-width: 500px;
   margin: 0 auto;
 
   img {
-      border-radius: 10px;
+      // border-radius: 10px;
+  }
+}
+
+.image-gallery-content {
+  .image-gallery-slide {
+    .image-gallery-image {
+      max-height: unset;
+    }
   }
 }
 
@@ -47,7 +55,7 @@ a {
       display: flex;
       justify-content: space-between; /* Change to space-around */
       align-items: center;
-      width: 95%; /* Ensure the container takes up the full width */
+      width: 100%; /* Ensure the container takes up the full width */
   }
 
   .image-gallery-thumbnail {

@@ -32,6 +32,19 @@ module.exports = (sequelize, DataTypes) => {
     main_image_id: {
       type: DataTypes.INTEGER,
       allowNull: true
+    },
+    product_colors: {
+      type: DataTypes.JSON,
+      allowNull: true
+    },
+    product_sizes: {
+      type: DataTypes.JSON,
+      allowNull: true
+    },
+    availability: {
+      type: DataTypes.ENUM('in-stock', 'out-of-stock'),
+      allowNull: false,
+      defaultValue: 'in-stock'
     }
   }, {
     timestamps: true,
