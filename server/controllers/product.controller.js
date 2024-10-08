@@ -3,10 +3,12 @@ const {
   Category,
   ProductImage,
   Review,
+  Option,
+  Stock,
   sequelize,
 } = require("../models");
 const fs = require("fs");
-const {Op} = require("sequelize");
+const { Op } = require("sequelize");
 
 exports.getProducts = async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
@@ -23,8 +25,8 @@ exports.getProducts = async (req, res, next) => {
       order: [[sort, order.toUpperCase()]],
       where: {
         product_name: {
-          [Op.like]: `%${q.replace('%20', ' ')}%`,
-        }
+          [Op.like]: `%${q.replace("%20", " ")}%`,
+        },
       },
       attributes: {
         exclude: ["updatedAt"],
@@ -39,9 +41,19 @@ exports.getProducts = async (req, res, next) => {
           as: "images",
           attributes: ["id", "file_path"],
           // required: false,
+        },
+        {
+          model: Option,
+          as: 'options',
+          attributes: {
+            include: [
+              'id', 'name', 'value', 'color', 'price',
+              [sequelize.literal('(SELECT stock FROM stocks WHERE stocks.option_id = options.id LIMIT 1)'), 'stock']
+            ]
+          }
         }
       ],
-      distinct: true
+      distinct: true,
     });
 
     if (!products) {
@@ -63,17 +75,17 @@ exports.getProducts = async (req, res, next) => {
       group: "product_id",
     });
 
-    products.rows.forEach(product => {
-      let review = reviews.find(item => product.id === item.product_id);
+    products.rows.forEach((product) => {
+      let review = reviews.find((item) => product.id === item.product_id);
       if (review != null) {
         product.dataValues.total_reviews = review.get("total_reviews");
         product.dataValues.average_rating = review.get("average_rating");
-        console.log(product)
+        console.log(product);
       } else {
         product.dataValues.total_reviews = 0;
         product.dataValues.average_rating = 0;
       }
-    })
+    });
 
     const totalItemCount = products.count;
     const currentItemCount = products.rows.length;
@@ -100,8 +112,14 @@ exports.getProducts = async (req, res, next) => {
 };
 
 exports.createProduct = async (req, res, next) => {
-  const { product_name, price, product_description, stock, category_ids } =
-    req.body;
+  const {
+    product_name,
+    base_price,
+    product_description,
+    total_in_stock,
+    category_ids,
+    options,
+  } = req.body;
   const transaction = await sequelize.transaction({ autocommit: false });
   // const promises = [];
 
@@ -109,12 +127,19 @@ exports.createProduct = async (req, res, next) => {
     const newProduct = await Product.create(
       {
         product_name,
-        price,
+        base_price,
         product_description,
-        stock,
+        total_in_stock,
       },
       { transaction }
     );
+
+    if (total_in_stock > 0) {
+      newProduct.availability = "in-stock";
+    } else {
+      newProduct.availability = "out-of-stock";
+    }
+
 
     if (category_ids != null && category_ids.length > 0) {
       const categories = await Category.findAll({
@@ -148,8 +173,39 @@ exports.createProduct = async (req, res, next) => {
     }
 
     newProduct.images = images;
-    newProduct.main_image_id = images[0].id;
+    if (images.length > 0) {
+      newProduct.main_image_id = images[0].id;
+    }
+
+    if (options != null && options.length > 0) {
+      for (let option of options) {
+        const newOption = await Option.create(
+          {
+            product_id: newProduct.id,
+            name: option.name,
+            value: option.value,
+            color: option.color,
+            price: option.price,
+          },
+          { transaction }
+        );
+
+        if (option.stock != null) {
+          await Stock.create(
+            {
+              product_id: newProduct.id,
+              option_id: newOption.id,
+              stock: option.stock,
+            },
+            { transaction }
+          );
+        }
+      }
+    }
+
+    await newProduct.save({ transaction });
     await transaction.commit();
+    
 
     return res
       .status(201)
@@ -189,13 +245,13 @@ exports.deleteProduct = async (req, res, next) => {
     res.status(500);
     return next(error);
   }
-}
+};
 
 // delete multiple products
 exports.deleteProducts = async (req, res, next) => {
   const { product_ids } = req.body;
   const transaction = await sequelize.transaction({ autocommit: false });
-  console.log(product_ids)
+  console.log(product_ids);
   if (!Array.isArray(product_ids) || product_ids.length === 0) {
     res.status(400);
     return next(new Error("Product ids are required"));
@@ -203,9 +259,9 @@ exports.deleteProducts = async (req, res, next) => {
   try {
     const products = await Product.findAll({
       where: {
-        id: product_ids
+        id: product_ids,
       },
-      transaction
+      transaction,
     });
 
     if (products.length !== product_ids.length) {
@@ -225,12 +281,13 @@ exports.deleteProducts = async (req, res, next) => {
     res.status(500);
     return next(error);
   }
-}
+};
 
 exports.updateProduct = async (req, res, next) => {
   const { id } = req.params;
-  const {rm_images, rm_categories } = req.query;
-  const { product_name, price, product_description, stock, categories_name } = req.body;
+  const { rm_images, rm_categories } = req.query;
+  const { product_name, price, product_description, stock, categories_name } =
+    req.body;
   const transaction = await sequelize.transaction({ autocommit: false });
 
   try {
@@ -243,7 +300,7 @@ exports.updateProduct = async (req, res, next) => {
 
     await product.update(
       {
-        product_name: product_name || product.product_name, 
+        product_name: product_name || product.product_name,
         price: price || product.price,
         product_description: product_description || product.product_description,
         stock: stock || product.stock,
@@ -258,9 +315,9 @@ exports.updateProduct = async (req, res, next) => {
           id: rm_images.split("%2C"),
         },
         attributes: {
-          exclude: ['productId']
+          exclude: ["productId"],
         },
-        transaction
+        transaction,
       });
 
       for (let image of images) {
@@ -273,9 +330,9 @@ exports.updateProduct = async (req, res, next) => {
     if (rm_categories != null) {
       const categories = await Category.findAll({
         where: {
-          name: rm_categories.split("%2C")
+          name: rm_categories.split("%2C"),
         },
-        transaction
+        transaction,
       });
 
       await product.removeCategories(categories, { transaction });
@@ -290,7 +347,7 @@ exports.updateProduct = async (req, res, next) => {
     res.status(500);
     return next(error);
   }
-}
+};
 
 exports.getSingleProduct = async (req, res, next) => {
   const { id } = req.params;
@@ -309,8 +366,28 @@ exports.getSingleProduct = async (req, res, next) => {
           model: ProductImage,
           as: "images",
           attributes: ["id", "file_path"],
+        },
+        // {
+        //   model: Review,
+        //   attributes: ["id", "rating", "comment", "createdAt"],
+        //   include: [
+        //     {
+        //       model: User,
+        //       attributes: ["id", "first_name", "last_name", "email"],
+        //     },
+        //   ],
+        // },
+        {
+          model: Option,
+          as: 'options',
+          attributes: {
+            include: [
+              'id', 'name', 'value', 'color', 'price',
+              [sequelize.literal('(SELECT stock FROM stocks WHERE stocks.option_id = options.id LIMIT 1)'), 'stock']
+            ]
+          }
         }
-      ]
+      ],
     });
 
     if (!product) {
@@ -318,12 +395,14 @@ exports.getSingleProduct = async (req, res, next) => {
       return next(new Error("Product not found"));
     }
 
-    return res.status(200).json({ data: product, message: "Product found", success: true });
+    return res
+      .status(200)
+      .json({ data: product, message: "Product found", success: true });
   } catch (error) {
     res.status(500);
     return next(error);
   }
-}
+};
 
 exports.getProductsByCategory = async (req, res, next) => {
   const { category_name } = req.params;
@@ -351,8 +430,8 @@ exports.getProductsByCategory = async (req, res, next) => {
           model: ProductImage,
           as: "images",
           attributes: ["id", "file_path"],
-        }
-      ]
+        },
+      ],
     });
 
     if (!products) {
@@ -378,13 +457,13 @@ exports.getProductsByCategory = async (req, res, next) => {
         products: products.rows,
       },
       message: `Products under ${category_name} category`,
-      success: true
+      success: true,
     });
   } catch (err) {
     res.status(500);
     return next(err);
   }
-}
+};
 
 exports.getProductsBySearch = async (req, res, next) => {
   const { q } = req.query;
@@ -402,7 +481,7 @@ exports.getProductsBySearch = async (req, res, next) => {
       },
       where: {
         product_name: {
-          [Op.like]: `%${q.replace('%20', ' ')}%`,
+          [Op.like]: `%${q.replace("%20", " ")}%`,
         },
       },
       include: [
@@ -414,8 +493,8 @@ exports.getProductsBySearch = async (req, res, next) => {
           model: ProductImage,
           as: "images",
           attributes: ["id", "file_path"],
-        }
-      ]
+        },
+      ],
     });
 
     if (!products) {
@@ -440,11 +519,11 @@ exports.getProductsBySearch = async (req, res, next) => {
         ...pagination,
         products: products.rows,
       },
-      message: `Products with search term: ${q.replace('%20', ' ')}`,
-      success: true
+      message: `Products with search term: ${q.replace("%20", " ")}`,
+      success: true,
     });
   } catch (err) {
     res.status(500);
     return next(err);
   }
-}
+};

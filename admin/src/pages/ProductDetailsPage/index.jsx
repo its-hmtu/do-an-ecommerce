@@ -20,6 +20,12 @@ import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import { useQuery } from "@tanstack/react-query";
 import { getSingleProduct } from "api/products.api";
 import ReactImageGallery from "react-image-gallery";
+import {
+  LineChart,
+  Line,
+  Tooltip as ChartTooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 function ProductDetailsPage() {
   const { id } = useParams();
@@ -27,7 +33,9 @@ function ProductDetailsPage() {
     queryKey: ["product", { id }],
     queryFn: () => getSingleProduct({ id }),
   });
-  const imagesRef = React.useRef([]);
+  // const imagesRef = React.useRef([]);
+  const [isEdit, setIsEdit] = React.useState(false);
+
   useEffect(() => {
     console.log("Product ID: ", id);
   }, [data, id]);
@@ -84,13 +92,23 @@ function ProductDetailsPage() {
         <Typography level="h2" component="h1">
           Product Details
         </Typography>
-        <Button
-          color="primary"
-          startDecorator={<DownloadRoundedIcon />}
-          size="sm"
-        >
-          Download PDF
-        </Button>
+        <Stack direction="row" spacing={1}>
+          <Button
+            color="primary"
+            startDecorator={<DownloadRoundedIcon />}
+            size="sm"
+          >
+            Download PDF
+          </Button>
+          <Button color="primary" size="sm" 
+            startDecorator={<DownloadRoundedIcon />}
+          >
+            Edit
+          </Button>
+          <Button color="danger" size="sm">
+            Delete
+          </Button>
+        </Stack>
       </Box>
       {isLoading ? (
         <Typography>Loading...</Typography>
@@ -104,18 +122,6 @@ function ProductDetailsPage() {
                 gap: 4,
               }}
             >
-              <ReactImageGallery
-                items={[
-                  ...data?.images.map((image) => ({
-                    original: image.file_path,
-                    thumbnail: image.file_path,
-                  })),
-                ]}
-                showPlayButton={false}
-                showFullscreenButton={false}
-                loading={lazy}
-              />
-
               <Stack
                 direction="column"
                 spacing={2}
@@ -126,20 +132,18 @@ function ProductDetailsPage() {
               >
                 <FormControl>
                   <FormLabel>Product name</FormLabel>
-                  {/* <Input value={data?.product_name} /> */}
-
                   <Typography level="h2" sx={{ fontWeight: 500 }}>
                     {data?.product_name}
                   </Typography>
                 </FormControl>
 
                 <FormControl>
-                  <FormLabel>Price</FormLabel>
+                  <FormLabel>Base price</FormLabel>
                   <Typography level="h2" sx={{ fontWeight: 500 }}>
                     {new Intl.NumberFormat("en-US", {
                       style: "currency",
                       currency: "USD",
-                    }).format(data?.price)}
+                    }).format(data?.base_price)}
                   </Typography>
                 </FormControl>
 
@@ -155,17 +159,9 @@ function ProductDetailsPage() {
                 <FormControl>
                   <FormLabel>Colors</FormLabel>
                   <Stack direction="row" spacing={2}>
-                    {data?.product_colors.colors.map((color, index) => (
-                      <Chip
-                        key={index}
-                        variant="outlined"
-                        sx={
-                          {
-                            // backgroundColor: color.hex,
-                          }
-                        }
-                      >
-                        {color.name}
+                    {data?.options.map((option, index) => (
+                      <Chip key={index} variant="outlined">
+                        {option.color}
                       </Chip>
                     ))}
                   </Stack>
@@ -188,7 +184,7 @@ function ProductDetailsPage() {
                   <FormControl>
                     <FormLabel>Total available</FormLabel>
                     <Typography level="" sx={{ fontWeight: 500 }}>
-                      {data?.stock}
+                      {data?.total_in_stock}
                     </Typography>
                   </FormControl>
                 </Stack>
@@ -199,22 +195,95 @@ function ProductDetailsPage() {
                     <thead>
                       <tr>
                         <th>Color</th>
+                        <th>Option</th>
                         <th>Stock</th>
+                        <th>Price</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {data?.product_colors.colors.map((color, index) => (
+                      {data?.options.map((option, index) => (
                         <tr key={index}>
-                          <td>{color.name}</td>
-                          <td>{color.stock}</td>
+                          <td>{option.color}</td>
+                          <td>{option.value}</td>
+                          <td>{option.stock}</td>
+                          <td>
+                            {new Intl.NumberFormat("en-US", {
+                              style: "currency",
+                              currency: "USD",
+                            }).format(option.price)}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </Table>
                 </FormControl>
               </Stack>
+              <Stack
+                direction="column"
+                spacing={1}
+                sx={{
+                  gap: 1,
+                  width: "50%",
+                }}
+              >
+                <Box>
+                  <Typography level="h3" component="h2">
+                    Product images
+                  </Typography>
+                </Box>
+                <ReactImageGallery
+                  items={[
+                    ...data?.images.map((image) => ({
+                      original: image.file_path,
+                      thumbnail: image.file_path,
+                    })),
+                  ]}
+                  showPlayButton={false}
+                  showFullscreenButton={false}
+                  loading={lazy}
+                />
+              </Stack>
             </Box>
           </form>
+
+          {/* Render chart based on how many orders have been made for this product
+           *
+           *
+           */}
+
+          <Box sx={{ mt: 2 }}>
+            <Typography level="h3" component="h2">
+              Orders
+            </Typography>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={data?.orders}>
+                <Line
+                  type="monotone"
+                  dataKey="orders"
+                  stroke="#8884d8"
+                  dot={false}
+                />
+                <ChartTooltip />
+              </LineChart>
+            </ResponsiveContainer>
+
+            <Box sx={{ mt: 2 }}>
+              <Typography level="h3" component="h2">
+                Sales
+              </Typography>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={data?.sales}>
+                  <Line
+                    type="monotone"
+                    dataKey="sales"
+                    stroke="#8884d8"
+                    dot={false}
+                  />
+                  <ChartTooltip />
+                </LineChart>
+              </ResponsiveContainer>
+            </Box>
+          </Box>
         </Box>
       )}
     </>

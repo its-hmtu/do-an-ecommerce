@@ -67,6 +67,8 @@ db.Order = require('./order.model')(sequelize, Sequelize);
 db.OrderItem = require('./order_item.model')(sequelize, Sequelize);
 
 db.Product = require('./product.model')(sequelize, Sequelize);
+db.Option = require('./option.model')(sequelize, Sequelize);
+db.Stock = require('./stock.model')(sequelize, Sequelize);
 db.Review = require('./review.model')(sequelize, Sequelize);
 db.Address = require('./address.model')(sequelize, Sequelize);
 db.Upload = require('./upload.model')(sequelize, Sequelize);
@@ -87,6 +89,8 @@ db.Order.associate(db);
 db.OrderItem.associate(db);
 
 db.Product.associate(db);
+db.Option.associate(db);
+db.Stock.associate(db);
 db.Review.associate(db);
 db.Address.associate(db);
 db.Upload.associate(db);

@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(50),
       allowNull: false
     },
-    price: {
+    base_price: {
       type: DataTypes.DECIMAL(20, 2),
       allowNull: false
     },
@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    stock: {
+    total_in_stock: {
       type: DataTypes.INTEGER(11),
       allowNull: false
     }, 
@@ -85,6 +85,9 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'product_id',
       otherKey: 'category_id'
     });
+
+    Product.hasMany(models.Option, {foreignKey: 'product_id', onDelete: 'cascade', onUpdate: 'cascade'});
+    Product.hasMany(models.Stock, {foreignKey: 'product_id', onDelete: 'cascade', onUpdate: 'cascade'});
   }
 
   return Product;
