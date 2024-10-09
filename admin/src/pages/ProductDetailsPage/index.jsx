@@ -17,6 +17,7 @@ import { Link, useParams } from "react-router-dom";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
+import ModeEditRoundedIcon from "@mui/icons-material/ModeEditRounded";
 import { useQuery } from "@tanstack/react-query";
 import { getSingleProduct } from "api/products.api";
 import ReactImageGallery from "react-image-gallery";
@@ -101,7 +102,7 @@ function ProductDetailsPage() {
             Download PDF
           </Button>
           <Button color="primary" size="sm" 
-            startDecorator={<DownloadRoundedIcon />}
+            startDecorator={<ModeEditRoundedIcon />}
           >
             Edit
           </Button>

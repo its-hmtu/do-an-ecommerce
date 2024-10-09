@@ -1,14 +1,14 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
+import react from '@vitejs/plugin-react'
 import eslint from 'vite-plugin-eslint'
 import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    react(),
-    eslint(),
+    react()
   ],
+  // alias
   resolve: {
     alias: {
       src: path.resolve(__dirname, "./src"),
@@ -27,9 +27,5 @@ export default defineConfig({
       contexts: path.resolve(__dirname, "./src/contexts"),
     },
   },
-  server: {
-    proxy: {
-      "/users": "http://localhost:5000",
-    }
-  }
+
 })

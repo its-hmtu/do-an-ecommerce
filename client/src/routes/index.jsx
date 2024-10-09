@@ -1,12 +1,18 @@
-import React from 'react'
-import { createBrowserRouter } from 'react-router-dom';
-import MainLayout from 'layouts/MainLayout';
+import MainLayout from 'layouts/MainLayout'
+import LoginPage from 'pages/LoginPage'
+import { createBrowserRouter } from 'react-router-dom'
 
-const routes = createBrowserRouter([
-    {
-        path: "/",
-        element: <MainLayout/>,
-    }
-]);
-
-export default routes
+export default createBrowserRouter([
+  {
+    path: '/',
+    element: <MainLayout />,
+  }, 
+  {
+    path: '/account/login',
+    element: <LoginPage />,
+  },
+  {
+    path: '/account/register',
+    element: <LoginPage register />,
+  }
+])

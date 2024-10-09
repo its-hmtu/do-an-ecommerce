@@ -1,12 +1,8 @@
-import Header from './components/Header'
-import Footer from './components/Footer'
+import React from 'react'
 
 function MainLayout() {
   return (
-    <>
-        <Header/>
-        <Footer/>
-    </> 
+    <div>MainLayout</div>
   )
 }
 
