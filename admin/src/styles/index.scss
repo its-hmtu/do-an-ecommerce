@@ -1,5 +1,6 @@
 // @import '~bootstrap/scss/bootstrap';
 @import "~react-image-gallery/styles/css/image-gallery.css";
+@import "~bootstrap/scss/bootstrap";
 @keyframes shake {
   0% { transform: translateX(0); }
   25% { transform: translateX(-5px); }
@@ -110,5 +111,27 @@ a {
               height: auto;
           }
       }
+  }
+}
+
+.dropzone {
+  border: 2px dashed #0b6bcb;
+  border-radius: 10px;
+  padding: 64px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin: 20px 0;
+
+  &.active {
+    background-color: #f5f5f5;
+    border: 2px solid #0b6bcb;
+    transition: all 1s ease;
+  }
+
+  &:hover {
+    background-color: #f5f5f5;
   }
 }

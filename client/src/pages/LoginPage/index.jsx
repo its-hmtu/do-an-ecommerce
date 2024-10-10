@@ -15,12 +15,24 @@ import {
   CircularProgress,
 } from "@mui/joy";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Error, Visibility, VisibilityOff, Google, BadgeRounded, Check, Close } from "@mui/icons-material";
+import {
+  Error,
+  Visibility,
+  VisibilityOff,
+  Google,
+  BadgeRounded,
+  Check,
+  Close,
+} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 function LoginPage({ register = false }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const [cred, setCred] = useState({ email: "", password: "" });
+  const [cred, setCred] = useState({
+    email: "",
+    password: "",
+    confirm_password: "",
+  });
   const [error, setError] = useState({});
   const [warning, setWarning] = useState({});
   const [shake, setShake] = useState(false);
@@ -88,8 +100,10 @@ function LoginPage({ register = false }) {
     }
     if (!cred.password) {
       errors.password = "Password is required";
-    } else if (cred.password.length < 6) {
-      errors.password = "Password must be at least 6 characters";
+    } else if (cred.password.length < 8) {
+      errors.password = "Password must be at least 8 characters";
+    } else if (cred.password !== cred.confirm_password) {
+      errors.password = "Passwords do not match";
     }
     return errors;
   };
@@ -106,52 +120,52 @@ function LoginPage({ register = false }) {
         setShake(false);
       }, 500);
       return;
-    } else if (cred && cred.email && cred.password) {
+    } else if (cred && cred.email && cred.password && cred.confirm_password) {
       mutate(cred);
     }
   };
 
   const renderValidatePass = () => {
     if (cred.password.length === 0) {
-      return <Check />
+      return <Check />;
     }
 
-    if (cred.password.length >= 8 ) {
-      return <Check color="success" />
+    if (cred.password.length >= 8) {
+      return <Check color="success" />;
     }
 
     if (cred.password.length < 8) {
-      return <Close color="danger" />
+      return <Close color="danger" />;
     }
-  }
+  };
 
   const renderValPassNotIncludeEmail = () => {
     if (cred.password.length === 0) {
-      return <Check />
+      return <Check />;
     }
     if (cred.password.length >= 8) {
       if (cred.password.includes(cred.email)) {
-        return <Close color="danger" />
+        return <Close color="danger" />;
       }
-      return <Check color="success" />
+      return <Check color="success" />;
     }
 
-    return <Check color="success" /> 
-  }
+    return <Check color="success" />;
+  };
 
   const valPassColor = () => {
     if (cred.password.length === 0) {
-      return "neutral"
+      return "neutral";
     }
     if (cred.password.length >= 8) {
       if (cred.password.includes(cred.email)) {
-        return "danger"
+        return "danger";
       }
-      return "success"
+      return "success";
     }
 
-    return "success"
-  }
+    return "success";
+  };
 
   return (
     // Create a login form with Joy UI
@@ -184,16 +198,16 @@ function LoginPage({ register = false }) {
           }}
         >
           <Box
-              component="header"
-              sx={{ py: 3, display: 'flex', justifyContent: 'space-between' }}
-            >
-              <Box sx={{ gap: 2, display: 'flex', alignItems: 'center' }}>
-                <IconButton variant="soft" color="primary" size="sm">
-                  <BadgeRounded />
-                </IconButton>
-                <Typography level="title-lg">Company logo</Typography>
-              </Box>
+            component="header"
+            sx={{ py: 3, display: "flex", justifyContent: "space-between" }}
+          >
+            <Box sx={{ gap: 2, display: "flex", alignItems: "center" }}>
+              <IconButton variant="soft" color="primary" size="sm">
+                <BadgeRounded />
+              </IconButton>
+              <Typography level="title-lg">Company logo</Typography>
             </Box>
+          </Box>
           <Box
             component="main"
             sx={{
@@ -225,18 +239,22 @@ function LoginPage({ register = false }) {
                 <Typography level="body-sm">
                   {isRegister ? "Have an account? " : "Don't have an account? "}
                   {isRegister ? (
-                    <Link 
-                      onClick={() => setIsRegister(false)}
-                    >
-                      <Typography level="title-sm" color="primary" sx={{ textAlign: "center" }}>
+                    <Link onClick={() => setIsRegister(false)}>
+                      <Typography
+                        level="title-sm"
+                        color="primary"
+                        sx={{ textAlign: "center" }}
+                      >
                         Login here.
                       </Typography>
                     </Link>
                   ) : (
-                    <Link 
-                      onClick={() => setIsRegister(true)}
-                    >
-                      <Typography level="title-sm" color="primary" sx={{ textAlign: "center" }}>
+                    <Link onClick={() => setIsRegister(true)}>
+                      <Typography
+                        level="title-sm"
+                        color="primary"
+                        sx={{ textAlign: "center" }}
+                      >
                         Register here.
                       </Typography>
                     </Link>
@@ -244,21 +262,23 @@ function LoginPage({ register = false }) {
                 </Typography>
               </Stack>
               <Stack sx={{ gap: 2 }}>
-                <Button variant="outlined" fullWidth sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  gap: 1,
-                }}>
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
                   <Google />
                   Continue with Google
                 </Button>
-                <Divider sx={{ borderColor: "background.level2" }}>
-                  Or
-                </Divider>
+                <Divider sx={{ borderColor: "background.level2" }}>Or</Divider>
               </Stack>
             </Stack>
-            <Stack sx={{ gap: 2}}>
+            <Stack sx={{ gap: 2 }}>
               {error.message && (
                 <Alert
                   color={"danger"}
@@ -321,57 +341,111 @@ function LoginPage({ register = false }) {
                       </IconButton>
                     }
                   />
-                  <Stack sx={{mt: 1}}>
-                    <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', gap: 1 }}>
-                      {
-                        renderValidatePass()
-                      }
-                      <Typography level="body-sm" color={(valPassColor() === "danger") ? "danger" : (valPassColor() === "success") ? "success" : "neutral"}>Password must be at least 8 characters</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', gap: 1 }}>
-                      {
-                        // password must not include email
-                        renderValPassNotIncludeEmail()
-                        
-                      }
-                      <Typography level="body-sm" color={
-                        (valPassColor() === "danger") ? "danger" : (valPassColor() === "success") ? "success" : "neutral"
-                      } >Does not include your email</Typography>
-                    </Box>
-                  </Stack>
-                </FormControl>
-                {isRegister && (<FormControl required>
-                  <FormLabel>Confirm password</FormLabel>
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    value={cred.password}
-                    onChange={handleChange}
-                    endDecorator={
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={() => setShowPassword(!showPassword)}
+                  {isRegister && (
+                    <Stack sx={{ mt: 1 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "start",
+                          alignItems: "center",
+                          gap: 1,
+                        }}
                       >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    }
-                  />
-                </FormControl>)}
-                <Stack sx={{ gap: 2, mt: 1, justifyContent: "center", alignItems: "start" }}>
-                  {!isRegister && (<Box
+                        {renderValidatePass()}
+                        <Typography
+                          level="body-sm"
+                          color={
+                            valPassColor() === "danger"
+                              ? "danger"
+                              : valPassColor() === "success"
+                              ? "success"
+                              : "neutral"
+                          }
+                        >
+                          Password must be at least 8 characters
+                        </Typography>
+                      </Box>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "start",
+                          alignItems: "center",
+                          gap: 1,
+                        }}
+                      >
+                        {
+                          // password must not include email
+                          renderValPassNotIncludeEmail()
+                        }
+                        <Typography
+                          level="body-sm"
+                          color={
+                            valPassColor() === "danger"
+                              ? "danger"
+                              : valPassColor() === "success"
+                              ? "success"
+                              : "neutral"
+                          }
+                        >
+                          Does not include your email
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  )}
+                </FormControl>
+                {isRegister && (
+                  <FormControl required>
+                    <FormLabel>Confirm password</FormLabel>
+                    <Input
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirm_password"
+                      value={cred.confirm_password}
+                      onChange={handleChange}
+                      endDecorator={
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
+                        >
+                          {showConfirmPassword ? (
+                            <VisibilityOff />
+                          ) : (
+                            <Visibility />
+                          )}
+                        </IconButton>
+                      }
+                    />
+                  </FormControl>
+                )}
+                <Stack
+                  sx={{
+                    gap: 2,
+                    mt: 1,
+                    justifyContent: "center",
+                    alignItems: "start",
+                  }}
+                >
+                  {!isRegister && (
+                    <Box
                       sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'start',
-                        flexDirection: 'column',
-                        gap: 2
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "start",
+                        flexDirection: "column",
+                        gap: 2,
                       }}
                     >
-                      <Checkbox size="sm" label="Remember me" name="persistent" />
+                      <Checkbox
+                        size="sm"
+                        label="Remember me"
+                        name="persistent"
+                      />
                       <Link level="title-sm" href="#replace-with-a-link">
                         Forgot your password?
                       </Link>
-                    </Box>)}
+                    </Box>
+                  )}
                   <Button
                     type="submit"
                     fullWidth
@@ -385,7 +459,13 @@ function LoginPage({ register = false }) {
                       },
                     }}
                   >
-                    {isPending ? <CircularProgress variant="plain" /> : isRegister ? "Register" : "Login"}
+                    {isPending ? (
+                      <CircularProgress variant="plain" />
+                    ) : isRegister ? (
+                      "Register"
+                    ) : (
+                      "Login"
+                    )}
                   </Button>
                   {!isRegister}
                 </Stack>

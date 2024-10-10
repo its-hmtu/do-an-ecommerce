@@ -22,4 +22,12 @@ const getCategories = async ({
   }
 };
 
+const getAllCategories = async () => {
+  try {
+    // const response = await api.get()
+  } catch (e) {
+    return e.response.data
+  }
+}
+
 export { getCategories };

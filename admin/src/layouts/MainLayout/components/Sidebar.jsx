@@ -36,7 +36,7 @@ import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 // product icon
 import InventoryIcon from "@mui/icons-material/Inventory2Rounded";
 import ColorSchemeToggle from "./ColorSchemeToggle";
-import { AdminPanelSettings } from "@mui/icons-material";
+import { AdminPanelSettings, CategoryRounded } from "@mui/icons-material";
 import { closeSidebar } from "utils/sidebar";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 
@@ -193,6 +193,16 @@ function Sidebar({ user }) {
                 <ShoppingCartRoundedIcon />
                 <ListItemContent>
                   <Typography level="title-sm">Orders</Typography>
+                </ListItemContent>
+              </ListItemButton>
+            </NavLink>
+          </ListItem>
+          <ListItem>
+            <NavLink to="/categories">
+              <ListItemButton selected={selected === "/categories"}>
+                <CategoryRounded />
+                <ListItemContent>
+                  <Typography level="title-sm">Categories</Typography>
                 </ListItemContent>
               </ListItemButton>
             </NavLink>
