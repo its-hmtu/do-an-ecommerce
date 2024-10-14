@@ -68,6 +68,45 @@ exports.getCategories = async (req, res, next) => {
   }
 };
 
+exports.getSinglecategory = async (req, res, next) => {
+  const {id} = req.params;
+
+  try {
+    const category = await Category.findByPk(id, {
+      include: [
+        {
+          model: CategoryImage,
+          as: "images",
+          where: {
+            category_id: {
+              [Op.ne]: null,
+            },
+          },
+          attributes: [
+            "file_name",
+            "file_path",
+            "file_size",
+            "original_name",
+            "mime_type",
+          ],
+          required: false,
+        },
+      ],
+    });
+
+    if (!category) {
+      res.status(404);
+      return next(new Error("Category not found"));
+    }
+
+    return res.status(200).json({message: "Category retrieved",success: true, data: category});
+
+  } catch (e) {
+    res.status(500);
+    return next(e);
+  }
+}
+
 exports.getAll = async (req, res, next) => {
   try {
     const categories = await Category.findAll({
@@ -221,7 +260,7 @@ exports.deleteCategory = async (req, res, next) => {
 
     await transaction.commit();
 
-    return res.status(200).json({ message: "Category deleted" });
+    return res.status(200).json({ message: "Category deleted", success: true });
   } catch (error) {
     await transaction.rollback();
     res.status(500);

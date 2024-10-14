@@ -30,4 +30,32 @@ const getAllCategories = async () => {
   }
 }
 
-export { getCategories };
+const getSingleCategory = async ({id}) => {
+  try {
+    const {data} = await api.get(`/categories/${id}`);
+
+    if (data.success === false) {
+      throw new Error(data.message);
+    }
+
+    return data.data;
+  } catch (e) {
+    return e.response.data;
+  }
+}
+
+const deleteCategory = async ({id}) => {
+  try {
+    const {data} = await api.delete(`/categories/${id}`);
+
+    if (data.success === false) {
+      throw new Error(data.message);
+    }
+
+    return data.data;
+  } catch (e) {
+    return e.response.data;
+  }
+}
+
+export { getCategories, getSingleCategory, deleteCategory };

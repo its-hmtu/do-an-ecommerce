@@ -10,9 +10,9 @@ import ProductPage from 'pages/ProductPage';
 import ProductTable from 'pages/ProductPage/components/ProductTable';
 import ProductDetailsPage from 'pages/ProductDetailsPage';
 import CategoryPage from 'pages/CategoryPage';
-import CategoryCreatePage from 'pages/CategoryCreatePage';
-import CategoryEditPage from 'pages/CategoryEditPage';
 import CategoryTable from 'pages/CategoryPage/components/CategoryTable';
+import CategoryEdit from 'pages/CategoryPage/components/CategoryEdit';
+import CategoryCreate from 'pages/CategoryPage/components/CategoryCreate';
 
 const router = createBrowserRouter([
   {
@@ -26,10 +26,12 @@ const router = createBrowserRouter([
       {
         path: '/products',
         element: <ProductPage />,
-      },
-      {
-        path: '/products/:id',
-        element: <ProductDetailsPage />
+        children: [
+          {
+            path: '/products/:id',
+            element: <ProductDetailsPage />
+          },
+        ]
       },
       {
         path: '/orders',
@@ -45,11 +47,11 @@ const router = createBrowserRouter([
           },
           {
             path: '/categories/create',
-            element: <CategoryCreatePage />
+            element: <CategoryCreate />
           },
           {
             path: '/categories/:id/edit',
-            element: <CategoryEditPage />
+            element: <CategoryEdit />
           },
         ]
       },

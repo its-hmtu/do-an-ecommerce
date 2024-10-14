@@ -25,6 +25,7 @@ import {
   MenuItem,
   iconButtonClasses,
   Breadcrumbs,
+  Link as MuiLink,
 } from "@mui/joy";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import SearchIcon from "@mui/icons-material/Search";
@@ -35,8 +36,8 @@ import BlockIcon from "@mui/icons-material/Block";
 import MoreHorizRoundedIcon from "@mui/icons-material/MoreHorizRounded";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
-import { useQuery } from "@tanstack/react-query";
-import { getCategories } from "api/categories.api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getCategories, deleteCategory } from "api/categories.api";
 import { useNavigate } from "react-router-dom";
 import {
   AddCircleRounded,
@@ -44,83 +45,41 @@ import {
   DownloadRounded,
   HomeRounded,
 } from "@mui/icons-material";
+import RowMenu from "components/RowMenu";
+import { getComparator } from 'utils/helper';
+import Filter from "components/Filter";
+import SearchBox from "components/SearchBox";
+import ConfirmModal from "components/ConfirmModal";
 
-function RowMenu({ onClick }) {
-  return (
-    <Dropdown>
-      <MenuButton
-        slots={{ root: IconButton }}
-        slotProps={{ root: { variant: "plain", color: "neutral", size: "sm" } }}
-      >
-        <MoreHorizRoundedIcon />
-      </MenuButton>
-      <Menu size="sm" sx={{ minWidth: 140 }}>
-        <MenuItem onClick={onClick}>Edit</MenuItem>
-        <MenuItem>Rename</MenuItem>
-        <MenuItem>Move</MenuItem>
-        <Divider />
-        <MenuItem color="danger">Delete</MenuItem>
-      </Menu>
-    </Dropdown>
-  );
-}
-
-function getComparator(order, orderBy) {
-  return order === "desc"
-    ? (a, b) => (b[orderBy] < a[orderBy] ? -1 : 1)
-    : (a, b) => (a[orderBy] < b[orderBy] ? -1 : 1);
-}
 
 const CategoryTable = () => {
   const navigate = useNavigate();
   const [order, setOrder] = React.useState("desc");
   const [selected, setSelected] = React.useState([]);
   const [open, setOpen] = React.useState(false);
+  const [openDelete, setOpenDelete] = React.useState(false);
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(10);
+  const [selectedCategory, setSelectedCategory] = React.useState({});
+
+  const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
-    queryKey: ["product", { page, pageSize }],
+    queryKey: ["categories", { page, pageSize }],
     queryFn: () => getCategories({ page, pageSize }),
   });
 
-  const renderFilters = () => (
-    <React.Fragment>
-      <FormControl size="sm">
-        <FormLabel>Status</FormLabel>
-        <Select
-          size="sm"
-          placeholder="Filter by status"
-          slotProps={{ button: { sx: { whiteSpace: "nowrap" } } }}
-        >
-          <Option value="paid">Paid</Option>
-          <Option value="pending">Pending</Option>
-          <Option value="refunded">Refunded</Option>
-          <Option value="cancelled">Cancelled</Option>
-        </Select>
-      </FormControl>
-      <FormControl size="sm">
-        <FormLabel>Category</FormLabel>
-        <Select size="sm" placeholder="All">
-          <Option value="all">All</Option>
-          <Option value="refund">Refund</Option>
-          <Option value="purchase">Purchase</Option>
-          <Option value="debit">Debit</Option>
-        </Select>
-      </FormControl>
-      <FormControl size="sm">
-        <FormLabel>Customer</FormLabel>
-        <Select size="sm" placeholder="All">
-          <Option value="all">All</Option>
-          <Option value="olivia">Olivia Rhye</Option>
-          <Option value="steve">Steve Hampton</Option>
-          <Option value="ciaran">Ciaran Murray</Option>
-          <Option value="marina">Marina Macdonald</Option>
-          <Option value="charles">Charles Fulton</Option>
-          <Option value="jay">Jay Hoper</Option>
-        </Select>
-      </FormControl>
-    </React.Fragment>
-  );
+  // delete category using tanstack/react-query
+  const mutation = useMutation({
+    mutationFn: (id) => deleteCategory({id}),
+    onSuccess: () => {
+      queryClient.invalidateQueries("categories");
+    }
+  })
+
+  const handleDelete = (id) => {
+    mutation.mutate(id);
+  }
+
   return (
     <React.Fragment>
       <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -130,10 +89,14 @@ const CategoryTable = () => {
           separator={<ChevronRightRounded fontSize="sm" />}
           sx={{ pl: 0 }}
         >
-          <Link to={"/dashboard"}>
-            <HomeRounded />
-          </Link>
-          <Link to={"/dashboard"}>Dashboard</Link>
+          <MuiLink
+            underline="hover"
+            color="neutral"
+            onClick={() => navigate("/dashboard")}
+            sx={{ fontSize: 12, fontWeight: 500 }}
+          >
+            Dashboard
+          </MuiLink>
           <Typography color="primary" sx={{ fontWeight: 500, fontSize: 12 }}>
             Categories
           </Typography>
@@ -202,7 +165,7 @@ const CategoryTable = () => {
             </Typography>
             <Divider sx={{ my: 2 }} />
             <Sheet sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {renderFilters()}
+              <Filter />
               <Button color="primary" onClick={() => setOpen(false)}>
                 Submit
               </Button>
@@ -223,15 +186,8 @@ const CategoryTable = () => {
           },
         }}
       >
-        <FormControl sx={{ flex: 1 }} size="sm">
-          <FormLabel>Search for order</FormLabel>
-          <Input
-            size="sm"
-            placeholder="Search"
-            startDecorator={<SearchIcon />}
-          />
-        </FormControl>
-        {renderFilters()}
+        <SearchBox width={240} />
+        <Filter />
       </Box>
       <Sheet
         className="OrderTableContainer"
@@ -372,9 +328,15 @@ const CategoryTable = () => {
                       Download
                     </Link>
                     <RowMenu
-                      onClick={() => {
+                      onEdit={() => {
                         navigate(`/categories/${row.id}/edit`);
                       }}
+                      onDelete={
+                        () => {
+                          setOpenDelete(true)
+                          setSelectedCategory(row)
+                        }
+                      }
                     />
                   </Box>
                 </td>
@@ -425,6 +387,21 @@ const CategoryTable = () => {
           Next
         </Button>
       </Box>
+      <ConfirmModal 
+        open={openDelete}
+        onClose={() => {
+          setOpenDelete(false)
+          setSelectedCategory({})
+        }}
+        onConfirm={() => {
+          handleDelete(selectedCategory?.id);
+          setOpenDelete(false);
+        }}
+        title={`Delete "${selectedCategory?.name}" category`}
+        description="This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </React.Fragment>
   );
 };

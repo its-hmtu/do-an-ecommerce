@@ -1,7 +1,5 @@
 import {
   ChevronRightRounded,
-  DownloadRounded,
-  FileUploadRounded,
   HomeRounded,
 } from "@mui/icons-material";
 import {
@@ -12,20 +10,16 @@ import {
   FormLabel,
   Input,
   Link,
-  Modal,
-  ModalClose,
-  ModalDialog,
-  Sheet,
   Table,
   Textarea,
   Typography,
 } from "@mui/joy";
+import ConfirmModal from "components/ConfirmModal";
 import React, { useCallback, useRef, useState } from "react";
-import { InputGroup } from "react-bootstrap";
 import Dropzone from "react-dropzone";
 import { useNavigate } from "react-router-dom";
 
-function CategoryCreatePage() {
+function CategoryCreate() {
   const [imagePreview, setImagePreview] = useState(null);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
@@ -54,7 +48,7 @@ function CategoryCreatePage() {
         setImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
-      console.log(imagePreview)
+      console.log(imagePreview);
     } else {
       setImagePreview(null);
     }
@@ -133,7 +127,7 @@ function CategoryCreatePage() {
       >
         <FormControl>
           <FormLabel>Name</FormLabel>
-          <Input placeholder="Enter category name" required/>
+          <Input placeholder="Enter category name" required />
         </FormControl>
         <FormControl>
           <FormLabel>Description</FormLabel>
@@ -169,7 +163,7 @@ function CategoryCreatePage() {
                     className: `dropzone ${additionalClass}`,
                   })}
                 >
-                  <input {...getInputProps()} />
+                  <input {...getInputProps()} accept="image/*" />
 
                   <Typography
                     variant="body"
@@ -210,10 +204,18 @@ function CategoryCreatePage() {
           >
             <thead>
               <tr>
-                <th style={{ padding: "12px 6px", textAlign: "center" }}>Preview</th>
-                <th style={{ padding: "12px 6px", textAlign: "center" }}>File name</th>
-                <th style={{ padding: "12px 6px", textAlign: "center" }}>File size</th>
-                <th style={{ padding: "12px 6px", textAlign: "center" }}>Action</th>
+                <th style={{ padding: "12px 6px", textAlign: "center" }}>
+                  Preview
+                </th>
+                <th style={{ padding: "12px 6px", textAlign: "center" }}>
+                  File name
+                </th>
+                <th style={{ padding: "12px 6px", textAlign: "center" }}>
+                  File size
+                </th>
+                <th style={{ padding: "12px 6px", textAlign: "center" }}>
+                  Action
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -247,8 +249,13 @@ function CategoryCreatePage() {
             gap: 2,
           }}
         >
-          <Button variant="outlined" color="neutral" type="reset"
-            onClick={() => {setOpen(true)}}
+          <Button
+            variant="outlined"
+            color="neutral"
+            type="reset"
+            onClick={() => {
+              setOpen(true);
+            }}
           >
             Cancel
           </Button>
@@ -259,52 +266,17 @@ function CategoryCreatePage() {
         </Box>
       </Box>
 
-      <Modal
+      <ConfirmModal
         open={open}
         onClose={() => setOpen(false)}
-      >
-        <ModalDialog
-          variant="outlined"
-          sx={{ maxWidth: 500, borderRadius: 'md', p: 3, boxShadow: 'lg' }}
-        >
-          <ModalClose variant="plain" />
-          <Typography
-            component="h2"
-            id="modal-title"
-            level="h4"
-            textColor="inherit"
-            sx={{ fontWeight: 'lg', mt: 2 }}
-          >
-            Are you sure want to cancel?
-          </Typography>
-          <Typography
-            component="p"
-            id="modal-description"
-            level="body"
-            textColor="inherit"
-            sx={{ mb: 1 }}
-          >
-            Your changes will not be saved.
-          </Typography>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: 2,
-              mt: 2,
-            }}
-          >
-            <Button variant="outlined" color="neutral" onClick={() => setOpen(false)}>
-              No
-            </Button>
-            <Button variant="solid" color="primary" onClick={() => navigate("/categories")}>
-              Yes
-            </Button>
-          </Box>
-        </ModalDialog>
-      </Modal>
+        onConfirm={() => navigate("/categories")}
+        title={"Discard changes?"}
+        description={"Your changes will not be saved."}
+        cancelText={"Keep editing"}
+        confirmText={"Discard"}
+      />
     </>
   );
 }
 
-export default CategoryCreatePage;
+export default CategoryCreate;

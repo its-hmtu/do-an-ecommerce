@@ -10,10 +10,10 @@ require('dotenv').config();
 const mode = process.env.NODE_ENV || 'development';
 const dialect = process.env.DB_DIALECT || 'mysql';
 const host = process.env.DB_HOST || 'localhost';
-const port = process.env.DB_PORT || 3306;
+const port = process.env.DB_PORT || 33061;
 const database = process.env.DB_NAME || 'do-an-ecommerce';
-const username = process.env.DB_USERNAME || 'admin';
-const password = process.env.DB_PASSWORD || 'do_an2024';
+const username = process.env.DB_USERNAME || 'root';
+const password = process.env.DB_PASSWORD || 'root';
 
 const connectObj = {
   host: host,
