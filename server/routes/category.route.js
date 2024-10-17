@@ -8,12 +8,15 @@ const {
 const { setUploadPath } = require("../middlewares/upload.middleware");
 const {
   getCategories,
+  getAll,
   createCategory,
   getSinglecategory,
   deleteCategory
 } = require("../controllers/category.controller");
 
 router.get("/categories", getCategories);
+
+router.get("/categories/all", getAll);
 
 router.post(
   "/categories",

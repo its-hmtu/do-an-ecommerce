@@ -12,12 +12,22 @@ const { Op } = require("sequelize");
 exports.getCategories = async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   const pageSize = parseInt(req.query.limit) || 10;
+  const q = req.query.q;
   const offset = (page - 1) * pageSize;
+
+  const where = {};
+
+  if (q) {
+    where.name = {
+      [Op.like]: `%${q}%`,
+    };
+  }
 
   try {
     const categories = await Category.findAndCountAll({
       limit: pageSize,
       offset: offset,
+      where: where,
       include: [
         {
           model: CategoryImage,
@@ -34,28 +44,31 @@ exports.getCategories = async (req, res, next) => {
             "original_name",
             "mime_type",
           ],
-          required: false,
+          // required: false,
         },
       ],
+      distinct: true,
     });
-  
+
     if (!categories) {
       res.status(404);
       return next(new Error("Categories not found"));
     }
-  
+
     const totalItemCount = categories.count;
     const currentItemCount = categories.rows.length;
     const currentPage = page;
     const totalPages = Math.ceil(totalItemCount / pageSize);
-  
+    const prevPage = page > 1 ? page - 1 : null;
+
     const pagination = {
       total_item_count: totalItemCount,
       current_item_count: currentItemCount,
       total_pages: totalPages,
       current_page: currentPage,
+      prev_page: prevPage,
     };
-  
+
     return res.status(200).json({
       data: {
         ...pagination,
@@ -69,7 +82,7 @@ exports.getCategories = async (req, res, next) => {
 };
 
 exports.getSinglecategory = async (req, res, next) => {
-  const {id} = req.params;
+  const { id } = req.params;
 
   try {
     const category = await Category.findByPk(id, {
@@ -99,13 +112,14 @@ exports.getSinglecategory = async (req, res, next) => {
       return next(new Error("Category not found"));
     }
 
-    return res.status(200).json({message: "Category retrieved",success: true, data: category});
-
+    return res
+      .status(200)
+      .json({ message: "Category retrieved", success: true, data: category });
   } catch (e) {
     res.status(500);
     return next(e);
   }
-}
+};
 
 exports.getAll = async (req, res, next) => {
   try {
@@ -129,6 +143,7 @@ exports.getAll = async (req, res, next) => {
           required: false,
         },
       ],
+      distinct: true,
     });
 
     if (!categories) {
@@ -136,21 +151,28 @@ exports.getAll = async (req, res, next) => {
       return next(new Error("Categories not found"));
     }
 
-    return res.status(200).json({ data: categories, message: "Categories retrieved", success: true });
+    const totalItemCount = categories.length;
+
+    return res.status(200).json({
+      total_item_count: totalItemCount,
+      data: categories,
+      message: "Categories retrieved",
+      success: true,
+    });
   } catch (error) {
     res.status(500);
     return next(error);
   }
-}
+};
 
 exports.createCategory = async (req, res, next) => {
   const { name, description } = req.body;
   const transaction = await sequelize.transaction({ autocommit: false });
 
   if (name == null || name.length === 0) {
-    res.status(400)
-    return next(new Error("Category name is required"))
-  } 
+    res.status(400);
+    return next(new Error("Category name is required"));
+  }
 
   const existingCategory = await Category.findOne({
     where: {
@@ -160,7 +182,7 @@ exports.createCategory = async (req, res, next) => {
 
   if (existingCategory) {
     res.status(400);
-    return next(new Error("Category already exists"))
+    return next(new Error("Category already exists"));
   }
 
   try {
@@ -242,7 +264,7 @@ exports.updateCategory = async (req, res, next) => {
     res.status(500);
     return next(error);
   }
-}
+};
 
 exports.deleteCategory = async (req, res, next) => {
   const { id } = req.params;
@@ -266,7 +288,7 @@ exports.deleteCategory = async (req, res, next) => {
     res.status(500);
     return next(error);
   }
-}
+};
 
 exports.addCategoryToProduct = async (req, res, next) => {
   const { product_id, category_id } = req.body;
@@ -297,4 +319,4 @@ exports.addCategoryToProduct = async (req, res, next) => {
     res.status(500);
     return next(error);
   }
-}
+};

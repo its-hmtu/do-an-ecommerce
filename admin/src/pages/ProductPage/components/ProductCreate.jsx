@@ -20,7 +20,7 @@ import React, { useCallback, useRef, useState } from "react";
 import Dropzone from "react-dropzone";
 import { useNavigate } from "react-router-dom";
 
-function CategoryCreate() {
+function ProductCreate() {
   const [imagePreview, setImagePreview] = useState(null);
   const formData = new FormData();
   const fileInputRef = useRef(null);
@@ -119,10 +119,10 @@ function CategoryCreate() {
             sx={{ fontSize: 12, fontWeight: 500 }}
             onClick={() => setOpen(true)}
           >
-            Categories
+            Products
           </Link>
           <Typography color="primary" sx={{ fontWeight: 500, fontSize: 12 }}>
-            Create new category
+            Create new product
           </Typography>
         </Breadcrumbs>
       </Box>
@@ -138,7 +138,7 @@ function CategoryCreate() {
         }}
       >
         <Typography level="h2" component="h1">
-          Create new category
+          Create new product
         </Typography>
       </Box>
 
@@ -169,6 +169,17 @@ function CategoryCreate() {
             minRows={3}
             name="description"
             value={data.description}
+            onChange={handleOnChange}
+          />
+        </FormControl>
+        <FormControl>
+          <FormLabel>Base price</FormLabel>
+          <Input 
+            type="number" 
+            placeholder="Enter base price" 
+            required
+            name="base_price"
+            value={data.base_price}
             onChange={handleOnChange}
           />
         </FormControl>
@@ -256,7 +267,7 @@ function CategoryCreate() {
       <ConfirmModal
         open={open}
         onClose={() => setOpen(false)}
-        onConfirm={() => navigate("/categories")}
+        onConfirm={() => navigate("/products")}
         title={"Discard changes?"}
         description={"Your changes will not be saved."}
         cancelText={"Keep editing"}
@@ -266,4 +277,4 @@ function CategoryCreate() {
   );
 }
 
-export default CategoryCreate;
+export default ProductCreate;

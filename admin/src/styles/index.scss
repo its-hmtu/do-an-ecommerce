@@ -50,7 +50,7 @@ a {
   justify-content: center;
   align-items: center;
   height: auto;
-  margin: 30px 0 0 0;
+  margin: 10px 0 0 0;
 
   .image-gallery-thumbnails-container {
       display: flex;
@@ -63,44 +63,24 @@ a {
       border: none;
       width: fit-content;
       height: auto;
+      border-radius: 4px;
 
       .image-gallery-thumbnail-image {
-          border: 2px solid transparent;
-
-          &:hover {
-              border: 2px solid #0b6bcb;
-          }
-
-          &:focus {
-              border: 2px solid #0b6bcb;
-              outline: none;
-          }
-
-          &:active {
-              border: 2px solid #0b6bcb;
-          }
-
-          &.active {
-              border: 2px solid #0b6bcb;
-              img {
-                  opacity: 0.3;
-              }
-          }
       }
       &:hover {
-          border: none;
+        border: 2px solid #0b6bcb;
       }
 
       &:focus {
-          border: none;
+        border: 2px solid #0b6bcb;
       }
 
       &:active {
-          border: none;
+        border: 2px solid #0b6bcb;
       }
 
       &.active {
-          border: none;
+        border: 2px solid #0b6bcb;
       }
 
       .image-gallery-thumbnail-inner {

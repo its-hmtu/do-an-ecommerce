@@ -24,6 +24,7 @@ import {
   Dropdown,
   MenuButton,
   CircularProgress,
+  Breadcrumbs,
 } from "@mui/joy";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
@@ -37,34 +38,14 @@ import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import Avatar from "@mui/joy/Avatar";
 import { useQuery } from "@tanstack/react-query";
 import { getProducts } from "api/products.api";
-import { getCategories } from "api/categories.api";
-import { Link as RouterLink } from "react-router-dom";
-
-function RowMenu() {
-  return (
-    <Dropdown>
-      <MenuButton
-        slots={{ root: IconButton }}
-        slotProps={{ root: { variant: "plain", color: "neutral", size: "sm" } }}
-      >
-        <MoreHorizRoundedIcon />
-      </MenuButton>
-      <Menu size="sm" sx={{ minWidth: 140 }}>
-        <MenuItem>Edit</MenuItem>
-        <MenuItem>Rename</MenuItem>
-        <MenuItem>Move</MenuItem>
-        <Divider />
-        <MenuItem color="danger">Delete</MenuItem>
-      </Menu>
-    </Dropdown>
-  );
-}
-
-function getComparator(order, orderBy) {
-  return order === "desc"
-    ? (a, b) => (b[orderBy] < a[orderBy] ? -1 : 1)
-    : (a, b) => (a[orderBy] < b[orderBy] ? -1 : 1);
-}
+import { getAllCategories, getCategories } from "api/categories.api";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import RowMenu from "components/RowMenu";
+import { getComparator } from "utils/helper";
+import { AddCircleRounded, ChevronRightRounded, DownloadRounded } from "@mui/icons-material";
+import Filter from "components/Filter";
+import SearchBox from "components/SearchBox";
+import { Pagination } from "antd";
 
 function ProductTable() {
   const [page, setPage] = useState(1);
@@ -72,60 +53,118 @@ function ProductTable() {
   const [q, setQ] = useState("");
   const [category, setCategory] = useState("");
   const [sort, setSort] = useState("createdAt");
-  const [order, setOrder] = useState("desc");
+  const [order, setOrder] = useState("asc");
   const [selected, setSelected] = React.useState([]);
   const [filterCategory, setFilterCategory] = useState("");
+  const navigate = useNavigate();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ["products", { page, pageSize, q, category, sort, order }],
     queryFn: () =>
       getProducts({ page, limit: pageSize, q, category, sort, order }),
   });
 
-  const { data: categories, isLoading: isLoadingCategories } = useQuery({
-    queryKey: ["categories", { page, pageSize }],
-    queryFn: () => getCategories({ page, limit: pageSize }),
+  const { data: categoryData } = useQuery({
+    queryKey: ["categories"],
+    queryFn: getAllCategories,
   });
 
   useEffect(() => {
-    setCategory(filterCategory);
-  }, [filterCategory]);
+    refetch();
+  }, [page, pageSize, q, category, sort, order, refetch]);
 
   const [open, setOpen] = React.useState(false);
-  const renderFilters = () => (
-    <React.Fragment>
-      <FormControl size="sm">
-        <FormLabel>Status</FormLabel>
-        <Select
+
+  const itemRender = (_, type, originalElement) => {
+    if (type === "prev" && data?.current_page > 1) {
+      return (
+        <Button
           size="sm"
-          placeholder="Filter by status"
-          slotProps={{ button: { sx: { whiteSpace: "nowrap" } } }}
+          variant="outlined"
+          color="neutral"
+          startDecorator={<KeyboardArrowLeftIcon />}
+          
         >
-          <Option value="paid">Paid</Option>
-          <Option value="pending">Pending</Option>
-          <Option value="refunded">Refunded</Option>
-          <Option value="cancelled">Cancelled</Option>
-        </Select>
-      </FormControl>
-      <FormControl size="sm">
-        <FormLabel>Category</FormLabel>
-        <Select size="sm" placeholder="All">
-          <Option value="">All</Option>
-          {categories?.categories?.map((category) => (
-            <Option
-              key={category.id}
-              value={category.name.toLowerCase()}
-              onSelect={() => setFilterCategory(category.name.toLowerCase())}
-            >
-              {category.name}
-            </Option>
-          ))}
-        </Select>
-      </FormControl>
-    </React.Fragment>
-  );
+          Previous
+        </Button>
+      );
+    }
+
+    if (type === "next") {
+      return (
+        <Button
+          size="sm"
+          variant="outlined"
+          color="neutral"
+          endDecorator={<KeyboardArrowRightIcon />}
+        >
+          Next
+        </Button>
+      );
+    }
+  
+    return originalElement;
+  };
+
   return (
     <React.Fragment>
+      <Box sx={{ display: "flex", alignItems: "center" }}>
+        <Breadcrumbs
+          size="sm"
+          aria-label="breadcrumbs"
+          separator={<ChevronRightRounded fontSize="sm" />}
+          sx={{ pl: 0 }}
+        >
+          <Link
+            underline="hover"
+            color="neutral"
+            onClick={() => navigate("/dashboard")}
+            sx={{ fontSize: 12, fontWeight: 500 }}
+          >
+            Dashboard
+          </Link>
+          <Typography color="primary" sx={{ fontWeight: 500, fontSize: 12 }}>
+            Products
+          </Typography>
+        </Breadcrumbs>
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          mb: 1,
+          gap: 1,
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: { xs: "start", sm: "center" },
+          flexWrap: "wrap",
+          justifyContent: "space-between",
+        }}
+      >
+        <Typography level="h2" component="h1">
+          Products
+        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+          }}
+        >
+          <Button
+            color="primary"
+            startDecorator={<AddCircleRounded />}
+            size="sm"
+            onClick={() => navigate("/products/create")}
+          >
+            Create new product
+          </Button>
+          <Button
+            color="primary"
+            startDecorator={<DownloadRounded />}
+            size="sm"
+          >
+            Download PDF
+          </Button>
+        </Box>
+      </Box>
       <Sheet
         className="SearchAndFilters-mobile"
         sx={{ display: { xs: "flex", sm: "none" }, my: 1, gap: 1 }}
@@ -152,7 +191,7 @@ function ProductTable() {
             </Typography>
             <Divider sx={{ my: 2 }} />
             <Sheet sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {renderFilters()}
+              <Filter />
               <Button color="primary" onClick={() => setOpen(false)}>
                 Submit
               </Button>
@@ -166,22 +205,20 @@ function ProductTable() {
           borderRadius: "sm",
           py: 2,
           display: { xs: "none", sm: "flex" },
-          flexWrap: "wrap",
+          // flexWrap: "wrap",
+          alignItems: "end",
           gap: 1.5,
           "& > *": {
             minWidth: { xs: "120px", md: "160px" },
           },
         }}
       >
-        <FormControl sx={{ flex: 1 }} size="sm">
-          <FormLabel>Search for order</FormLabel>
-          <Input
-            size="sm"
-            placeholder="Search"
-            startDecorator={<SearchIcon />}
-          />
-        </FormControl>
-        {renderFilters()}
+        <SearchBox
+          width={300}
+          onChange={(e) => setQ(e.target.value)}
+          value={q}
+        />
+        <Filter isCategoryVisible categoryData={categoryData} />
       </Box>
       <Sheet
         className="OrderTableContainer"
@@ -237,7 +274,9 @@ function ProductTable() {
                   sx={{ verticalAlign: "text-bottom" }}
                 />
               </th>
-              <th style={{ width: 80, padding: "12px 6px" }}>
+
+              <th style={{ width: 100, padding: "12px 6px" }}> </th>
+              <th style={{ width: 120, padding: "12px 6px" }}>
                 <Link
                   underline="none"
                   color="primary"
@@ -258,12 +297,11 @@ function ProductTable() {
                       : { "& svg": { transform: "rotate(180deg)" } },
                   ]}
                 >
-                  ID
+                  Name
                 </Link>
               </th>
-              <th style={{ width: 80, padding: "12px 6px" }}> </th>
-              <th style={{ width: 140, padding: "12px 6px" }}>Name</th>
-              <th style={{ width: 140, padding: "12px 6px" }}>Price</th>
+              {/* <th style={{ width: 140, padding: "12px 6px" }}>Name</th> */}
+              <th style={{ width: 140, padding: "12px 16px" }}>Price</th>
               <th style={{ width: 100, padding: "12px 6px" }}>Stock</th>
               <th style={{ width: 140, padding: "12px 6px" }}>Categories</th>
               <th style={{ width: 140, padding: "12px 6px" }}>Created at</th>
@@ -276,7 +314,7 @@ function ProductTable() {
           </thead>
           <tbody>
             {!isLoading ? (
-              data?.products?.sort(getComparator(order, "id"))?.map((row) => (
+              data?.products?.sort(getComparator(order, "name"))?.map((row) => (
                 <tr key={row.id}>
                   <td style={{ textAlign: "center", width: 120 }}>
                     <Checkbox
@@ -295,38 +333,58 @@ function ProductTable() {
                     />
                   </td>
                   <td>
-                    <Typography level="body-xs">{row.id}</Typography>
-                  </td>
-                  <td>
-                  <Avatar src={`http://localhost:5000${row?.images[0]?.file_path}`} alt={row.product_name} size="100px" sx={{
-                    borderRadius: "0"
-                  }} />
-                  </td>
-                  <td>
-                      <Typography
-                        level="body-xs"
+                    {row.images.length > 0 ? (
+                      <Avatar
+                        src={`http://localhost:5000${row?.images[0]?.file_path}`}
+                        size="100px"
                         sx={{
-                          "& > a:hover": {
+                          borderRadius: "0",
+                          // height: "auto",
+                          backgroundColor: "transparent",
+                        }}
+                      />
+                    ) : (
+                      <Typography level="body-xs">No Image</Typography>
+                    )}
+                  </td>
+                  <td>
+                    <Typography
+                      level="body-xs"
+                      sx={{
+                        "& > a:hover": {
+                          textDecoration: "underline",
+                        },
+                      }}
+                    >
+                      <RouterLink to={`/products/${row.id}`}>
+                        <Typography level="body-xs" sx={{
+                          "&:hover": {
                             textDecoration: "underline",
                           },
-                        }}
-                      >
-                        <RouterLink to={`/products/${row.id}`}>
+                          fontWeight: "bold"
+                        }}>
                           {row.product_name}
-                        </RouterLink>
-                      </Typography>
+                        </Typography>
+                      </RouterLink>
+                    </Typography>
                   </td>
-                  
-                  <td>
+
+                  <td
+                    style={{
+                      padding: "12px 16px",
+                    }}
+                  >
                     <Typography level="body-xs">
                       {new Intl.NumberFormat("en-US", {
                         style: "currency",
                         currency: "USD",
-                      }).format(row.price)}
+                      }).format(row.base_price)}
                     </Typography>
                   </td>
                   <td>
-                    <Typography level="body-xs">{row.stock}</Typography>
+                    <Typography level="body-xs">
+                      {row.total_in_stock}
+                    </Typography>
                   </td>
                   <td>
                     {row.categories
@@ -404,35 +462,20 @@ function ProductTable() {
           },
         }}
       >
-        <Button
-          size="sm"
-          variant="outlined"
-          color="neutral"
-          startDecorator={<KeyboardArrowLeftIcon />}
-        >
-          Previous
-        </Button>
-
         <Box sx={{ flex: 1 }} />
-        {["1", "2", "3", "…", "8", "9", "10"].map((page) => (
-          <IconButton
-            key={page}
-            size="sm"
-            variant={Number(page) ? "outlined" : "plain"}
-            color="neutral"
-          >
-            {page}
-          </IconButton>
-        ))}
+        <Pagination
+          current={data?.current_page || 1}
+          total={data?.total_item_count || 0}
+          onChange={(page) => setPage(page)}
+          showSizeChanger
+          onShowSizeChange={(current, size) => setPageSize(size)}
+          showTotal={(total, range) =>
+            `${range[0]}-${range[1]} of ${total} items`
+          }
+          // hideOnSinglePage
+          itemRender={itemRender}
+        />
         <Box sx={{ flex: 1 }} />
-        <Button
-          size="sm"
-          variant="outlined"
-          color="neutral"
-          endDecorator={<KeyboardArrowRightIcon />}
-        >
-          Next
-        </Button>
       </Box>
     </React.Fragment>
   );

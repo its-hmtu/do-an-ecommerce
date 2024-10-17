@@ -10,6 +10,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: true
     },
+    
     name: {
       type: DataTypes.STRING(50),
       allowNull: true
@@ -37,8 +38,7 @@ module.exports = (sequelize, DataTypes) => {
   })
 
   Option.associate = (models) => {
-    Option.belongsTo(models.Product, {foreignKey: 'product_id', onDelete: 'cascade', onUpdate: 'cascade'});
-    
+    Option.belongsTo(models.Product, {foreignKey: 'product_id', onDelete: 'cascade', onUpdate: 'cascade'}); 
     Option.hasMany(models.Stock, {as: 'stock', foreignKey: 'option_id', onDelete: 'cascade', onUpdate: 'cascade'});
   }
 

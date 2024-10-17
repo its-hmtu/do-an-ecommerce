@@ -5,6 +5,8 @@ function Filter({
   isStatusVisible = false,
   isCategoryVisible = false,
   isCustomerVisible = false,
+  categoryData,
+  onChange
 }) {
   return (
     <React.Fragment>
@@ -26,11 +28,15 @@ function Filter({
       {isCategoryVisible && (
         <FormControl size="sm">
           <FormLabel>Category</FormLabel>
-          <Select size="sm" placeholder="All">
+          <Select size="sm" placeholder="All" 
+            onChange={onChange}
+          >
             <Option value="all">All</Option>
-            <Option value="refund">Refund</Option>
-            <Option value="purchase">Purchase</Option>
-            <Option value="debit">Debit</Option>
+            {categoryData?.map((category) => (
+              <Option key={category.id} value={category.id}>
+                {category.name}
+              </Option>
+            ))}
           </Select>
         </FormControl>
       )}

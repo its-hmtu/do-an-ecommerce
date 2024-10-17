@@ -3,12 +3,14 @@ import api from "api";
 const getCategories = async ({
   page = 1,
   limit = 10,
+  q = "",
 }) => {
   try {
     const response = await api.get("/categories", {
       params: {
         page,
         limit,
+        q
       }
     });
 
@@ -24,7 +26,14 @@ const getCategories = async ({
 
 const getAllCategories = async () => {
   try {
-    // const response = await api.get()
+    const {data} = await api.get("/categories/all");
+
+    if (data.success === false) {
+      throw new Error(data.message);
+    }
+
+    return data.data;
+
   } catch (e) {
     return e.response.data
   }
@@ -33,6 +42,24 @@ const getAllCategories = async () => {
 const getSingleCategory = async ({id}) => {
   try {
     const {data} = await api.get(`/categories/${id}`);
+
+    if (data.success === false) {
+      throw new Error(data.message);
+    }
+
+    return data.data;
+  } catch (e) {
+    return e.response.data;
+  }
+}
+
+const createCategory = async (formData) => {
+  try {
+    const {data} = await api.post("/categories", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      }
+    });
 
     if (data.success === false) {
       throw new Error(data.message);
@@ -58,4 +85,4 @@ const deleteCategory = async ({id}) => {
   }
 }
 
-export { getCategories, getSingleCategory, deleteCategory };
+export { getCategories, getSingleCategory, createCategory, deleteCategory, getAllCategories };

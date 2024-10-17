@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Box,
   Button,
@@ -26,6 +26,7 @@ import {
   iconButtonClasses,
   Breadcrumbs,
   Link as MuiLink,
+  Snackbar,
 } from "@mui/joy";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import SearchIcon from "@mui/icons-material/Search";
@@ -41,44 +42,107 @@ import { getCategories, deleteCategory } from "api/categories.api";
 import { useNavigate } from "react-router-dom";
 import {
   AddCircleRounded,
+  CheckCircle,
   ChevronRightRounded,
+  Close,
   DownloadRounded,
   HomeRounded,
+  Info,
+  Warning,
 } from "@mui/icons-material";
 import RowMenu from "components/RowMenu";
-import { getComparator } from 'utils/helper';
+import { getComparator } from "utils/helper";
 import Filter from "components/Filter";
 import SearchBox from "components/SearchBox";
 import ConfirmModal from "components/ConfirmModal";
+import { ToastMessageContext } from "contexts/ToastMessageContext";
+import { Pagination } from "antd";
+import { toast } from "react-toastify";
 
 
 const CategoryTable = () => {
   const navigate = useNavigate();
-  const [order, setOrder] = React.useState("desc");
+  const [order, setOrder] = React.useState("asc");
   const [selected, setSelected] = React.useState([]);
   const [open, setOpen] = React.useState(false);
   const [openDelete, setOpenDelete] = React.useState(false);
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(10);
   const [selectedCategory, setSelectedCategory] = React.useState({});
+  const [searchValue, setSearchValue] = React.useState("");
+  const [dataFilteredList, setDataFilteredList] = React.useState([]);
+  const { toastMessage, setToastMessage } =
+    React.useContext(ToastMessageContext);
 
   const queryClient = useQueryClient();
-  const { data, isLoading } = useQuery({
-    queryKey: ["categories", { page, pageSize }],
-    queryFn: () => getCategories({ page, pageSize }),
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["categories", { page, limit: pageSize, q: searchValue }],
+    queryFn: () => getCategories({ page: page, limit: pageSize, q: searchValue }),
   });
 
   // delete category using tanstack/react-query
   const mutation = useMutation({
-    mutationFn: (id) => deleteCategory({id}),
+    mutationFn: (id) => deleteCategory({ id }),
     onSuccess: () => {
       queryClient.invalidateQueries("categories");
-    }
-  })
+    },
+  });
 
   const handleDelete = (id) => {
     mutation.mutate(id);
-  }
+  };
+
+  const handleSearch = (e) => {
+    setSearchValue(e.target.value);
+  };
+
+  const isNewlyCreated = (createdAt) => {
+    const now = new Date();
+    const created = new Date(createdAt);
+    const diff = now - created;
+    return diff < 1000 * 60 * 60 * 24;
+  };
+
+  useEffect(() => {
+    if (data?.categories) {
+      setDataFilteredList(data.categories);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    refetch();
+  }, [page, pageSize, refetch, searchValue]);
+
+  const itemRender = (_, type, originalElement) => {
+    if (type === "prev" && data?.current_page > 1) {
+      return (
+        <Button
+          size="sm"
+          variant="outlined"
+          color="neutral"
+          startDecorator={<KeyboardArrowLeftIcon />}
+          
+        >
+          Previous
+        </Button>
+      );
+    }
+
+    if (type === "next") {
+      return (
+        <Button
+          size="sm"
+          variant="outlined"
+          color="neutral"
+          endDecorator={<KeyboardArrowRightIcon />}
+        >
+          Next
+        </Button>
+      );
+    }
+  
+    return originalElement;
+  };
 
   return (
     <React.Fragment>
@@ -186,7 +250,7 @@ const CategoryTable = () => {
           },
         }}
       >
-        <SearchBox width={240} />
+        <SearchBox width={240} onChange={handleSearch} value={searchValue} />
         <Filter />
       </Box>
       <Sheet
@@ -223,10 +287,10 @@ const CategoryTable = () => {
                 <Checkbox
                   size="sm"
                   indeterminate={
-                    selected.length > 0 &&
-                    selected.length !== data?.categories.length
+                    selected?.length > 0 &&
+                    selected?.length !== dataFilteredList?.length
                   }
-                  checked={selected.length === data?.categories.length}
+                  checked={selected?.length === dataFilteredList?.length}
                   onChange={(event) => {
                     setSelected(
                       event.target.checked
@@ -274,7 +338,7 @@ const CategoryTable = () => {
             </tr>
           </thead>
           <tbody>
-            {data?.categories.sort(getComparator(order, "name")).map((row) => (
+            {dataFilteredList?.sort(getComparator(order, "name")).map((row) => (
               <tr key={row.id}>
                 <td style={{ textAlign: "center", width: 120 }}>
                   <Checkbox
@@ -293,7 +357,22 @@ const CategoryTable = () => {
                   />
                 </td>
                 <td>
-                  <Typography level="body-xs">{row.name}</Typography>
+                  <Typography
+                    level="body-xs"
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                    }}
+                  >
+                    {/* if the row is the last of the list then is must be the newly created then add a badge to it */}
+                    {row.name}
+                    {isNewlyCreated(row.createdAt) ? (
+                      <Chip color="success" size="sm">
+                        New
+                      </Chip>
+                    ) : null}
+                  </Typography>
                 </td>
                 <td>
                   <Typography level="body-xs">{row.description}</Typography>
@@ -331,12 +410,10 @@ const CategoryTable = () => {
                       onEdit={() => {
                         navigate(`/categories/${row.id}/edit`);
                       }}
-                      onDelete={
-                        () => {
-                          setOpenDelete(true)
-                          setSelectedCategory(row)
-                        }
-                      }
+                      onDelete={() => {
+                        setOpenDelete(true);
+                        setSelectedCategory(row);
+                      }}
                     />
                   </Box>
                 </td>
@@ -357,44 +434,57 @@ const CategoryTable = () => {
           },
         }}
       >
-        <Button
-          size="sm"
-          variant="outlined"
-          color="neutral"
-          startDecorator={<KeyboardArrowLeftIcon />}
-        >
-          Previous
-        </Button>
-
         <Box sx={{ flex: 1 }} />
-        {["1", "2", "3", "…", "8", "9", "10"].map((page) => (
-          <IconButton
-            key={page}
-            size="sm"
-            variant={Number(page) ? "outlined" : "plain"}
-            color="neutral"
-          >
-            {page}
-          </IconButton>
-        ))}
+        <Pagination
+          current={data?.current_page || 1}
+          total={data?.total_item_count || 0}
+          onChange={(page) => setPage(page)}
+          showSizeChanger
+          onShowSizeChange={(current, size) => setPageSize(size)}
+          showTotal={(total, range) =>
+            `${range[0]}-${range[1]} of ${total} items`
+          }
+          // hideOnSinglePage
+          itemRender={itemRender}
+        />
         <Box sx={{ flex: 1 }} />
-        <Button
-          size="sm"
-          variant="outlined"
-          color="neutral"
-          endDecorator={<KeyboardArrowRightIcon />}
-        >
-          Next
-        </Button>
       </Box>
-      <ConfirmModal 
+      <ConfirmModal
         open={openDelete}
         onClose={() => {
-          setOpenDelete(false)
-          setSelectedCategory({})
+          setOpenDelete(false);
+          setSelectedCategory({});
         }}
         onConfirm={() => {
           handleDelete(selectedCategory?.id);
+          setToastMessage({
+            open: true,
+            message: `Category "${selectedCategory?.name}" has been deleted`,
+            type: "danger",
+          });
+          // toast.error(<Snackbar
+          //   open={toastMessage.open}
+          //   autoHideDuration={6000}
+          //   color={toastMessage.type}
+          //   variant="soft"
+          //   anchorOrigin={{ vertical: "top", horizontal: "right" }}
+          //   startDecorator={toastMessage.type === "danger" ? <Warning /> : toastMessage.type === 'success' ? <CheckCircle /> : <Info />}
+          //   endDecorator={
+          //     <IconButton
+          //       size="small"
+          //       aria-label="close"
+          //       color="inherit"
+          //       onClick={() =>
+          //         setToastMessage({ ...toastMessage, open: false })
+          //       }
+          //     >
+          //       <Close fontSize="small" color="neutral" />
+          //     </IconButton>
+          //   }
+          //   onClose={() => setToastMessage({ ...toastMessage, open: false })}
+          // >
+          //   {toastMessage.message || "Success"}
+          // </Snackbar>);
           setOpenDelete(false);
         }}
         title={`Delete "${selectedCategory?.name}" category`}
