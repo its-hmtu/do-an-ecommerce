@@ -1,9 +1,10 @@
 {
   "development": {
-    "username": "admin",
-    "password": "do_an2024",
+    "username": "root",
+    "password": "root",
     "database": "do-an-ecommerce",
-    "host": "db-do-an.cf0q6ac06qpg.ap-southeast-2.rds.amazonaws.com",
+    "host": "localhost",
+    "port": "33061",
     "dialect": "mysql"
   },
   "test": {

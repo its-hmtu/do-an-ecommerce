@@ -1,14 +1,14 @@
-const { Op } = require("sequelize");
+const { Op } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  const CategoryImage = sequelize.define('category_images', {
+  const OptionImage = sequelize.define('option_images', {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
       allowNull: false
     },
-    category_id: {
+    option_id: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
@@ -40,20 +40,16 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     timestamps: true,
     tableName: 'uploads',
-    
-  });
-
-  CategoryImage.associate = (models) => {
-    CategoryImage.belongsTo(models.Category, {onDelete: 'cascade'});
-  }
-
-  CategoryImage.defaultScope = {
-    where: {
-      category_id: {
-        [Op.ne]: null
+    defaultScope: {
+      where: {
+        option_id: {[Op.ne]: null}
       }
     }
+  });
+
+  OptionImage.associate = (models) => {
+    OptionImage.belongsTo(models.Option, {onDelete: 'cascade'});
   }
 
-  return CategoryImage;
+  return OptionImage;
 }

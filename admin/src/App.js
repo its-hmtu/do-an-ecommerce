@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, useLocation } from "react-router-dom";
 import MainLayout from "layouts/MainLayout";
 import LoginPage from "pages/LoginPage";
 import DashboardPage from "pages/DashboardPage";
@@ -17,11 +17,11 @@ import ToastMessageProvider from "contexts/ToastMessageContext";
 import { createTheme, ThemeProvider } from "@mui/material";
 import ProductDetail from "pages/ProductPage/components/ProductDetail";
 import ProductCreate from "pages/ProductPage/components/ProductCreate";
-
+import PATHS from "constants"
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: PATHS.HOME,
     element: <MainLayout />,
     children: [
       {
@@ -95,12 +95,13 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  useEffect(() => {
-    const token = sessionStorage.getItem("token");
-    if (!token) {
-      router.navigate("/login");
-    }
-  }, []);
+  // const location = useLocation();
+  // useEffect(() => {
+  //   const token = sessionStorage.getItem("token");
+  //   if (!token) {
+  //     router.navigate();
+  //   }
+  // }, []);
 
   const defaultTheme = createTheme({palette: {mode: "light"}});
 

@@ -282,14 +282,6 @@ function LoginPage() {
                   >
                     {isPending ? <CircularProgress variant="plain" /> : "Login"}
                   </Button>
-                  <Button fullWidth variant="soft" color="primary" size="sm"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setIsRegister(prev => !prev);
-                    }}
-                  >
-                    Sign up
-                  </Button>
                 </Stack>
               </form>
             </Stack>

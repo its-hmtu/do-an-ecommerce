@@ -13,12 +13,12 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(50),
       allowNull: false
     },
-    slug: {
-      type: DataTypes.STRING(50),
+    brand_id: {
+      type: DataTypes.INTEGER,
       allowNull: false
     },
-    base_price: {
-      type: DataTypes.DECIMAL(20, 2),
+    slug: {
+      type: DataTypes.STRING(50),
       allowNull: false
     },
     product_description: {
@@ -88,6 +88,8 @@ module.exports = (sequelize, DataTypes) => {
 
     Product.hasMany(models.Option, {foreignKey: 'product_id', onDelete: 'cascade', onUpdate: 'cascade'});
     Product.hasMany(models.Stock, {foreignKey: 'product_id', onDelete: 'cascade', onUpdate: 'cascade'});
+    
+    Product.belongsTo(models.Brand, {foreignKey: 'brand_id', onDelete: 'cascade', onUpdate: 'cascade'});
   }
 
   return Product;

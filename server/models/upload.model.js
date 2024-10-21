@@ -15,6 +15,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: true
     },
+    option_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
     user_id: {
       type: DataTypes.INTEGER,
       allowNull: true
@@ -38,6 +42,11 @@ module.exports = (sequelize, DataTypes) => {
     mime_type: {
       type: DataTypes.STRING,
       allowNull: false
+    },
+    is_cover_image: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     }
   }, {
     timestamps: true,

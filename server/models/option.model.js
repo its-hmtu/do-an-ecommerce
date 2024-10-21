@@ -40,6 +40,7 @@ module.exports = (sequelize, DataTypes) => {
   Option.associate = (models) => {
     Option.belongsTo(models.Product, {foreignKey: 'product_id', onDelete: 'cascade', onUpdate: 'cascade'}); 
     Option.hasMany(models.Stock, {as: 'stock', foreignKey: 'option_id', onDelete: 'cascade', onUpdate: 'cascade'});
+    Option.hasMany(models.OptionImage, {as: 'images', foreignKey: 'option_id', onDelete: 'cascade', onUpdate: 'cascade'});
   }
 
   return Option;

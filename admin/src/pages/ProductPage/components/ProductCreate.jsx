@@ -1,37 +1,51 @@
-import { ChevronRightRounded, HomeRounded } from "@mui/icons-material";
+import { AddRounded, ChevronRightRounded, HomeRounded } from "@mui/icons-material";
 import {
   Box,
   Breadcrumbs,
   Button,
+  CircularProgress,
+  Divider,
   FormControl,
   FormLabel,
   Input,
+  LinearProgress,
   Link,
+  Option,
+  Select,
+  Stack,
   Table,
   Textarea,
   Typography,
 } from "@mui/joy";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { getBrands } from "api/brands.api";
 import { createCategory } from "api/categories.api";
+import {uploadFile, removeImage} from "api/upload.api";
 import ConfirmModal from "components/ConfirmModal";
 import DropZone from "components/DropZone";
+import PreviewTable from "components/PreviewTable";
 import { ToastMessageContext } from "contexts/ToastMessageContext";
 import React, { useCallback, useRef, useState } from "react";
-import Dropzone from "react-dropzone";
 import { useNavigate } from "react-router-dom";
 
 function ProductCreate() {
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
   const formData = new FormData();
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [uploadedFile, setUploadedFile] = useState(null);
   const { toastMessage, setToastMessage } =
     React.useContext(ToastMessageContext);
   const [data, setData] = useState({
     name: "",
     description: "",
-    images: [],
+  });
+
+  const {data: brands, isLoading: brandsLoading} = useQuery({
+    queryKey: ["brands"],
+    queryFn: getBrands,
   });
 
   const mutate = useMutation({
@@ -45,6 +59,24 @@ function ProductCreate() {
       navigate("/categories");
     },
   });
+
+  const upload = useMutation({
+    mutationFn: (file) => uploadFile(file, setProgress),
+    onSuccess: (data) => {
+      setToastMessage({
+        message: "Image uploaded successfully",
+        type: "success",
+        open: true,
+      });
+
+      setUploadedFile(data.data);
+      console.log(uploadedFile[0]);
+    },
+  });
+
+  const removeImage = useMutation({
+
+  })
 
   const handleOnChange = (e) => {
     const { name, value } = e.target;
@@ -72,18 +104,17 @@ function ProductCreate() {
     console.log(file);
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-        fileInputRef.current = file;
-        console.log(fileInputRef.current);
-        console.log(imagePreview);
-      };
       reader.readAsDataURL(file);
 
-      setData((prevData) => ({
-        ...prevData,
-        images: [...prevData.images, file],
-      }));
+      reader.onload = () => {
+        setImagePreview(reader.result);
+      };
+
+      reader.onerror = () => {
+        console.error("Error reading file");
+      };
+
+      upload.mutate(file);
     } else {
       setImagePreview(null);
     }
@@ -122,7 +153,7 @@ function ProductCreate() {
             Products
           </Link>
           <Typography color="primary" sx={{ fontWeight: 500, fontSize: 12 }}>
-            Create new product
+            Create product
           </Typography>
         </Breadcrumbs>
       </Box>
@@ -138,7 +169,7 @@ function ProductCreate() {
         }}
       >
         <Typography level="h2" component="h1">
-          Create new product
+          Create product
         </Typography>
       </Box>
 
@@ -151,90 +182,91 @@ function ProductCreate() {
           gap: 2,
           mt: 2,
         }}
-      >
-        <FormControl>
-          <FormLabel>Name</FormLabel>
-          <Input
-            placeholder="Enter category name"
-            required
-            name="name"
-            value={data.name}
-            onChange={handleOnChange}
+      > 
+        <Stack
+          gap={2}
+          sx={{
+            borderBottom: "1px solid #ccc",
+            paddingBottom: "16px",
+          }}
+        >
+          <Typography level="h4" component="h2">
+            Basic Information
+          </Typography>
+          <FormControl>
+            <FormLabel>Name</FormLabel>
+            <Input
+              placeholder="Enter category name"
+              required
+              name="name"
+              value={data.name}
+              onChange={handleOnChange}
+            />
+          </FormControl>
+          <FormControl>
+            <FormLabel>Description</FormLabel>
+            <Textarea
+              placeholder="Enter category description"
+              minRows={3}
+              name="description"
+              value={data.description}
+              onChange={handleOnChange}
+            />
+          </FormControl>
+          
+          <FormControl>
+            <FormLabel>Product images</FormLabel>
+            <DropZone onDrop={onDrop} />
+          </FormControl>
+          <PreviewTable
+            upload={upload}
+            progress={progress}
+            handleRemoveImage={handleRemoveImage}
+            uploadedFile={uploadedFile}
           />
-        </FormControl>
-        <FormControl>
-          <FormLabel>Description</FormLabel>
-          <Textarea
-            placeholder="Enter category description"
-            minRows={3}
-            name="description"
-            value={data.description}
-            onChange={handleOnChange}
-          />
-        </FormControl>
-        <FormControl>
-          <FormLabel>Base price</FormLabel>
-          <Input 
-            type="number" 
-            placeholder="Enter base price" 
-            required
-            name="base_price"
-            value={data.base_price}
-            onChange={handleOnChange}
-          />
-        </FormControl>
-        <FormControl>
-          <FormLabel>Cover Image</FormLabel>
-          {!imagePreview && <DropZone onDrop={onDrop} />}
-        </FormControl>
-        {imagePreview && (
-          <Table
-            sx={{
-              border: "2px dashed #ccc",
-              borderRadius: 4,
-              textAlign: "center",
-            }}
+          </Stack>
+
+          <Stack
+            gap={2}
           >
-            <thead>
-              <tr>
-                <th style={{ padding: "12px 6px", textAlign: "center" }}>
-                  Preview
-                </th>
-                <th style={{ padding: "12px 6px", textAlign: "center" }}>
-                  File name
-                </th>
-                <th style={{ padding: "12px 6px", textAlign: "center" }}>
-                  File size
-                </th>
-                <th style={{ padding: "12px 6px", textAlign: "center" }}>
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    style={{ width: 100, height: 100 }}
-                  />
-                </td>
-                <td>{fileInputRef.current?.name}</td>
-                <td>{fileInputRef.current?.size}</td>
-                <td>
-                  <Button
-                    variant="outlined"
-                    color="danger"
-                    onClick={handleRemoveImage}
-                  >
-                    Remove
-                  </Button>
-                </td>
-              </tr>
-            </tbody>
-          </Table>
-        )}
+            <Typography level="h4" component="h2">
+              Detail Information
+            </Typography>
+            <FormControl>
+              <FormLabel>Brand</FormLabel>
+              {/* Brand selector */}
+              <Select placeholder="Select brand"
+                sx={{
+                  width: "25%",
+                  maxHeight: "200px"
+                }}
+              >
+                <Option value="">
+                  Select brand
+                </Option>
+                <Stack>
+                {
+                  brands?.map((brand) => (
+                    <Option key={brand.id} value={brand.id}>
+                      {brand.name}
+                    </Option>
+                  ))
+                }
+                </Stack>
+                <Button variant="plain" color="primary"
+                  endDecorator={<AddRounded />}
+                  sx={{
+                    textAlign: "left",
+                  }}
+                >
+                  Add new brand
+                </Button>
+              </Select>
+
+            </FormControl>
+
+          </Stack>
+
         <Box
           sx={{
             display: "flex",
@@ -256,7 +288,7 @@ function ProductCreate() {
             variant="solid"
             color="primary"
             type="submit"
-            disabled={mutate.isLoading}
+            disabled={mutate.isLoading || Object.values(data).some((v) => !v)}
             onClick={handleSubmit}
           >
             {mutate.isLoading ? "Creating..." : "Create"}

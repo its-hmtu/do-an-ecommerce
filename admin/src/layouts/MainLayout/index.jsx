@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Box, Breadcrumbs, Link, Typography, Button } from "@mui/joy";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
@@ -13,10 +13,20 @@ import { toast, ToastContainer } from "react-toastify";
 // import OrderList from './components/OrderList';
 // import { OrderTable } from './components/OrderTable';
 import 'react-toastify/dist/ReactToastify.css'; 
+import PATHS from "constants";
 
 function MainLayout() {
   const queryClient = useQueryClient();
   const isUser = sessionStorage.getItem("token");
+  const location = useLocation();
+  const navigate = useNavigate();
+  // useEffect(() => {
+  //   if (location.pathname === PATHS.HOME && !isUser) {
+  //     navigate(PATHS.LOGIN);
+  //   } else if (location.pathname === PATHS.LOGIN && isUser) {
+  //     navigate(PATHS.DASHBOARD);
+  //   }
+  // }, [location, isUser, navigate]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin"],

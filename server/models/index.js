@@ -73,6 +73,8 @@ db.Review = require('./review.model')(sequelize, Sequelize);
 db.Address = require('./address.model')(sequelize, Sequelize);
 db.Upload = require('./upload.model')(sequelize, Sequelize);
 db.ProductImage = require('./product_image.model')(sequelize, Sequelize);
+db.OptionImage = require('./option_image.model')(sequelize, Sequelize);
+db.Brand = require('./brand.model')(sequelize, Sequelize);
 
 db.Cart = require('./cart.model')(sequelize, Sequelize);
 db.CartItem = require('./cart_item.model')(sequelize, Sequelize);
@@ -95,6 +97,8 @@ db.Review.associate(db);
 db.Address.associate(db);
 db.Upload.associate(db);
 db.ProductImage.associate(db);
+db.OptionImage.associate(db);
+db.Brand.associate(db);
 
 db.Cart.associate(db);
 db.CartItem.associate(db);

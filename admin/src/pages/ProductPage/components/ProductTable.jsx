@@ -97,6 +97,10 @@ function ProductTable() {
           variant="outlined"
           color="neutral"
           endDecorator={<KeyboardArrowRightIcon />}
+          disabled
+          // sx={{ 
+          //   "."
+          // }}
         >
           Next
         </Button>
