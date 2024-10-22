@@ -94,7 +94,7 @@ function Sidebar({ user }) {
         },
         transition: "transform 0.4s, width 0.4s",
         zIndex: 1299,
-        height: "100dvh",
+        height: "100vh",
         width: "var(--Sidebar-width)",
         top: 0,
         padding: "16px 8px",

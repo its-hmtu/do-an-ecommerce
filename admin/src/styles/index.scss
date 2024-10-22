@@ -97,13 +97,12 @@ a {
 .dropzone {
   border: 2px dashed #0b6bcb;
   border-radius: 10px;
-  padding: 64px;
   cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  margin: 20px 0;
+  // margin: 20px 0;
 
   &.active {
     background-color: #f5f5f5;

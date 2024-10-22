@@ -61,7 +61,7 @@ function MainLayout() {
             display: "flex",
             flexDirection: "column",
             minWidth: 0,
-            height: "100dvh",
+            // height: "100dvh",
             gap: 1,
           }}
         >
@@ -70,7 +70,6 @@ function MainLayout() {
       </Box>
       <ToastMessage />
       <ToastContainer stacked />
-      <button onClick={() => toast("Hello")}>Click</button>
     </>
   );
 }

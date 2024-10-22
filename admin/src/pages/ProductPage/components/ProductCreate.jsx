@@ -1,4 +1,9 @@
-import { AddRounded, ChevronRightRounded, HomeRounded } from "@mui/icons-material";
+import {
+  AddRounded,
+  ChevronRightRounded,
+  CloseRounded,
+  HomeRounded,
+} from "@mui/icons-material";
 import {
   Box,
   Breadcrumbs,
@@ -7,6 +12,7 @@ import {
   Divider,
   FormControl,
   FormLabel,
+  IconButton,
   Input,
   LinearProgress,
   Link,
@@ -20,7 +26,7 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getBrands } from "api/brands.api";
 import { createCategory } from "api/categories.api";
-import {uploadFile, removeImage} from "api/upload.api";
+import { uploadFile, removeImage } from "api/upload.api";
 import ConfirmModal from "components/ConfirmModal";
 import DropZone from "components/DropZone";
 import PreviewTable from "components/PreviewTable";
@@ -36,6 +42,9 @@ function ProductCreate() {
   const [open, setOpen] = useState(false);
   const [progress, setProgress] = useState(0);
   const [uploadedFile, setUploadedFile] = useState(null);
+  const [isAddVariation, setIsAddVariation] = useState(false);
+  const [variations, setVariations] = useState([]);
+
   const { toastMessage, setToastMessage } =
     React.useContext(ToastMessageContext);
   const [data, setData] = useState({
@@ -43,7 +52,7 @@ function ProductCreate() {
     description: "",
   });
 
-  const {data: brands, isLoading: brandsLoading} = useQuery({
+  const { data: brands, isLoading: brandsLoading } = useQuery({
     queryKey: ["brands"],
     queryFn: getBrands,
   });
@@ -74,9 +83,7 @@ function ProductCreate() {
     },
   });
 
-  const removeImage = useMutation({
-
-  })
+  const removeImage = useMutation({});
 
   const handleOnChange = (e) => {
     const { name, value } = e.target;
@@ -182,7 +189,7 @@ function ProductCreate() {
           gap: 2,
           mt: 2,
         }}
-      > 
+      >
         <Stack
           gap={2}
           sx={{
@@ -196,7 +203,7 @@ function ProductCreate() {
           <FormControl>
             <FormLabel>Name</FormLabel>
             <Input
-              placeholder="Enter category name"
+              // placeholder="Enter category name"
               required
               name="name"
               value={data.name}
@@ -206,14 +213,82 @@ function ProductCreate() {
           <FormControl>
             <FormLabel>Description</FormLabel>
             <Textarea
-              placeholder="Enter category description"
+              // placeholder="Enter category description"
               minRows={3}
               name="description"
               value={data.description}
               onChange={handleOnChange}
             />
           </FormControl>
-          
+          <Stack
+            direction="row"
+            gap={2}
+            width="50%"
+            sx={{
+              "& > *": {
+                width: "50%",
+              },
+            }}
+          >
+            <FormControl>
+              <FormLabel>Category</FormLabel>
+              {/* Category selector */}
+              <Select
+                placeholder="Select category"
+                sx={{
+                  // width: "25%",
+                  maxHeight: "200px",
+                }}
+              >
+                <Option value="">Select category</Option>
+                <Stack>
+                  <Option value="1">Category 1</Option>
+                  <Option value="2">Category 2</Option>
+                  <Option value="3">Category 3</Option>
+                </Stack>
+                <Button
+                  variant="plain"
+                  color="primary"
+                  endDecorator={<AddRounded />}
+                  sx={{
+                    textAlign: "left",
+                  }}
+                >
+                  Add new category
+                </Button>
+              </Select>
+            </FormControl>
+            <FormControl>
+              <FormLabel>Brand</FormLabel>
+              {/* Brand selector */}
+              <Select
+                placeholder="Select brand"
+                sx={{
+                  // width: "25%",
+                  maxHeight: "200px",
+                }}
+              >
+                <Option value="">Select brand</Option>
+                <Stack>
+                  {brands?.map((brand) => (
+                    <Option key={brand.id} value={brand.id}>
+                      {brand.name}
+                    </Option>
+                  ))}
+                </Stack>
+                <Button
+                  variant="plain"
+                  color="primary"
+                  endDecorator={<AddRounded />}
+                  sx={{
+                    textAlign: "left",
+                  }}
+                >
+                  Add new brand
+                </Button>
+              </Select>
+            </FormControl>
+          </Stack>
           <FormControl>
             <FormLabel>Product images</FormLabel>
             <DropZone onDrop={onDrop} />
@@ -224,48 +299,239 @@ function ProductCreate() {
             handleRemoveImage={handleRemoveImage}
             uploadedFile={uploadedFile}
           />
-          </Stack>
+        </Stack>
+
+        <Stack gap={2}>
+          <Typography level="h4" component="h2">
+            Sales Information
+          </Typography>
+
+          {/* Sales information for each variations */}
 
           <Stack
-            gap={2}
+            sx={{
+              borderBottom: "1px solid #ccc",
+              paddingBottom: "16px",
+            }}
           >
-            <Typography level="h4" component="h2">
-              Detail Information
-            </Typography>
-            <FormControl>
-              <FormLabel>Brand</FormLabel>
-              {/* Brand selector */}
-              <Select placeholder="Select brand"
-                sx={{
-                  width: "25%",
-                  maxHeight: "200px"
-                }}
-              >
-                <Option value="">
-                  Select brand
-                </Option>
-                <Stack>
-                {
-                  brands?.map((brand) => (
-                    <Option key={brand.id} value={brand.id}>
-                      {brand.name}
-                    </Option>
-                  ))
-                }
+            <Stack
+              direction="row"
+              gap={3}
+              sx={{
+                alignItems: isAddVariation ? "flex-start" : "center",
+              }}
+              width={isAddVariation ? "100%" : "auto"}
+            >
+              <Typography level="h5" component="h3">
+                Variations
+              </Typography>
+              {isAddVariation ? (
+                <Stack width={"100%"} gap={3}>
+                  {variations.map((variation, index) => (
+                    <Box
+                      sx={{
+                        "& > *": {
+                          marginBottom: "16px",
+                        },
+                        padding: "24px",
+                        backgroundColor: "#f9f9f9",
+                        borderRadius: "8px",
+                        position: "relative",
+                      }}
+                      // maxWidth={600}
+                    >
+                      <IconButton
+                        onClick={() => {
+                          setVariations(
+                            variations.filter((_, i) => i !== index)
+                          );
+
+                          if (variations.length === 1) {
+                            setIsAddVariation(false);
+                          }
+                        }}
+                        sx={{
+                          position: "absolute",
+                          top: 5,
+                          right: 5,
+                        }}
+                      >
+                        <CloseRounded />
+                      </IconButton>
+                      <FormControl>
+                        <Stack
+                          direction="row"
+                          gap={2}
+                          sx={{
+                            alignItems: "center",
+                          }}
+                          width="50%"
+                        >
+                          <FormLabel
+                            sx={{
+                              alignSelf: "center",
+                              margin: 0,
+                              width: 100,
+                            }}
+                          >
+                            {`Variation ${index + 1}`}
+                          </FormLabel>
+                          <Input
+                            placeholder="eg. Color, Storage, etc."
+                            type="text"
+                            sx={{
+                              width: "100%",
+                            }}
+                          />
+                        </Stack>
+                      </FormControl>
+                      <FormControl>
+                        <Stack
+                          direction="row"
+                          gap={2}
+                          sx={{
+                            alignItems: "center",
+                          }}
+                          width="50%"
+                        >
+                          <FormLabel
+                            sx={{
+                              alignSelf: "center",
+                              margin: 0,
+                              width: 100,
+                            }}
+                          >
+                            Options
+                          </FormLabel>
+                          <Input
+                            placeholder="eg. Red, 64GB, etc."
+                            type="text"
+                            sx={{
+                              width: "100%",
+                            }}
+                          />
+                        </Stack>
+                      </FormControl>
+                    </Box>
+                  ))}
+
+                  <Box padding="24px" backgroundColor="#f9f9f9">
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={() => setVariations([...variations, {}])}
+                      startDecorator={<AddRounded />}
+                    >
+                      Add variation
+                    </Button>
+                  </Box>
                 </Stack>
-                <Button variant="plain" color="primary"
-                  endDecorator={<AddRounded />}
-                  sx={{
-                    textAlign: "left",
+              ) : (
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  startDecorator={<AddRounded />}
+                  onClick={() => {
+                    setIsAddVariation(true);
+                    setVariations([{}]);
                   }}
                 >
-                  Add new brand
+                  Add variation
                 </Button>
-              </Select>
+              )}
+            </Stack>
 
-            </FormControl>
-
+            {isAddVariation ? (
+              <Box
+                sx={{
+                  borderRadius: "8px",
+                  border: "1px solid #ccc",
+                  marginTop: "16px",
+                }}
+              >
+                <Table
+                  variant="soft"
+                  stripe="even"
+                  borderAxis="bothBetween"
+                  sx={{
+                    borderRadius: "8px",
+                    "& th": {
+                      padding: "12px",
+                      backgroundColor: "#f9f9f9",
+                    },
+                    "& td": {
+                      padding: "12px",
+                    },
+                  }}
+                >
+                  <thead>
+                    <tr>
+                      <th style={{ width: "50px" }}>Variation</th>
+                      <th style={{ width: "150px" }}>Price</th>
+                      <th style={{ width: "150px" }}>Stock</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <Box
+                          style={{
+                            margin: "0 auto",
+                            width: "80px",
+                            // borderRight: "1px solid #ccc",
+                          }}
+                        >
+                          <DropZone
+                            onDrop={onDrop}
+                            minHeight={100}
+                            maxWidth={80}
+                            component={
+                              <AddRounded 
+                                color="primary"
+                                sx={{
+                                  fontSize: 40,
+                                }}
+                              />
+                            }
+                          />
+                        </Box>
+                      </td>
+                      <td>
+                        <Input
+                          placeholder="Enter price"
+                          startDecorator={"₫"}
+                          type="text"
+                        />
+                      </td>
+                      <td>
+                        <Input
+                          placeholder="Enter stock"
+                          type="number"
+                          value={0}
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </Table>
+              </Box>
+            ) : (
+              <Stack direction="row" gap={2} marginTop={2}>
+                <FormControl>
+                  <FormLabel>Price</FormLabel>
+                  <Input
+                    placeholder="Enter price"
+                    startDecorator={"₫"}
+                    type="text"
+                  />
+                </FormControl>
+                <FormControl>
+                  <FormLabel>Stock</FormLabel>
+                  <Input placeholder="Enter stock" type="number" value={0} />
+                </FormControl>
+              </Stack>
+            )}
           </Stack>
+        </Stack>
 
         <Box
           sx={{

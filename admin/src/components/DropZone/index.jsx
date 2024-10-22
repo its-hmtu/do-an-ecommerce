@@ -2,8 +2,7 @@ import React from "react";
 import Dropzone from "react-dropzone";
 import { Box, Typography } from "@mui/joy";
 
-
-function DropZone({onDrop}) {
+function DropZone({ onDrop, minHeight, maxWidth, component }) {
   return (
     <Dropzone onDrop={onDrop} accept="image/*" minSize={1024} maxSize={3072000}>
       {({
@@ -22,7 +21,8 @@ function DropZone({onDrop}) {
         return (
           <Box
             sx={{
-              minHeight: 200,
+              minHeight: minHeight || 200,
+              maxWidth: maxWidth || 200,
             }}
             {...getRootProps({
               className: `dropzone ${additionalClass}`,
@@ -30,30 +30,34 @@ function DropZone({onDrop}) {
           >
             <input {...getInputProps()} />
 
-            <Typography
-              variant="body"
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 1,
-                height: "100%",
-                "& span:first-child": {
-                  fontSize: 16,
-                  fontWeight: 600,
-                  color: "#0b6bcb",
-                },
-                "& span:last-child": {
-                  fontSize: 12,
-                  color: "neutral",
-                },
-              }}
-            >
-              <span>Click to upload</span>
+            {component ? (
+              component
+            ) : (
+              <Typography
+                variant="body"
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 1,
+                  height: "100%",
+                  "& span:first-child": {
+                    fontSize: 16,
+                    fontWeight: 600,
+                    color: "#0b6bcb",
+                  },
+                  "& span:last-child": {
+                    fontSize: 12,
+                    color: "neutral",
+                  },
+                }}
+              >
+                <span>Click to upload</span>
 
-              <span>or drag and drop image here</span>
-            </Typography>
+                <span>or drag and drop image here</span>
+              </Typography>
+            )}
           </Box>
         );
       }}
