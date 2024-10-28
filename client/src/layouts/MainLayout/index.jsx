@@ -2,12 +2,12 @@ import React from 'react'
 import Header from './components/Header'
 import Footer from './components/Footer'
 
-function MainLayout() {
+const MainLayout = () => {
   return (
-    <>
-        <Header/>
-        <Footer/>
-    </> 
+    <div className='main-layout__container'>
+      <Header />
+      <Footer />
+    </div>
   )
 }
 
