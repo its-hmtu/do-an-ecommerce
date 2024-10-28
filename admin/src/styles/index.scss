@@ -1,5 +1,6 @@
 // @import '~bootstrap/scss/bootstrap';
-
+@import "~react-image-gallery/styles/css/image-gallery.css";
+@import "~bootstrap/scss/bootstrap";
 @keyframes shake {
   0% { transform: translateX(0); }
   25% { transform: translateX(-5px); }
@@ -23,9 +24,104 @@
 a {
   text-decoration: none;
   color: inherit;
+  width: 100%;
+}
 
-  &:hover {
-    text-decoration: underline;
-    color: inherit;
+.image-gallery-content {
+  width: 300px;
+  max-width: 300px;
+  // margin: 0 auto;
+
+  img {
+      // border-radius: 10px;
   }
 }
+
+.image-gallery-content {
+  .image-gallery-slide {
+    .image-gallery-image {
+      max-height: unset;
+    }
+  }
+}
+
+.image-gallery-thumbnails {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: auto;
+  margin: 10px 0 0 0;
+
+  .image-gallery-thumbnails-container {
+      display: flex;
+      justify-content: space-between; /* Change to space-around */
+      align-items: center;
+      width: 100%; /* Ensure the container takes up the full width */
+  }
+
+  .image-gallery-thumbnail {
+      border: none;
+      width: fit-content;
+      height: auto;
+      border-radius: 4px;
+
+      .image-gallery-thumbnail-image {
+      }
+      &:hover {
+        border: 2px solid #0b6bcb;
+      }
+
+      &:focus {
+        border: 2px solid #0b6bcb;
+      }
+
+      &:active {
+        border: 2px solid #0b6bcb;
+      }
+
+      &.active {
+        border: 2px solid #0b6bcb;
+      }
+
+      .image-gallery-thumbnail-inner {
+          width: 80px;
+          height: auto;
+          img {
+              width: 100%;
+              height: auto;
+          }
+      }
+  }
+}
+
+.dropzone {
+  border: 2px dashed #0b6bcb;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  // margin: 20px 0;
+
+  &.active {
+    background-color: #f5f5f5;
+    border: 2px solid #0b6bcb;
+    transition: all 1s ease;
+  }
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+
+  .disabled {
+    pointer-events: none;
+  }
+}
+
+// body {
+//   font-family: 'Inter', sans-serif!important;
+//   color: #32383e!important;
+//   // font-size: 1rem!important;
+//   line-height: 1.5!important;
+// }

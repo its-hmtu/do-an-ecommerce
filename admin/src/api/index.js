@@ -8,11 +8,15 @@ const api = axios.create({
 
 const handleDecode = () => {
   let storage = JSON.parse(sessionStorage.getItem("token"));
-  console.log(storage);
   let decoded = {};
+  // console.log("storage called")
 
   try {
-    decoded = jwtDecode(storage);
+    if (storage) {
+      decoded = jwtDecode(storage);
+    } else {
+      storage = null;
+    }
   } catch (error) {
     console.error(error);
     sessionStorage.removeItem("token");
@@ -101,4 +105,4 @@ const getRoles = async () => {
   }
 }
 
-export { adminLogin, getRoles, getCurrentAdmin };
+export { adminLogin, getRoles, getCurrentAdmin, api as default };

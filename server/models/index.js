@@ -10,10 +10,10 @@ require('dotenv').config();
 const mode = process.env.NODE_ENV || 'development';
 const dialect = process.env.DB_DIALECT || 'mysql';
 const host = process.env.DB_HOST || 'localhost';
-const port = process.env.DB_PORT || 3306;
+const port = process.env.DB_PORT || 3307;
 const database = process.env.DB_NAME || 'do-an-ecommerce';
-const username = process.env.DB_USERNAME || 'admin';
-const password = process.env.DB_PASSWORD || 'do_an2024';
+const username = process.env.DB_USERNAME || 'root';
+const password = process.env.DB_PASSWORD || 'root';
 
 const connectObj = {
   host: host,
@@ -67,10 +67,15 @@ db.Order = require('./order.model')(sequelize, Sequelize);
 db.OrderItem = require('./order_item.model')(sequelize, Sequelize);
 
 db.Product = require('./product.model')(sequelize, Sequelize);
+db.Option = require('./option.model')(sequelize, Sequelize);
+db.Stock = require('./stock.model')(sequelize, Sequelize);
 db.Review = require('./review.model')(sequelize, Sequelize);
 db.Address = require('./address.model')(sequelize, Sequelize);
 db.Upload = require('./upload.model')(sequelize, Sequelize);
 db.ProductImage = require('./product_image.model')(sequelize, Sequelize);
+db.OptionImage = require('./option_image.model')(sequelize, Sequelize);
+db.Brand = require('./brand.model')(sequelize, Sequelize);
+db.Specification = require('./specification.model')(sequelize, Sequelize);
 
 db.Cart = require('./cart.model')(sequelize, Sequelize);
 db.CartItem = require('./cart_item.model')(sequelize, Sequelize);
@@ -87,10 +92,15 @@ db.Order.associate(db);
 db.OrderItem.associate(db);
 
 db.Product.associate(db);
+db.Option.associate(db);
+db.Stock.associate(db);
 db.Review.associate(db);
 db.Address.associate(db);
 db.Upload.associate(db);
 db.ProductImage.associate(db);
+db.OptionImage.associate(db);
+db.Brand.associate(db);
+db.Specification.associate(db);
 
 db.Cart.associate(db);
 db.CartItem.associate(db);

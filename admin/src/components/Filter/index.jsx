@@ -1,0 +1,72 @@
+import { CloseRounded } from "@mui/icons-material";
+import { FormControl, FormLabel, IconButton, Option, Select } from "@mui/joy";
+import React from "react";
+
+function Filter({
+  isStatusVisible = false,
+  isCategoryVisible = false,
+  isCustomerVisible = false,
+  categoryData,
+  categoryValue,
+  onChange
+}) {
+  return (
+    <React.Fragment>
+      {isStatusVisible && (
+        <FormControl size="sm">
+          <FormLabel>Status</FormLabel>
+          <Select
+            size="sm"
+            placeholder="Filter by status"
+            slotProps={{ button: { sx: { whiteSpace: "nowrap" } } }}
+          >
+            <Option value="paid">Paid</Option>
+            <Option value="pending">Pending</Option>
+            <Option value="refunded">Refunded</Option>
+            <Option value="cancelled">Cancelled</Option>
+          </Select>
+        </FormControl>
+      )}
+      {isCategoryVisible && (
+        <FormControl size="sm">
+          <FormLabel>Category</FormLabel>
+          <Select size="sm" placeholder="All" 
+            onChange={onChange}
+            value={categoryValue}
+            {...(
+              categoryValue
+              && {
+              endDecorator: (
+                <IconButton onClick={(e) => onChange(e, "")}>
+                  <CloseRounded />
+                </IconButton>
+              ),
+            })}
+          >
+            {categoryData?.map((category) => (
+              <Option key={category.id} value={category.name}>
+                {category.name}
+              </Option>
+            ))}
+          </Select>
+        </FormControl>
+      )}
+      {isCustomerVisible && (
+        <FormControl size="sm">
+          <FormLabel>Customer</FormLabel>
+          <Select size="sm" placeholder="All">
+            <Option value="all">All</Option>
+            <Option value="olivia">Olivia Rhye</Option>
+            <Option value="steve">Steve Hampton</Option>
+            <Option value="ciaran">Ciaran Murray</Option>
+            <Option value="marina">Marina Macdonald</Option>
+            <Option value="charles">Charles Fulton</Option>
+            <Option value="jay">Jay Hoper</Option>
+          </Select>
+        </FormControl>
+      )}
+    </React.Fragment>
+  );
+}
+
+export default Filter;

@@ -26,6 +26,7 @@ function LoginPage() {
   const [warning, setWarning] = useState({});
   const [shake, setShake] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isRegister, setIsRegister] = useState(false);
 
   const { mutate, isPending } = useMutation({
     mutationFn: adminLogin,
@@ -40,7 +41,7 @@ function LoginPage() {
           setShake(false);
         }, 500);
       } else {
-        queryClient.setQueryData("admin", data);
+        queryClient.setQueryData(["admin"], data);
         console.log(data);
         // alert(data);
         navigate("/dashboard");
@@ -105,13 +106,14 @@ function LoginPage() {
 
   return (
     // Create a login form with Joy UI
-    <>
+    <Box>
       <Box
         sx={(theme) => ({
           width: { xs: "100%", md: "50vw" },
-          transition: "width var(--Transition-duration)",
+          transition: "width var(--Transition-duration), left var(--Transition-duration)",
           transitionDelay: "calc(var(--Transition-duration) + 0.1s)",
           position: "relative",
+          left: isRegister ? "50vw" : "0",
           zIndex: 1,
           display: "flex",
           justifyContent: "flex-end",
@@ -291,8 +293,7 @@ function LoginPage() {
           </Box>
         </Box>
       </Box>
-      <Box
-        sx={(theme) => ({
+      <Box sx={(theme) => ({
           height: "100%",
           position: "fixed",
           right: 0,
@@ -314,7 +315,7 @@ function LoginPage() {
           },
         })}
       />
-    </>
+    </Box>
   );
 }
 

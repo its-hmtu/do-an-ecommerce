@@ -33,7 +33,12 @@ module.exports = (sequelize, DataTypes) => {
       mime_type: {
         type: DataTypes.STRING(255),
         allowNull: false,
-      }
+      },
+      is_cover_image: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
     },
     {
       timestamps: true,

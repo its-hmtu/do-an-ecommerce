@@ -33,20 +33,19 @@ import SupportRoundedIcon from "@mui/icons-material/SupportRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+// product icon
+import InventoryIcon from "@mui/icons-material/Inventory2Rounded";
 import ColorSchemeToggle from "./ColorSchemeToggle";
+import { AdminPanelSettings, CategoryRounded } from "@mui/icons-material";
 import { closeSidebar } from "utils/sidebar";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 
 function Toggler({ defaultExpanded = false, renderToggle, children }) {
   const [open, setOpen] = React.useState(defaultExpanded);
   const location = window.location.pathname;
 
   useEffect(() => {
-    if (
-      location === "/users" ||
-      location === "/profile" ||
-      location === "/users/roles"
-    ) {
+    if (location === "/users" || location === "/profile") {
       setOpen(true);
     } else {
       setOpen(false);
@@ -76,13 +75,13 @@ function Toggler({ defaultExpanded = false, renderToggle, children }) {
 
 function Sidebar({ user }) {
   const navigate = useNavigate();
-  const location = window.location.pathname;
+  const location = useLocation().pathname;
   const [selected, setSelected] = React.useState(location);
 
   // get current location
-  // useEffect(() => {
-  //   console.log(location);
-  // });
+  useEffect(() => {
+    setSelected(location);
+  }, [location]);
 
   return (
     <Sheet
@@ -94,11 +93,11 @@ function Sidebar({ user }) {
           md: "none",
         },
         transition: "transform 0.4s, width 0.4s",
-        zIndex: 10000,
-        height: "100dvh",
+        zIndex: 1299,
+        height: "100vh",
         width: "var(--Sidebar-width)",
         top: 0,
-        p: 2,
+        padding: "16px 8px",
         flexShrink: 0,
         display: "flex",
         flexDirection: "column",
@@ -169,103 +168,68 @@ function Sidebar({ user }) {
           }}
         >
           <ListItem>
-            <ListItemButton
-              onClick={() => {
-                navigate("/dashboard");
-                setSelected("/dashboard");
-              }}
-              selected={selected === "/dashboard"}
-            >
-              <DashboardRoundedIcon />
-              <ListItemContent>
-                <Typography level="title-sm">Dashboard</Typography>
-              </ListItemContent>
-            </ListItemButton>
+            <NavLink to="/dashboard">
+              <ListItemButton selected={selected === "/dashboard"}>
+                <DashboardRoundedIcon />
+                <ListItemContent>
+                  <Typography level="title-sm">Dashboard</Typography>
+                </ListItemContent>
+              </ListItemButton>
+            </NavLink>
           </ListItem>
-
           <ListItem>
-            <ListItemButton
-              onClick={() => {
-                navigate("/orders");
-                setSelected("/orders");
-              }}
-              selected={selected === "/orders"}
-            >
-              <ShoppingCartRoundedIcon />
-              <ListItemContent>
-                <Typography level="title-sm">Orders</Typography>
-              </ListItemContent>
-            </ListItemButton>
+            <NavLink to="/products">
+              <ListItemButton selected={selected === "/products"}>
+                <InventoryIcon />
+                <ListItemContent>
+                  <Typography level="title-sm">Products</Typography>
+                </ListItemContent>
+              </ListItemButton>
+            </NavLink>
           </ListItem>
-          <ListItem nested>
-            <Toggler
-              renderToggle={({ open, setOpen }) => (
-                <ListItemButton
-                  selected={
-                    open || selected === "/users" || selected === "/profile"
-                  }
-                  onClick={() => setOpen(!open)}
-                >
-                  <GroupRoundedIcon />
-                  <ListItemContent>
-                    <Typography level="title-sm">Users</Typography>
-                  </ListItemContent>
-                  <KeyboardArrowDownIcon
-                    sx={[
-                      open
-                        ? { transform: "rotate(180deg)" }
-                        : { transform: "none" },
-                    ]}
-                  />
-                </ListItemButton>
-              )}
-            >
-              <List sx={{ gap: 0.5 }}>
-                <ListItem sx={{ mt: 0.5 }}>
-                  <ListItemButton
-                    role="menuitem"
-                    component="a"
-                    onClick={() => {
-                      navigate("/users");
-                      setSelected("/users");
-                    }}
-                    selected={selected === "/users"}
-                  >
-                    All users
-                  </ListItemButton>
-                </ListItem>
-                <ListItem>
-                  <ListItemButton
-                    role="menuitem"
-                    component="a"
-                    onClick={() => {
-                      navigate("/profile");
-                      setSelected("/profile");
-                    }}
-                    selected={selected === "/profile"}
-                  >
-                    My profile
-                  </ListItemButton>
-                </ListItem>
-
-                <ListItem>
-                  <ListItemButton>Create a new user</ListItemButton>
-                </ListItem>
-                <ListItem>
-                  <ListItemButton
-                    role="menuitem"
-                    component="a"
-                    onClick={() => {
-                      navigate("/users/roles");
-                      setSelected("/users/roles");
-                    }}
-                    selected={selected === "/users/roles"}
-                  >
-                    Roles and permissions
-                  </ListItemButton>
-                </ListItem>
-              </List>
-            </Toggler>
+          <ListItem>
+            <NavLink to="/orders">
+              <ListItemButton selected={selected === "/orders"}>
+                <ShoppingCartRoundedIcon />
+                <ListItemContent>
+                  <Typography level="title-sm">Orders</Typography>
+                </ListItemContent>
+              </ListItemButton>
+            </NavLink>
+          </ListItem>
+          <ListItem>
+            <NavLink to="/categories">
+              <ListItemButton selected={selected === "/categories"}>
+                <CategoryRounded />
+                <ListItemContent>
+                  <Typography level="title-sm">Categories</Typography>
+                </ListItemContent>
+              </ListItemButton>
+            </NavLink>
+          </ListItem>
+          <ListItem>
+            <NavLink to="/users">
+              <ListItemButton selected={selected === "/users"}>
+                <GroupRoundedIcon />
+                <ListItemContent>
+                  <Typography level="title-sm">Users</Typography>
+                </ListItemContent>
+              </ListItemButton>
+            </NavLink>
+          </ListItem>
+          <ListItem>
+            <NavLink to="/roles">
+              <ListItemButton
+                selected={selected === "/roles"}
+              >
+                <AdminPanelSettings />
+                <ListItemContent>
+                  <Typography level="title-sm">
+                    Roles and Permissions
+                  </Typography>
+                </ListItemContent>
+              </ListItemButton>
+            </NavLink>
           </ListItem>
           <ListItem>
             <ListItemButton role="menuitem" component="a">
@@ -304,7 +268,7 @@ function Sidebar({ user }) {
 
           <ListItem>
             <ListItemButton color="danger">
-              <LogoutRoundedIcon color="danger"/>
+              <LogoutRoundedIcon color="danger" />
               Logout
             </ListItemButton>
           </ListItem>
@@ -341,7 +305,12 @@ function Sidebar({ user }) {
       </Box>
       <Divider />
       <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-        <Avatar variant="soft" size="sm" alt={user?.first_name} color="primary"/>
+        <Avatar
+          variant="soft"
+          size="sm"
+          alt={user?.first_name}
+          color="primary"
+        />
         <Box sx={{ minWidth: 200, flex: 1 }}>
           <Typography level="title-sm">
             {user?.first_name + " " + user?.last_name}

@@ -72,7 +72,7 @@ const RolesTable = () => {
   const [filteredData, setFilteredData] = React.useState([]);
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
-    queryKey: "roles",
+    queryKey: ["roles"],
     queryFn: getRoles,
   });
 

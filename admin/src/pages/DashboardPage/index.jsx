@@ -1,13 +1,10 @@
 import React from "react";
-import { Box, Breadcrumbs, Typography, Button } from "@mui/joy";
+import { Box, Breadcrumbs, Typography, Button, Card, Divider } from "@mui/joy";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
-import Sidebar from "../../layouts/MainLayout/components/Sidebar";
-import Header from "../../layouts/MainLayout/components/Header";
-import OrderList from "../OrdersPage/components/OrderList";
-import OrderTable from "../OrdersPage/components/OrderTable";
 import {Link} from 'react-router-dom'
+import SumaryCard from "./components/SumaryCard";
 
 function DashboardPage() {
   return (
@@ -48,7 +45,7 @@ function DashboardPage() {
         }}
       >
         <Typography level="h2" component="h1">
-          Orders
+          Dashboard
         </Typography>
         <Button
           color="primary"
@@ -59,8 +56,28 @@ function DashboardPage() {
         </Button>
         
       </Box>
-      <OrderTable />
-      <OrderList />
+      <Card
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "row", // Make children horizontal
+        }}
+      >
+        <SumaryCard title="Weekly sales" total="746k" />
+        <Divider orientation="vertical" sx={{
+          margin: '10px 0'
+        }}/>
+        <SumaryCard k/>
+        <Divider orientation="vertical" sx={{
+          margin: '10px 0'
+        }}/>
+        <SumaryCard />
+        <Divider orientation="vertical" sx={{
+          margin: '10px 0'
+        }}/>
+        <SumaryCard />
+      </Card>
     </>
   );
 }

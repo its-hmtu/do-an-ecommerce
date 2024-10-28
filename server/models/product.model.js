@@ -13,21 +13,43 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(50),
       allowNull: false
     },
-    slug: {
-      type: DataTypes.STRING(50),
+    brand_id: {
+      type: DataTypes.INTEGER,
       allowNull: false
     },
-    price: {
-      type: DataTypes.DECIMAL(20, 2),
+    slug: {
+      type: DataTypes.STRING(50),
       allowNull: false
     },
     product_description: {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    stock: {
+    base_price: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0
+    },
+    total_in_stock: {
       type: DataTypes.INTEGER(11),
       allowNull: false
+    }, 
+    main_image_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    product_colors: {
+      type: DataTypes.JSON,
+      allowNull: true
+    },
+    product_sizes: {
+      type: DataTypes.JSON,
+      allowNull: true
+    },
+    availability: {
+      type: DataTypes.ENUM('in-stock', 'out-of-stock'),
+      allowNull: false,
+      defaultValue: 'in-stock'
     }
   }, {
     timestamps: true,
@@ -45,21 +67,21 @@ module.exports = (sequelize, DataTypes) => {
   })
 
   Product.associate = (models) => {
-    Product.addScope('defaultScope', {
-      include: [
-        {
-          required: false,
-          model: models.ProductImage,
-          as: 'images',
-          attributes: ['id', 'file_path'],
-          where: {
-            product_id: {
-              [Op.ne]: null
-            }
-          }
-        }
-      ]
-    }, { override: true });
+    // Product.addScope('defaultScope', {
+    //   include: [
+    //     {
+    //       required: false,
+    //       model: models.ProductImage,
+    //       as: 'images',
+    //       attributes: ['id', 'file_path'],
+    //       where: {
+    //         product_id: {
+    //           [Op.ne]: null
+    //         }
+    //       }
+    //     }
+    //   ]
+    // }, { override: true });
 
     Product.hasMany(models.Review);
     Product.hasMany(models.ProductImage, {as: 'images', foreignKey: 'product_id'});
@@ -68,6 +90,13 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'product_id',
       otherKey: 'category_id'
     });
+
+    Product.hasMany(models.Option, {foreignKey: 'product_id', onDelete: 'cascade', onUpdate: 'cascade'});
+    Product.hasMany(models.Stock, {foreignKey: 'product_id', onDelete: 'cascade', onUpdate: 'cascade'});
+    Product.hasOne(models.Specification, {
+      as: 'specification',
+      foreignKey: 'product_id', onDelete: 'cascade', onUpdate: 'cascade'});
+    Product.belongsTo(models.Brand, {foreignKey: 'brand_id', onDelete: 'cascade', onUpdate: 'cascade'});
   }
 
   return Product;

@@ -1,4 +1,4 @@
-const {User, Role} = require('../models');
+const {User, Role, UserRole} = require('../models');
 const Op = require('sequelize').Op;
 const sanitizeInput = require('../utils/sanitize').sanitizeInput;
 
@@ -57,19 +57,29 @@ exports.register = async (req, res) => {
 
   try {
     const newUser = await User.create({
-      user_name: sanitizeInput(username),
+      username: sanitizeInput(username),
       first_name: sanitizeInput(first_name),
       last_name: sanitizeInput(last_name),
       email: sanitizeInput(email),
-      password: sanitizeInput(password)
+      password: sanitizeInput(password),
     });
+
+    const userRole = await Role.findOne({
+      where: { name: 'USER' }
+    })
+    
+    if (userRole) {
+      await newUser.addRole(userRole);
+    }
 
     return res.status(201).json({ message: 'User created successfully', user: {
       id: newUser.id,
-      user_name: newUser.user_name,
+      username: newUser.username,
       email: newUser.email,
       first_name: newUser.first_name,
-      last_name: newUser.last_name
+      last_name: newUser.last_name,
+      // include the role of the user get from the userRole variable
+      roles: [userRole.name]
     }});
   } catch (e) {
     return res.status(500).json({ message: 'An error occurred', error: e.message });

@@ -80,7 +80,7 @@ module.exports = function(sequelize, DataTypes) {
     return jwt.sign({
       id: this.id,
       user_name: this.user_name,
-      email: this.email,
+      // email: this.email,
       roles: this.roles.map(role => role.name)
     }, process.env.JWT_SECRET, {
       expiresIn: '1h'
