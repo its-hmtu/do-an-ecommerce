@@ -50,7 +50,11 @@ exports.deleteImage = async (req, res, next) => {
 
     await upload.destroy({transaction});
     await transaction.commit();
-    return res.status(204).send();
+    return res.status(200).json({
+      message: 'Image deleted successfully',
+      success: true,
+      id: id
+    });
   } catch (error) {
     return next(error);
   }

@@ -1,55 +1,61 @@
-import {
-  AddRounded,
-  ChevronRightRounded,
-  CloseRounded,
-  HomeRounded,
-} from "@mui/icons-material";
-import {
-  Box,
-  Breadcrumbs,
-  Button,
-  CircularProgress,
-  Divider,
-  FormControl,
-  FormLabel,
-  IconButton,
-  Input,
-  LinearProgress,
-  Link,
-  Option,
-  Select,
-  Stack,
-  Table,
-  Textarea,
-  Typography,
-} from "@mui/joy";
+import { ChevronRightRounded } from "@mui/icons-material";
+import { Box, Breadcrumbs, Button, Divider, Link, Typography } from "@mui/joy";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getBrands } from "api/brands.api";
-import { createCategory } from "api/categories.api";
-import { uploadFile, removeImage } from "api/upload.api";
+import { createCategory, getAllCategories } from "api/categories.api";
+import { uploadFile, removeImage, uploadSingleFile } from "api/upload.api";
 import ConfirmModal from "components/ConfirmModal";
-import DropZone from "components/DropZone";
-import PreviewTable from "components/PreviewTable";
 import { ToastMessageContext } from "contexts/ToastMessageContext";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import BasicInfo from "./BasicInfo";
+import SalesInfo from "./SalesInfo";
+import SpecsInfo from "./SpecsInfo";
+import { toast } from "react-toastify";
+import { createProduct } from "api/products.api";
 
 function ProductCreate() {
-  const [imagePreview, setImagePreview] = useState("");
-  const formData = new FormData();
-  const fileInputRef = useRef(null);
+  const [isImagePreview, setIsImagePreview] = useState(false);
   const navigate = useNavigate();
+  const [submitData, setSubmitData] = useState({});
   const [open, setOpen] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [uploadedFile, setUploadedFile] = useState(null);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [uploadedFile, setUploadedFile] = useState({});
   const [isAddVariation, setIsAddVariation] = useState(false);
-  const [variations, setVariations] = useState([]);
-
-  const { toastMessage, setToastMessage } =
-    React.useContext(ToastMessageContext);
-  const [data, setData] = useState({
+  const [filesCount, setFilesCount] = useState(0);
+  const [isCoverImageSet, setIsCoverImageSet] = useState(false);
+  const [variations, setVariations] = useState([
+    {
+      name: "",
+      price: 0,
+      stock: 0,
+      image: null,
+    },
+  ]);
+  const [specsValue, setSpecsValue] = useState({
+    brand: "",
+    storage_capacity: "",
+    number_of_cameras: "",
+    camera_resolution: "",
+    battery_capacity: "",
+    processor: "",
+    dimensions: "",
+    ram: "",
+    rom: "",
+    screen_size: "",
+    operating_system: "",
+    cable_type: "",
+    sim_type: "",
+    manufacture_date: "",
+    warranty_duration: "",
+    condition: "",
+    phone_model: "",
+  });
+  const [basic, setBasic] = useState({
     name: "",
     description: "",
+    category: [],
   });
 
   const { data: brands, isLoading: brandsLoading } = useQuery({
@@ -57,82 +63,215 @@ function ProductCreate() {
     queryFn: getBrands,
   });
 
+  const { data: categories, isLoading: categoriesLoading } = useQuery({
+    queryKey: ["categories"],
+    queryFn: getAllCategories,
+  });
+
   const mutate = useMutation({
-    mutationFn: (formData) => createCategory(formData),
+    mutationFn: (data) => createProduct(data),
     onSuccess: () => {
-      setToastMessage({
-        message: "Category created successfully",
-        type: "success",
-        open: true,
-      });
-      navigate("/categories");
+      toast.success("Product created successfully!");
+      navigate("/products", { replace: true });
     },
+    onError: (error) => {
+      console.log(error);
+      toast.error("Something went wrong");
+    }
   });
 
   const upload = useMutation({
-    mutationFn: (file) => uploadFile(file, setProgress),
+    mutationFn: (files) => uploadFile(files, setProgress),
     onSuccess: (data) => {
-      setToastMessage({
-        message: "Image uploaded successfully",
-        type: "success",
-        open: true,
-      });
-
-      setUploadedFile(data.data);
-      console.log(uploadedFile[0]);
+      toast.success("Upload successfully!");
+      setUploadedFiles((prevFiles) => [...prevFiles, ...data]);
+      // console.log(data);
     },
   });
 
-  const removeImage = useMutation({});
+  const uploadSingle = useMutation({
+    mutationFn: (file) => uploadSingleFile(file, setProgress),
+    onSuccess: (data) => {
+      toast.success("Upload successfully!");
+      setUploadedFile(data[0]);
+      // console.log(data[0]);
+    },
+  });
 
-  const handleOnChange = (e) => {
-    const { name, value } = e.target;
-    setData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-
-    console.log(data);
-  };
+  const remove = useMutation({
+    mutationFn: (id) => removeImage(id)
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    formData.append("name", data.name);
-    formData.append("description", data.description);
-    formData.append("images", data.images[0]);
-    for (const pair of formData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
-    }
-    mutate.mutate(formData);
-  };
+    const validation = validate();
 
-  const onDrop = useCallback((acceptedFiles) => {
-    const file = acceptedFiles[0];
-    console.log(file);
-    if (file) {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
+    if (!validation) return;
 
-      reader.onload = () => {
-        setImagePreview(reader.result);
-      };
+    else {
+      const options = variations.map((variation) => ({
+        color: variation.name,
+        price: variation.price,
+        stock: variation.stock,
+        image_id: variation.image?.id,
+      }))
+  
+      const product_images_ids = uploadedFiles.map((file) => file.id);
+      const newSubmitData = {
+        product_name: basic.name,
+        product_description: basic.description,
+        category_ids: basic.category,
+        options,
+        specs: specsValue,
+        product_images_ids,
+      }
+      setSubmitData(newSubmitData);
+      mutate.mutate(newSubmitData);
 
-      reader.onerror = () => {
-        console.error("Error reading file");
-      };
-
-      upload.mutate(file);
-    } else {
-      setImagePreview(null);
-    }
-  }, []);
-
-  const handleRemoveImage = () => {
-    setImagePreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = null;
     }
   };
+
+  useEffect(() => {
+    console.log(submitData);
+  }, [submitData]);
+
+  const handleOnSpecsChange = (value, key) => {
+    setSpecsValue((prevValue) => ({
+      ...prevValue,
+      [key]: value,
+    }));
+
+    if (key === "category") {
+      setBasic((prevBasic) => ({
+        ...prevBasic,
+        category: value,
+      }));
+    }
+  };
+
+  const handleOnBasicChange = (e) => {
+    if (!e || !e.target) return;
+    const { name, value } = e.target;
+    setBasic((prevBasic) => ({
+      ...prevBasic,
+      [name]: value,
+    }));
+
+    console.log(basic);
+  };
+
+  const handleCloseVariation = (variationIndex) => {
+    setVariations(variations?.filter((_, i) => i !== variationIndex));
+
+    if (variations?.length === 1) {
+      setIsAddVariation(false);
+    }
+  };
+
+  const handleOnVariationChange = (e, variationIndex) => {
+    const { name, value } = e.target;
+    setVariations((prevVariations) => {
+      const newVariations = [...prevVariations];
+      newVariations[variationIndex] = {
+        ...newVariations[variationIndex],
+        [name]: value,
+      };
+
+      return newVariations;
+    });
+  };
+
+  const onClickAddMoreVariation = () => setVariations([...variations, {}]);
+
+  const onClickEnableAddVariation = () => {
+    setIsAddVariation(true);
+    setVariations([{}]);
+  };
+
+  const onDropMultiple = useCallback(
+    (acceptedFiles) => {
+      const files = acceptedFiles;
+      console.log(files);
+
+      if (files.length > 6) {
+        toast.error("You can only upload up to 6 images");
+        return;
+      }
+
+      setFilesCount((prevCount) => prevCount + files.length);
+      setIsCoverImageSet(true);
+      upload.mutate(files);
+
+      setIsImagePreview(true);
+    },
+    [upload]
+  );
+
+  const onDropSingle = useCallback(
+    (acceptedFiles, variationIndex) => {
+      const file = acceptedFiles[0];
+
+      if (file) {
+        uploadSingle.mutate(file, {
+          onSuccess: (data) => {
+            setVariations((prevVariations) =>
+              prevVariations.map((variation, index) =>
+                index === variationIndex
+                  ? { ...variation, image: data[0] }
+                  : variation
+              )
+            );
+            console.log(variations);
+          },
+        });
+      }
+    },
+    [uploadSingle, variations]
+  );
+
+  const handleRemoveImage = (id) => {
+    remove.mutate(id);
+
+    setUploadedFiles((prevFiles) => prevFiles.filter((file) => file.id !== id));
+    setFilesCount((prevCount) => prevCount - 1);
+
+
+    if (filesCount === 1) {
+      setIsImagePreview(false);
+    } else if (filesCount === 0) {
+      setIsCoverImageSet(false);
+    }
+  };
+
+  const handleRemoveSingleImage = (id, variationIndex) => {
+    remove.mutate(id, {
+      onSuccess: () => {
+        setVariations((prevVariations) =>
+          prevVariations.map((variation, index) =>
+            index === variationIndex ? { ...variation, image: null } : variation
+          )
+        );
+      },
+    });
+  };
+
+  const validate = () => {
+    if (Object.values(basic).some((v) => !v)) {
+      // toast.error("Please fill in all required fields");
+      return false;
+    } else if (!specsValue.brand) {
+      // toast.error("Please select a brand");
+      return false;
+    } else if (Object.values(variations).some((v) => !v.price || !v.stock)) {
+      // toast.error("Please fill in all color fields");
+      return false;
+    } else if (filesCount < 1 || !isCoverImageSet) {
+      // toast.error("Please upload at least 1 image");
+      return false;
+    }
+
+    return true;
+  }
 
   return (
     <>
@@ -190,354 +329,51 @@ function ProductCreate() {
           mt: 2,
         }}
       >
-        <Stack
-          gap={2}
-          sx={{
-            borderBottom: "1px solid #ccc",
-            paddingBottom: "16px",
-          }}
-        >
-          <Typography level="h4" component="h2">
-            Basic Information
-          </Typography>
-          <FormControl>
-            <FormLabel>Name</FormLabel>
-            <Input
-              // placeholder="Enter category name"
-              required
-              name="name"
-              value={data.name}
-              onChange={handleOnChange}
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Description</FormLabel>
-            <Textarea
-              // placeholder="Enter category description"
-              minRows={3}
-              name="description"
-              value={data.description}
-              onChange={handleOnChange}
-            />
-          </FormControl>
-          <Stack
-            direction="row"
-            gap={2}
-            width="50%"
-            sx={{
-              "& > *": {
-                width: "50%",
-              },
-            }}
-          >
-            <FormControl>
-              <FormLabel>Category</FormLabel>
-              {/* Category selector */}
-              <Select
-                placeholder="Select category"
-                sx={{
-                  // width: "25%",
-                  maxHeight: "200px",
-                }}
-              >
-                <Option value="">Select category</Option>
-                <Stack>
-                  <Option value="1">Category 1</Option>
-                  <Option value="2">Category 2</Option>
-                  <Option value="3">Category 3</Option>
-                </Stack>
-                <Button
-                  variant="plain"
-                  color="primary"
-                  endDecorator={<AddRounded />}
-                  sx={{
-                    textAlign: "left",
-                  }}
-                >
-                  Add new category
-                </Button>
-              </Select>
-            </FormControl>
-            <FormControl>
-              <FormLabel>Brand</FormLabel>
-              {/* Brand selector */}
-              <Select
-                placeholder="Select brand"
-                sx={{
-                  // width: "25%",
-                  maxHeight: "200px",
-                }}
-              >
-                <Option value="">Select brand</Option>
-                <Stack>
-                  {brands?.map((brand) => (
-                    <Option key={brand.id} value={brand.id}>
-                      {brand.name}
-                    </Option>
-                  ))}
-                </Stack>
-                <Button
-                  variant="plain"
-                  color="primary"
-                  endDecorator={<AddRounded />}
-                  sx={{
-                    textAlign: "left",
-                  }}
-                >
-                  Add new brand
-                </Button>
-              </Select>
-            </FormControl>
-          </Stack>
-          <FormControl>
-            <FormLabel>Product images</FormLabel>
-            <DropZone onDrop={onDrop} />
-          </FormControl>
-          <PreviewTable
-            upload={upload}
-            progress={progress}
-            handleRemoveImage={handleRemoveImage}
-            uploadedFile={uploadedFile}
-          />
-        </Stack>
+        <BasicInfo
+          data={basic}
+          categories={categories}
+          isImagePreview={isImagePreview}
+          upload={upload}
+          progress={progress}
+          uploadedFiles={uploadedFiles}
+          filesCount={filesCount}
+          // coverImageCount={coverImageCount}
+          handleOnChange={handleOnBasicChange}
+          handleOnCategoryChange={handleOnSpecsChange}
+          onDrop={onDropMultiple}
+          handleRemoveImage={handleRemoveImage}
+        />
 
-        <Stack gap={2}>
-          <Typography level="h4" component="h2">
-            Sales Information
-          </Typography>
+        <Divider />
 
-          {/* Sales information for each variations */}
+        <SpecsInfo
+          brands={brands}
+          specsValue={specsValue}
+          onClick={handleOnSpecsChange}
+        />
 
-          <Stack
-            sx={{
-              borderBottom: "1px solid #ccc",
-              paddingBottom: "16px",
-            }}
-          >
-            <Stack
-              direction="row"
-              gap={3}
-              sx={{
-                alignItems: isAddVariation ? "flex-start" : "center",
-              }}
-              width={isAddVariation ? "100%" : "auto"}
-            >
-              <Typography level="h5" component="h3">
-                Variations
-              </Typography>
-              {isAddVariation ? (
-                <Stack width={"100%"} gap={3}>
-                  {variations.map((variation, index) => (
-                    <Box
-                      sx={{
-                        "& > *": {
-                          marginBottom: "16px",
-                        },
-                        padding: "24px",
-                        backgroundColor: "#f9f9f9",
-                        borderRadius: "8px",
-                        position: "relative",
-                      }}
-                      // maxWidth={600}
-                    >
-                      <IconButton
-                        onClick={() => {
-                          setVariations(
-                            variations.filter((_, i) => i !== index)
-                          );
+        <Divider />
 
-                          if (variations.length === 1) {
-                            setIsAddVariation(false);
-                          }
-                        }}
-                        sx={{
-                          position: "absolute",
-                          top: 5,
-                          right: 5,
-                        }}
-                      >
-                        <CloseRounded />
-                      </IconButton>
-                      <FormControl>
-                        <Stack
-                          direction="row"
-                          gap={2}
-                          sx={{
-                            alignItems: "center",
-                          }}
-                          width="50%"
-                        >
-                          <FormLabel
-                            sx={{
-                              alignSelf: "center",
-                              margin: 0,
-                              width: 100,
-                            }}
-                          >
-                            {`Variation ${index + 1}`}
-                          </FormLabel>
-                          <Input
-                            placeholder="eg. Color, Storage, etc."
-                            type="text"
-                            sx={{
-                              width: "100%",
-                            }}
-                          />
-                        </Stack>
-                      </FormControl>
-                      <FormControl>
-                        <Stack
-                          direction="row"
-                          gap={2}
-                          sx={{
-                            alignItems: "center",
-                          }}
-                          width="50%"
-                        >
-                          <FormLabel
-                            sx={{
-                              alignSelf: "center",
-                              margin: 0,
-                              width: 100,
-                            }}
-                          >
-                            Options
-                          </FormLabel>
-                          <Input
-                            placeholder="eg. Red, 64GB, etc."
-                            type="text"
-                            sx={{
-                              width: "100%",
-                            }}
-                          />
-                        </Stack>
-                      </FormControl>
-                    </Box>
-                  ))}
+        <SalesInfo
+          variations={variations}
+          isAddVariation={isAddVariation}
+          // uploadedFile={uploadedFile[0]}
+          handleCloseVariation={handleCloseVariation}
+          handleRemoveImage={handleRemoveSingleImage}
+          onVariationChange={handleOnVariationChange}
+          onClickAddMoreVariation={onClickAddMoreVariation}
+          onClickEnableAddVariation={onClickEnableAddVariation}
+          onDrop={onDropSingle}
+        />
 
-                  <Box padding="24px" backgroundColor="#f9f9f9">
-                    <Button
-                      variant="outlined"
-                      color="primary"
-                      onClick={() => setVariations([...variations, {}])}
-                      startDecorator={<AddRounded />}
-                    >
-                      Add variation
-                    </Button>
-                  </Box>
-                </Stack>
-              ) : (
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  startDecorator={<AddRounded />}
-                  onClick={() => {
-                    setIsAddVariation(true);
-                    setVariations([{}]);
-                  }}
-                >
-                  Add variation
-                </Button>
-              )}
-            </Stack>
-
-            {isAddVariation ? (
-              <Box
-                sx={{
-                  borderRadius: "8px",
-                  border: "1px solid #ccc",
-                  marginTop: "16px",
-                }}
-              >
-                <Table
-                  variant="soft"
-                  stripe="even"
-                  borderAxis="bothBetween"
-                  sx={{
-                    borderRadius: "8px",
-                    "& th": {
-                      padding: "12px",
-                      backgroundColor: "#f9f9f9",
-                    },
-                    "& td": {
-                      padding: "12px",
-                    },
-                  }}
-                >
-                  <thead>
-                    <tr>
-                      <th style={{ width: "50px" }}>Variation</th>
-                      <th style={{ width: "150px" }}>Price</th>
-                      <th style={{ width: "150px" }}>Stock</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <Box
-                          style={{
-                            margin: "0 auto",
-                            width: "80px",
-                            // borderRight: "1px solid #ccc",
-                          }}
-                        >
-                          <DropZone
-                            onDrop={onDrop}
-                            minHeight={100}
-                            maxWidth={80}
-                            component={
-                              <AddRounded 
-                                color="primary"
-                                sx={{
-                                  fontSize: 40,
-                                }}
-                              />
-                            }
-                          />
-                        </Box>
-                      </td>
-                      <td>
-                        <Input
-                          placeholder="Enter price"
-                          startDecorator={"₫"}
-                          type="text"
-                        />
-                      </td>
-                      <td>
-                        <Input
-                          placeholder="Enter stock"
-                          type="number"
-                          value={0}
-                        />
-                      </td>
-                    </tr>
-                  </tbody>
-                </Table>
-              </Box>
-            ) : (
-              <Stack direction="row" gap={2} marginTop={2}>
-                <FormControl>
-                  <FormLabel>Price</FormLabel>
-                  <Input
-                    placeholder="Enter price"
-                    startDecorator={"₫"}
-                    type="text"
-                  />
-                </FormControl>
-                <FormControl>
-                  <FormLabel>Stock</FormLabel>
-                  <Input placeholder="Enter stock" type="number" value={0} />
-                </FormControl>
-              </Stack>
-            )}
-          </Stack>
-        </Stack>
+        <Divider />
 
         <Box
           sx={{
             display: "flex",
             justifyContent: "flex-start",
             gap: 2,
+            paddingBlock: "1rem",
           }}
         >
           <Button
@@ -554,10 +390,17 @@ function ProductCreate() {
             variant="solid"
             color="primary"
             type="submit"
-            disabled={mutate.isLoading || Object.values(data).some((v) => !v)}
+            disabled={!validate() || mutate.isPending}
             onClick={handleSubmit}
+            loading={mutate.isPending}
+            loadingPosition="start"
+            sx={{
+              ".MuiCircularProgress-progress": {
+                stroke: "var(--CircularProgress-progressColor)!important",
+              },
+            }}
           >
-            {mutate.isLoading ? "Creating..." : "Create"}
+            {mutate.isPending ? "Creating..." : "Create"}
           </Button>
         </Box>
       </Box>

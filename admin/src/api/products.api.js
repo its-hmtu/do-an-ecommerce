@@ -44,4 +44,22 @@ const getSingleProduct = async ({id}) => {
   }
 }
 
-export { getProducts, getSingleProduct };
+const createProduct = async (data) => {
+  try {
+    const response = await api.post("/products", data, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (response.data.success === false) {
+      return response.data;
+    }
+
+    return response.data.data;
+  } catch (e) {
+    return e.response.data;
+  }
+}
+
+export { getProducts, getSingleProduct, createProduct };

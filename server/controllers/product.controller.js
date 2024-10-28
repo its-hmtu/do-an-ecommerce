@@ -2,6 +2,9 @@ const {
   Product,
   Category,
   ProductImage,
+  OptionImage,
+  Upload,
+  Specification,
   Review,
   Option,
   Stock,
@@ -15,44 +18,70 @@ exports.getProducts = async (req, res, next) => {
   const pageSize = parseInt(req.query.limit) || 10;
   const order = req.query.order || "DESC";
   const q = req.query.q || "";
+  const category = req.query.category || "";
   const sort = req.query.sort || "createdAt";
   const offset = (page - 1) * pageSize;
 
   try {
+    const whereCondition = {
+      product_name: {
+        [Op.like]: `%${q.replace("%20", " ")}%`,
+      },
+    }
+
+    const include = [
+      {
+        model: Category,
+        attributes: ["id", "name"],
+        through: {
+          attributes: []
+        }
+      }, 
+      {
+        model: ProductImage,
+        as: "images",
+        attributes: ["id", "file_path"],
+        // required: false,
+      },
+      {
+        model: Option,
+        as: 'options',
+        include: [
+          {
+            model: OptionImage,
+            as: 'images',
+            attributes: ['id', 'file_path'],
+          },
+        ],  
+        attributes: {
+          include: [
+            'id', 'color', 'price',
+            [sequelize.literal('(SELECT stock FROM stocks WHERE stocks.option_id = options.id LIMIT 1)'), 'stock']
+          ]
+        }
+      },
+      {
+        model: Specification,
+        as: 'specification',
+        attributes: {
+          exclude: ['createdAt', 'updatedAt']
+        }
+      }
+    ]
+
+    if (category) {
+      include[0].where = { name: category };
+    }
+
     const products = await Product.findAndCountAll({
       limit: pageSize,
       offset: offset,
       order: [[sort, order.toUpperCase()]],
-      where: {
-        product_name: {
-          [Op.like]: `%${q.replace("%20", " ")}%`,
-        },
-      },
+      where: whereCondition,
       attributes: {
         exclude: ["updatedAt"],
       },
-      include: [
-        {
-          model: Category,
-          attributes: ["id", "name"],
-        },
-        {
-          model: ProductImage,
-          as: "images",
-          attributes: ["id", "file_path"],
-          // required: false,
-        },
-        {
-          model: Option,
-          as: 'options',
-          attributes: {
-            include: [
-              'id', 'name', 'value', 'color', 'price',
-              [sequelize.literal('(SELECT stock FROM stocks WHERE stocks.option_id = options.id LIMIT 1)'), 'stock']
-            ]
-          }
-        }
-      ],
+      include: include,
       distinct: true,
     });
 
@@ -114,22 +143,33 @@ exports.getProducts = async (req, res, next) => {
 exports.createProduct = async (req, res, next) => {
   const {
     product_name,
-    base_price,
     product_description,
-    total_in_stock,
     category_ids,
     options,
+    specs,
+    product_images_ids,
   } = req.body;
   const transaction = await sequelize.transaction({ autocommit: false });
   // const promises = [];
 
   try {
+    // console.log(Array.isArray(options));
+    let base_price = 0;
+    let total_in_stock = 0;
+
+    if (Array.isArray(options) && options.length > 0) {
+      base_price = options.length > 1 ? Math.min(...options.map((option) => Number(option.price))) : Number(options[0].price);
+      total_in_stock = options.reduce((acc, variation) => acc + Number(variation.stock), 0);
+    }
+
     const newProduct = await Product.create(
       {
         product_name,
         base_price,
         product_description,
         total_in_stock,
+        brand_id: specs.brand,
+        main_image_id: product_images_ids[0],
       },
       { transaction }
     );
@@ -153,42 +193,39 @@ exports.createProduct = async (req, res, next) => {
     }
 
     const images = [];
-    for (let i = 0; req.files != null && i < req.files.length; i++) {
-      let file = req.files[i];
-      let filePath = file.path.replace(new RegExp("\\\\", "g"), "/");
-      filePath = filePath.replace("public", "");
-      const image = await ProductImage.create(
-        {
-          product_id: newProduct.id,
-          file_name: file.filename,
-          file_path: filePath,
-          file_size: file.size,
-          original_name: file.originalname,
-          mime_type: file.mimetype,
-        },
-        { transaction }
-      );
+    for (let i = 0; i < product_images_ids.length; i++) {
+      const image = await Upload.findByPk(product_images_ids[i], {
+        transaction,
+      });
 
-      images.push(image);
+      if (image) {
+        image.product_id = newProduct.id;
+        await image.save({ transaction });
+        images.push(image);
+      }
     }
 
     newProduct.images = images;
-    if (images.length > 0) {
-      newProduct.main_image_id = images[0].id;
-    }
 
     if (options != null && options.length > 0) {
       for (let option of options) {
         const newOption = await Option.create(
           {
             product_id: newProduct.id,
-            name: option.name,
-            value: option.value,
             color: option.color,
             price: option.price,
           },
           { transaction }
         );
+
+        const optionImage = await Upload.findByPk(option.image_id, {
+          transaction,
+        });
+
+        if (optionImage) {
+          optionImage.option_id = newOption.id;
+          await optionImage.save({ transaction });
+        }
 
         if (option.stock != null) {
           await Stock.create(
@@ -203,6 +240,35 @@ exports.createProduct = async (req, res, next) => {
       }
     }
 
+    if (specs) {
+      const newSpecs = await Specification.create(
+        {
+          product_id: newProduct.id,
+          brand_id: specs.brand,
+          storage_capacity: specs.storage_capacity,
+          number_of_cameras: specs.number_of_cameras,
+          camera_resolution: specs.camera_resolution,
+          ram: specs.ram,
+          rom: specs.rom,
+          battery_capacity: specs.battery_capacity,
+          processor: specs.processor,
+          screen_size: specs.screen_size,
+          operating_system: specs.operating_system,
+          dimensions: specs.dimensions,
+          cable_type: specs.cable_type,
+          sim_type: specs.sim_type,
+          manufacture_date: specs.manufacture_date,
+          warranty_duration: specs.warranty_duration,
+          condition: specs.condition,
+          phone_model: specs.phone_model,
+        },
+        { transaction }
+      )
+
+      newProduct.specification = newSpecs;
+    }
+
+
     await newProduct.save({ transaction });
     await transaction.commit();
     
@@ -213,11 +279,11 @@ exports.createProduct = async (req, res, next) => {
   } catch (error) {
     await transaction.rollback();
     console.log(error);
-    if (req.files !== null) {
-      for (let i = 0; i < req.files.length; i++) {
-        fs.unlinkSync(req.files[i].path);
-      }
-    }
+    // if (req.files !== null) {
+    //   for (let i = 0; i < req.files.length; i++) {
+    //     fs.unlinkSync(req.files[i].path);
+    //   }
+    // }
     res.status(500);
     return next(error);
   }

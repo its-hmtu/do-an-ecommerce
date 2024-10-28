@@ -18,7 +18,7 @@ const {
 } = require('../controllers/product.controller');
 
 router.get("/", getProducts) 
-router.post('/', mustBeAuthenticated, isAdmin, setUploadPath("./public/images/products"), upload.array("images", 6), createProduct);
+router.post('/', createProduct);
 router.delete('/:id', mustBeAuthenticated, isAdmin, deleteProduct);
 // delete multiple products
 router.delete('/', mustBeAuthenticated, isAdmin, deleteProducts);

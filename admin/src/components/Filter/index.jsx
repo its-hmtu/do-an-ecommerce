@@ -1,4 +1,5 @@
-import { FormControl, FormLabel, Option, Select } from "@mui/joy";
+import { CloseRounded } from "@mui/icons-material";
+import { FormControl, FormLabel, IconButton, Option, Select } from "@mui/joy";
 import React from "react";
 
 function Filter({
@@ -6,6 +7,7 @@ function Filter({
   isCategoryVisible = false,
   isCustomerVisible = false,
   categoryData,
+  categoryValue,
   onChange
 }) {
   return (
@@ -30,10 +32,19 @@ function Filter({
           <FormLabel>Category</FormLabel>
           <Select size="sm" placeholder="All" 
             onChange={onChange}
+            value={categoryValue}
+            {...(
+              categoryValue
+              && {
+              endDecorator: (
+                <IconButton onClick={(e) => onChange(e, "")}>
+                  <CloseRounded />
+                </IconButton>
+              ),
+            })}
           >
-            <Option value="all">All</Option>
             {categoryData?.map((category) => (
-              <Option key={category.id} value={category.id}>
+              <Option key={category.id} value={category.name}>
                 {category.name}
               </Option>
             ))}

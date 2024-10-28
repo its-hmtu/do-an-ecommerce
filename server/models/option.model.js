@@ -10,15 +10,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: true
     },
-    
-    name: {
-      type: DataTypes.STRING(50),
-      allowNull: true
-    },
-    value: {
-      type: DataTypes.STRING(50),
-      allowNull: true
-    },
     color: {
       type: DataTypes.STRING(50),
       allowNull: true

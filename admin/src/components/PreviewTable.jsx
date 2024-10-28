@@ -5,8 +5,7 @@ function PreviewTable({
   upload,
   progress,
   handleRemoveImage,
-  uploadedFile,
-  // handleRemoveImage,
+  uploadedFiles,
 }) {
   return (
     <Table
@@ -27,46 +26,51 @@ function PreviewTable({
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>
-            {upload.isPending ? (
-              <CircularProgress />
-            ) : (
-              <img
-                // src={`http://localhost:5000${uploadedFile[0]?.file_path}` || ""}
-                alt="Preview"
-                style={{ width: 100, height: 100 }}
+        {uploadedFiles?.map((file) => (
+          <tr>
+            <td>
+              { upload.isPending ? (
+                <CircularProgress />
+              ) : (
+                <img
+                src={`${process.env.REACT_APP_API_URL}${file.file_path}`}
+                alt={file.original_name}
+                style={{ width: "100px" }}
               />
-            )}
-          </td>
-          {/* <td>{uploadedFile[0]?.file_size}</td> */}
-          <td>
-            {upload.isPending ? (
-              <LinearProgress
-                variant="determinate"
-                value={progress}
-                sx={{ width: "100%" }}
-              />
-            ) : (
-              <Button
-                variant="outlined"
-                color="danger"
-                onClick={handleRemoveImage}
-              >
-                Remove
-              </Button>
-            )}
-          </td>
-          {/* <td>
-                  <Button
-                    variant="outlined"
-                    color="danger"
-                    onClick={handleRemoveImage}
-                  >
-                    Remove
-                  </Button>
-                </td> */}
-        </tr>
+              )}
+            </td>
+            <td>
+              {
+                upload.isPending ? (
+                  <LinearProgress
+                    variant="determinate"
+                    value={progress}
+                    sx={{ width: "100%" }}
+                  />
+                ) : (
+                  (file.file_size / 1024).toFixed(2) + " KB"
+                )
+              }
+            </td>
+            <td>
+              {upload.isPending ? (
+                <LinearProgress
+                  variant="determinate"
+                  value={progress}
+                  sx={{ width: "100%" }}
+                />
+              ) : (
+                <Button
+                  variant="soft"
+                  color="neutral"
+                  onClick={() => handleRemoveImage(file.id)}
+                >
+                  Remove
+                </Button>
+              )}
+            </td>
+          </tr>
+        ))}
       </tbody>
     </Table>
   );

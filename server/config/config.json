@@ -4,7 +4,7 @@
     "password": "root",
     "database": "do-an-ecommerce",
     "host": "localhost",
-    "port": "33061",
+    "port": "3307",
     "dialect": "mysql"
   },
   "test": {

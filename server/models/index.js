@@ -10,7 +10,7 @@ require('dotenv').config();
 const mode = process.env.NODE_ENV || 'development';
 const dialect = process.env.DB_DIALECT || 'mysql';
 const host = process.env.DB_HOST || 'localhost';
-const port = process.env.DB_PORT || 33061;
+const port = process.env.DB_PORT || 3307;
 const database = process.env.DB_NAME || 'do-an-ecommerce';
 const username = process.env.DB_USERNAME || 'root';
 const password = process.env.DB_PASSWORD || 'root';
@@ -75,6 +75,7 @@ db.Upload = require('./upload.model')(sequelize, Sequelize);
 db.ProductImage = require('./product_image.model')(sequelize, Sequelize);
 db.OptionImage = require('./option_image.model')(sequelize, Sequelize);
 db.Brand = require('./brand.model')(sequelize, Sequelize);
+db.Specification = require('./specification.model')(sequelize, Sequelize);
 
 db.Cart = require('./cart.model')(sequelize, Sequelize);
 db.CartItem = require('./cart_item.model')(sequelize, Sequelize);
@@ -99,6 +100,7 @@ db.Upload.associate(db);
 db.ProductImage.associate(db);
 db.OptionImage.associate(db);
 db.Brand.associate(db);
+db.Specification.associate(db);
 
 db.Cart.associate(db);
 db.CartItem.associate(db);

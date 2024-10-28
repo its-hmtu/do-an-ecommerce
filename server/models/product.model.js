@@ -25,6 +25,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: true
     },
+    base_price: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0
+    },
     total_in_stock: {
       type: DataTypes.INTEGER(11),
       allowNull: false
@@ -62,21 +67,21 @@ module.exports = (sequelize, DataTypes) => {
   })
 
   Product.associate = (models) => {
-    Product.addScope('defaultScope', {
-      include: [
-        {
-          required: false,
-          model: models.ProductImage,
-          as: 'images',
-          attributes: ['id', 'file_path'],
-          where: {
-            product_id: {
-              [Op.ne]: null
-            }
-          }
-        }
-      ]
-    }, { override: true });
+    // Product.addScope('defaultScope', {
+    //   include: [
+    //     {
+    //       required: false,
+    //       model: models.ProductImage,
+    //       as: 'images',
+    //       attributes: ['id', 'file_path'],
+    //       where: {
+    //         product_id: {
+    //           [Op.ne]: null
+    //         }
+    //       }
+    //     }
+    //   ]
+    // }, { override: true });
 
     Product.hasMany(models.Review);
     Product.hasMany(models.ProductImage, {as: 'images', foreignKey: 'product_id'});
@@ -88,7 +93,9 @@ module.exports = (sequelize, DataTypes) => {
 
     Product.hasMany(models.Option, {foreignKey: 'product_id', onDelete: 'cascade', onUpdate: 'cascade'});
     Product.hasMany(models.Stock, {foreignKey: 'product_id', onDelete: 'cascade', onUpdate: 'cascade'});
-    
+    Product.hasOne(models.Specification, {
+      as: 'specification',
+      foreignKey: 'product_id', onDelete: 'cascade', onUpdate: 'cascade'});
     Product.belongsTo(models.Brand, {foreignKey: 'brand_id', onDelete: 'cascade', onUpdate: 'cascade'});
   }
 

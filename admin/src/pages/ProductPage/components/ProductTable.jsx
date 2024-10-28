@@ -25,6 +25,7 @@ import {
   MenuButton,
   CircularProgress,
   Breadcrumbs,
+  Stack,
 } from "@mui/joy";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
@@ -42,10 +43,16 @@ import { getAllCategories, getCategories } from "api/categories.api";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import RowMenu from "components/RowMenu";
 import { getComparator } from "utils/helper";
-import { AddCircleRounded, ChevronRightRounded, DownloadRounded } from "@mui/icons-material";
+import {
+  AddCircleRounded,
+  AutorenewRounded,
+  ChevronRightRounded,
+  DownloadRounded,
+} from "@mui/icons-material";
 import Filter from "components/Filter";
 import SearchBox from "components/SearchBox";
 import { Pagination } from "antd";
+import itemRender from "utils/itemRender";
 
 function ProductTable() {
   const [page, setPage] = useState(1);
@@ -58,7 +65,7 @@ function ProductTable() {
   const [filterCategory, setFilterCategory] = useState("");
   const navigate = useNavigate();
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["products", { page, pageSize, q, category, sort, order }],
     queryFn: () =>
       getProducts({ page, limit: pageSize, q, category, sort, order }),
@@ -75,40 +82,9 @@ function ProductTable() {
 
   const [open, setOpen] = React.useState(false);
 
-  const itemRender = (_, type, originalElement) => {
-    if (type === "prev" && data?.current_page > 1) {
-      return (
-        <Button
-          size="sm"
-          variant="outlined"
-          color="neutral"
-          startDecorator={<KeyboardArrowLeftIcon />}
-          
-        >
-          Previous
-        </Button>
-      );
-    }
-
-    if (type === "next") {
-      return (
-        <Button
-          size="sm"
-          variant="outlined"
-          color="neutral"
-          endDecorator={<KeyboardArrowRightIcon />}
-          disabled
-          // sx={{ 
-          //   "."
-          // }}
-        >
-          Next
-        </Button>
-      );
-    }
-  
-    return originalElement;
-  };
+  const mainImage = data?.products?.map((row) =>
+    row.images.find((image) => image.id === row.main_image_id)
+  );
 
   return (
     <React.Fragment>
@@ -141,10 +117,11 @@ function ProductTable() {
           alignItems: { xs: "start", sm: "center" },
           flexWrap: "wrap",
           justifyContent: "space-between",
+          padding: 0,
         }}
       >
         <Typography level="h2" component="h1">
-          Products
+          My Products
         </Typography>
         <Box
           sx={{
@@ -222,265 +199,291 @@ function ProductTable() {
           onChange={(e) => setQ(e.target.value)}
           value={q}
         />
-        <Filter isCategoryVisible categoryData={categoryData} />
-      </Box>
-      <Sheet
-        className="OrderTableContainer"
-        variant="outlined"
-        sx={{
-          display: { xs: "none", sm: "initial" },
-          width: "100%",
-          borderRadius: "sm",
-          flexShrink: 1,
-          overflow: "auto",
-          minHeight: 0,
-        }}
-      >
-        <Table
-          aria-labelledby="tableTitle"
-          stickyHeader
-          hoverRow
+        <Filter
+          isCategoryVisible
+          categoryData={categoryData}
+          categoryValue={category}
+          onChange={(e, value) => setCategory(value)}
+        />
+
+        <IconButton
+          size="sm"
+          onClick={() => refetch()}
+          variant="outlined"
           sx={{
-            "--TableCell-headBackground":
-              "var(--joy-palette-background-level1)",
-            "--Table-headerUnderlineThickness": "1px",
-            "--TableRow-hoverBackground":
-              "var(--joy-palette-background-level1)",
-            "--TableCell-paddingY": "4px",
-            "--TableCell-paddingX": "8px",
+            borderRadius: "sm",
+            boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)",
           }}
         >
-          <thead>
-            <tr>
-              <th
-                style={{ width: 48, textAlign: "center", padding: "12px 6px" }}
-              >
-                <Checkbox
-                  size="sm"
-                  indeterminate={
-                    selected.length > 0 &&
-                    selected.length !== data?.products?.length
-                  }
-                  checked={selected.length === data?.products?.length}
-                  onChange={(event) => {
-                    setSelected(
-                      event.target.checked
-                        ? data?.products?.map((row) => row.id)
-                        : []
-                    );
-                  }}
-                  color={
-                    selected.length > 0 ||
-                    selected.length === data?.products?.length
-                      ? "primary"
-                      : undefined
-                  }
-                  sx={{ verticalAlign: "text-bottom" }}
-                />
-              </th>
+          <AutorenewRounded />
+        </IconButton>
+      </Box>
 
-              <th style={{ width: 100, padding: "12px 6px" }}> </th>
-              <th style={{ width: 120, padding: "12px 6px" }}>
-                <Link
-                  underline="none"
-                  color="primary"
-                  component="button"
-                  onClick={() => setOrder(order === "asc" ? "desc" : "asc")}
-                  endDecorator={<ArrowDropDownIcon />}
-                  sx={[
-                    {
-                      fontWeight: "lg",
-                      "& svg": {
-                        transition: "0.2s",
-                        transform:
-                          order === "desc" ? "rotate(0deg)" : "rotate(180deg)",
-                      },
-                    },
-                    order === "desc"
-                      ? { "& svg": { transform: "rotate(0deg)" } }
-                      : { "& svg": { transform: "rotate(180deg)" } },
-                  ]}
-                >
-                  Name
-                </Link>
-              </th>
-              {/* <th style={{ width: 140, padding: "12px 6px" }}>Name</th> */}
-              <th style={{ width: 140, padding: "12px 16px" }}>Price</th>
-              <th style={{ width: 100, padding: "12px 6px" }}>Stock</th>
-              <th style={{ width: 140, padding: "12px 6px" }}>Categories</th>
-              <th style={{ width: 140, padding: "12px 6px" }}>Created at</th>
-              <th
-                style={{ width: 60, padding: "12px 6px", textAlign: "center" }}
-              >
-                {" "}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {!isLoading ? (
-              data?.products?.sort(getComparator(order, "name"))?.map((row) => (
-                <tr key={row.id}>
-                  <td style={{ textAlign: "center", width: 120 }}>
-                    <Checkbox
-                      size="sm"
-                      checked={selected.includes(row.id)}
-                      color={selected.includes(row.id) ? "primary" : undefined}
-                      onChange={(event) => {
-                        setSelected((ids) =>
-                          event.target.checked
-                            ? ids.concat(row.id)
-                            : ids.filter((itemId) => itemId !== row.id)
-                        );
-                      }}
-                      slotProps={{ checkbox: { sx: { textAlign: "left" } } }}
-                      sx={{ verticalAlign: "text-bottom" }}
-                    />
-                  </td>
-                  <td>
-                    {row.images.length > 0 ? (
-                      <Avatar
-                        src={`http://localhost:5000${row?.images[0]?.file_path}`}
-                        size="100px"
-                        sx={{
-                          borderRadius: "0",
-                          // height: "auto",
-                          backgroundColor: "transparent",
-                        }}
-                      />
-                    ) : (
-                      <Typography level="body-xs">No Image</Typography>
-                    )}
-                  </td>
-                  <td>
-                    <Typography
-                      level="body-xs"
-                      sx={{
-                        "& > a:hover": {
-                          textDecoration: "underline",
-                        },
-                      }}
-                    >
-                      <RouterLink to={`/products/${row.id}`}>
-                        <Typography level="body-xs" sx={{
-                          "&:hover": {
-                            textDecoration: "underline",
-                          },
-                          fontWeight: "bold"
-                        }}>
-                          {row.product_name}
-                        </Typography>
-                      </RouterLink>
-                    </Typography>
-                  </td>
-
-                  <td
+      {isLoading ? (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "flex-start",
+            height: "100%",
+          }}
+        >
+          <CircularProgress
+            sx={{
+              ".MuiCircularProgress-progress": {
+                stroke: "var(--CircularProgress-progressColor)!important",
+              },
+            }}
+          />
+        </Box>
+      ) : (
+        <>
+          <Typography level="h4">
+            {`${data?.total_item_count || 0} ${
+              data?.total_item_count > 1 ? "Products" : "Product"
+            }`}
+          </Typography>
+          <Sheet
+            className="OrderTableContainer"
+            variant="outlined"
+            sx={{
+              display: { xs: "none", sm: "initial" },
+              width: "100%",
+              borderRadius: "sm",
+              flexShrink: 1,
+              overflow: "auto",
+              minHeight: 0,
+            }}
+          >
+            <Table
+              aria-labelledby="tableTitle"
+              stickyHeader
+              hoverRow
+              sx={{
+                "--TableCell-headBackground":
+                  "var(--joy-palette-background-level1)",
+                "--Table-headerUnderlineThickness": "1px",
+                "--TableRow-hoverBackground":
+                  "var(--joy-palette-background-level1)",
+                "--TableCell-paddingY": "4px",
+                "--TableCell-paddingX": "8px",
+              }}
+            >
+              <thead>
+                <tr>
+                  <th
                     style={{
-                      padding: "12px 16px",
+                      width: 30,
+                      textAlign: "center",
+                      padding: "12px 6px",
                     }}
                   >
-                    <Typography level="body-xs">
-                      {new Intl.NumberFormat("en-US", {
-                        style: "currency",
-                        currency: "USD",
-                      }).format(row.base_price)}
-                    </Typography>
-                  </td>
-                  <td>
-                    <Typography level="body-xs">
-                      {row.total_in_stock}
-                    </Typography>
-                  </td>
-                  <td>
-                    {row.categories
-                      .filter((item) => item.id !== 0)
-                      .map((category) => (
-                        <Chip
-                          key={category.id}
+                    <Checkbox
+                      size="sm"
+                      indeterminate={
+                        selected.length > 0 &&
+                        selected.length !== data?.products?.length
+                      }
+                      checked={selected.length === data?.products?.length}
+                      onChange={(event) => {
+                        setSelected(
+                          event.target.checked
+                            ? data?.products?.map((row) => row.id)
+                            : []
+                        );
+                      }}
+                      color={
+                        selected.length > 0 ||
+                        selected.length === data?.products?.length
+                          ? "primary"
+                          : undefined
+                      }
+                      sx={{ verticalAlign: "text-bottom" }}
+                    />
+                  </th>
+
+                  {/* <th style={{ width: 100, padding: "12px 6px" }}> </th> */}
+                  <th style={{ width: 140, padding: "12px 6px" }}>
+                    <Link
+                      underline="none"
+                      color="primary"
+                      component="button"
+                      onClick={() => setOrder(order === "asc" ? "desc" : "asc")}
+                      endDecorator={<ArrowDropDownIcon />}
+                      sx={[
+                        {
+                          fontWeight: "lg",
+                          "& svg": {
+                            transition: "0.2s",
+                            transform:
+                              order === "desc"
+                                ? "rotate(0deg)"
+                                : "rotate(180deg)",
+                          },
+                        },
+                        order === "desc"
+                          ? { "& svg": { transform: "rotate(0deg)" } }
+                          : { "& svg": { transform: "rotate(180deg)" } },
+                      ]}
+                    >
+                      Product(s)
+                    </Link>
+                  </th>
+                  {/* <th style={{ width: 140, padding: "12px 6px" }}>Name</th> */}
+                  <th style={{ width: 80, padding: "12px 6px" }}>Sales</th>
+                  <th style={{ width: 80, padding: "12px 16px" }}>Price</th>
+                  <th style={{ width: 80, padding: "12px 6px" }}>Stock</th>
+                  <th style={{ width: 80, padding: "12px 6px" }}>Created at</th>
+                  <th style={{ width: 30, padding: "12px 6px" }}> </th>
+                </tr>
+              </thead>
+              <tbody>
+                {data?.products
+                  ?.sort(getComparator(order, "name"))
+                  ?.map((row) => (
+                    <tr key={row.id}>
+                      <td style={{ textAlign: "center", width: 120 }}>
+                        <Checkbox
                           size="sm"
-                          color="primary"
+                          checked={selected.includes(row.id)}
+                          color={
+                            selected.includes(row.id) ? "primary" : undefined
+                          }
+                          onChange={(event) => {
+                            setSelected((ids) =>
+                              event.target.checked
+                                ? ids.concat(row.id)
+                                : ids.filter((itemId) => itemId !== row.id)
+                            );
+                          }}
+                          slotProps={{
+                            checkbox: { sx: { textAlign: "left" } },
+                          }}
+                          sx={{ verticalAlign: "text-bottom" }}
+                        />
+                      </td>
+                      <td>
+                        <Typography
+                          level="body-xs"
                           sx={{
-                            mr: 1,
-                            // hover underlined
-                            "&:hover": { textDecoration: "underline" },
+                            "& > a:hover": {
+                              textDecoration: "underline",
+                            },
                           }}
                         >
-                          <RouterLink to={`/categories/${category.id}`}>
-                            {category.name}
+                          <RouterLink to={`/products/${row.id}`}>
+                            <Stack
+                              direction="row"
+                              gap={2}
+                              justifyItems="center"
+                              alignItems="center"
+                            >
+                              <img
+                                src={`${process.env.REACT_APP_API_URL}${mainImage[0]?.file_path}`}
+                                alt="product"
+                                style={{ width: 100, height: 100 }}
+                              />
+                              <Stack>
+                                <Typography
+                                  level="body-xs"
+                                  sx={{
+                                    "&:hover": {
+                                      textDecoration: "underline",
+                                    },
+                                    fontWeight: "bold",
+                                    fontSize: "1rem",
+                                  }}
+                                >
+                                  {row.product_name}
+                                </Typography>
+                                <Typography level="body-xs">
+                                  Item ID: {row.id}
+                                </Typography>
+                              </Stack>
+                            </Stack>
                           </RouterLink>
-                        </Chip>
-                      ))}
-                  </td>
-                  <td>
-                    <Typography level="body-xs">
-                      {new Date(row.createdAt).toLocaleString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                        hour: "numeric",
-                        minute: "numeric",
-                        hour12: false,
-                      })}
-                    </Typography>
-                  </td>
-                  <td>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        gap: 2,
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <RowMenu />
-                    </Box>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="7" style={{ textAlign: "center" }}>
-                  <CircularProgress
-                    size="sm"
-                    sx={{
-                      ".MuiCircularProgress-progress": {
-                        stroke:
-                          "var(--CircularProgress-progressColor)!important",
-                      },
-                    }}
-                  />
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </Table>
-      </Sheet>
-      <Box
-        className="Pagination-laptopUp"
-        sx={{
-          pt: 2,
-          gap: 1,
-          [`& .${iconButtonClasses.root}`]: { borderRadius: "50%" },
-          display: {
-            xs: "none",
-            md: "flex",
-          },
-        }}
-      >
-        <Box sx={{ flex: 1 }} />
-        <Pagination
-          current={data?.current_page || 1}
-          total={data?.total_item_count || 0}
-          onChange={(page) => setPage(page)}
-          showSizeChanger
-          onShowSizeChange={(current, size) => setPageSize(size)}
-          showTotal={(total, range) =>
-            `${range[0]}-${range[1]} of ${total} items`
-          }
-          // hideOnSinglePage
-          itemRender={itemRender}
-        />
-        <Box sx={{ flex: 1 }} />
-      </Box>
+                        </Typography>
+                      </td>
+                      <td>
+                        <Typography level="body-xs">
+                          {row.total_sold}
+                        </Typography>
+                      </td>
+                      <td
+                        style={{
+                          padding: "12px 16px",
+                        }}
+                      >
+                        <Typography level="body-xs">
+                          {new Intl.NumberFormat("en-US", {
+                            style: "currency",
+                            currency: "VND",
+                          }).format(row.base_price)}
+                        </Typography>
+                      </td>
+                      <td>
+                        <Typography level="body-xs">
+                          {row.total_in_stock}
+                        </Typography>
+                      </td>
+                      <td>
+                        <Typography level="body-xs">
+                          {new Date(row.createdAt).toLocaleString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                            hour: "numeric",
+                            minute: "numeric",
+                            hour12: false,
+                          })}
+                        </Typography>
+                      </td>
+                      <td>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            gap: 2,
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <RowMenu />
+                        </Box>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </Table>
+          </Sheet>
+
+          <Box
+          className="Pagination-laptopUp"
+          sx={{
+            pt: 2,
+            gap: 1,
+            [`& .${iconButtonClasses.root}`]: { borderRadius: "50%" },
+            display: {
+              xs: "none",
+              md: "flex",
+            },
+            justifyContent: "flex-end",
+          }}
+        >
+          <Pagination
+            current={data?.current_page || 1}
+            total={data?.total_item_count || 0}
+            onChange={(page) => setPage(page)}
+            showSizeChanger
+            onShowSizeChange={(current, size) => setPageSize(size)}
+            // showTotal={(total, range) =>
+            //   `${range[0]}-${range[1]} of ${total} items`
+            // }
+            // hideOnSinglePage
+            // itemRender={itemRender}
+          />
+        </Box>
+        </>
+      )}
     </React.Fragment>
   );
 }
