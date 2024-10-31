@@ -8,14 +8,24 @@ module.exports = (sequelize, DataTypes) => {
     },
     user_id: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      references: {
+        model: 'users',
+        key: 'id'
+      }
     },
     total_price: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false
     },
     status: {
-      type: DataTypes.ENUM('pending', 'processing', 'completed', 'cancelled'),
+      type: DataTypes.ENUM(
+        'pending',
+        'paid',
+        'shipped',
+        'delivered',
+        'canceled'
+      ),
       allowNull: false
     },
     tracking_number: {
@@ -37,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
 
   Order.associate = (models) => {
     Order.belongsTo(models.User, {onDelete: 'CASCADE', foreignKey: 'user_id'})
-    Order.hasMany(models.OrderItem);
+    Order.hasMany(models.OrderItem, {foreignKey: 'order_id'});
     Order.belongsTo(models.Address, {foreignKey: 'address_id'})
   }
 
