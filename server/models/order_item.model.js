@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     }, 
     order_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false
     },
     user_id: {
@@ -40,9 +40,9 @@ module.exports = (sequelize, DataTypes) => {
   })
   
   OrderItem.associate = (models) => {
-    OrderItem.belongsTo(models.Order, { foreignKey: 'order_id' });
-    OrderItem.belongsTo(models.Product, { foreignKey: 'product_id' });
-    OrderItem.belongsTo(models.User, { foreignKey: 'user_id' });
+    OrderItem.belongsTo(models.Order, { foreignKey: 'order_id', onDelete: 'CASCADE' });
+    OrderItem.belongsTo(models.Product, { foreignKey: 'product_id', onDelete: 'CASCADE' });
+    OrderItem.belongsTo(models.User, { foreignKey: 'user_id', onDelete: 'CASCADE' });
   }
 
   return OrderItem;

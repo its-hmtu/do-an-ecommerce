@@ -1,9 +1,13 @@
+const { generateOrderId } = require("../utils/helper");
+
 module.exports = (sequelize, DataTypes) => {
   const Order = sequelize.define('orders', {
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       primaryKey: true,
-      autoIncrement: true,
+      // autoIncrement: true,
+      unique: true,
+      defaultValue: generateOrderId(),
       allowNull: false
     },
     user_id: {
@@ -45,10 +49,14 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'orders'
   })
 
+  Order.beforeCreate(async (order) => {
+    order.id = generateOrderId();
+  })
+
   Order.associate = (models) => {
     Order.belongsTo(models.User, {onDelete: 'CASCADE', foreignKey: 'user_id'})
-    Order.hasMany(models.OrderItem, {foreignKey: 'order_id'});
-    Order.belongsTo(models.Address, {foreignKey: 'address_id'})
+    Order.hasMany(models.OrderItem, {foreignKey: 'order_id', onDelete: 'CASCADE'});
+    Order.belongsTo(models.Address, {foreignKey: 'address_id'});
   }
 
   return Order;

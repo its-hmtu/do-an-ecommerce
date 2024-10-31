@@ -129,6 +129,26 @@ exports.webhook = async (req, res, next) => {
   res.status(200).json({ received: true });
 }
 
+exports.getUserOrders = async (req, res, next) => {
+  const user_id = req.user.id;
+  
+  try {
+    const orders = await Order.findAndCountAll({
+      where: {
+        user_id
+      },
+      include: [OrderItem]
+    });
+
+    res.status(200).json({
+      data: orders.rows,
+      total: orders.count
+    });
+  } catch (e) {
+    next(e);
+  }
+}
+
 // get orders invoices to admin can view
 
 exports.getOrders = async (req, res, next) => {
@@ -136,7 +156,7 @@ exports.getOrders = async (req, res, next) => {
   const pageSize = parseInt(req.query.limit) || 10;
   const order = req.query.order || "DESC";
   const q = req.query.q || "";
-  const category = req.query.category || "";
+  // const category = req.query.category || "";
   const sort = req.query.sort || "createdAt";
   const offset = (page - 1) * pageSize;
 
@@ -164,10 +184,10 @@ exports.getOrders = async (req, res, next) => {
     });
 
     const pagination = {
-      currentPage: page,
-      pageSize: pageSize,
-      totalItems: orders.count,
-      totalPages: Math.ceil(orders.count / pageSize)
+      current_page: page,
+      page_size: pageSize,
+      total_items: orders.count,
+      total_pages: Math.ceil(orders.count / pageSize)
     }
     
     res.status(200).json({
