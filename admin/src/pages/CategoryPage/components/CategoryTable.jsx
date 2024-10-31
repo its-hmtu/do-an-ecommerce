@@ -444,6 +444,7 @@ const CategoryTable = () => {
           showTotal={(total, range) =>
             `${range[0]}-${range[1]} of ${total} items`
           }
+          defaultPageSize={pageSize}
           // hideOnSinglePage
           itemRender={itemRender}
         />

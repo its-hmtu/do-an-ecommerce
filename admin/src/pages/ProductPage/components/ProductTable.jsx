@@ -37,8 +37,8 @@ import MoreHorizRoundedIcon from "@mui/icons-material/MoreHorizRounded";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import Avatar from "@mui/joy/Avatar";
-import { useQuery } from "@tanstack/react-query";
-import { getProducts } from "api/products.api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { deleteMultipleProducts, deleteProduct, getProducts } from "api/products.api";
 import { getAllCategories, getCategories } from "api/categories.api";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import RowMenu from "components/RowMenu";
@@ -53,17 +53,22 @@ import Filter from "components/Filter";
 import SearchBox from "components/SearchBox";
 import { Pagination } from "antd";
 import itemRender from "utils/itemRender";
+import ConfirmModal from "components/ConfirmModal";
+import { toast } from "react-toastify";
 
 function ProductTable() {
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(10);
   const [q, setQ] = useState("");
   const [category, setCategory] = useState("");
   const [sort, setSort] = useState("createdAt");
   const [order, setOrder] = useState("asc");
   const [selected, setSelected] = React.useState([]);
   const [filterCategory, setFilterCategory] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState({});
+  const [openDelete, setOpenDelete] = useState(false);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["products", { page, pageSize, q, category, sort, order }],
@@ -76,6 +81,20 @@ function ProductTable() {
     queryFn: getAllCategories,
   });
 
+  const deleteProductMutation = useMutation({
+    mutationFn: (id) => deleteProduct({ id }),
+    onSuccess: () => {
+      queryClient.invalidateQueries("products");
+    },
+  });
+
+  const deleteMultipleProductsMutation = useMutation({
+    mutationFn: (ids) => deleteMultipleProducts({ product_ids: ids }),
+    onSuccess: () => {
+      queryClient.invalidateQueries("products");
+    },
+  })
+
   useEffect(() => {
     refetch();
   }, [page, pageSize, q, category, sort, order, refetch]);
@@ -85,6 +104,18 @@ function ProductTable() {
   const mainImage = data?.products?.map((row) =>
     row.images.find((image) => image.id === row.main_image_id)
   );
+
+  useEffect(() => {
+    console.log(selected);
+  }, [selected]);
+
+  const handleDelete = async (id) => {
+    await deleteProductMutation.mutateAsync(id);
+  };
+
+  const handleDeleteSelected = async () => {
+    await deleteMultipleProductsMutation.mutateAsync(selected);
+  }
 
   return (
     <React.Fragment>
@@ -265,7 +296,7 @@ function ProductTable() {
                 "--Table-headerUnderlineThickness": "1px",
                 "--TableRow-hoverBackground":
                   "var(--joy-palette-background-level1)",
-                "--TableCell-paddingY": "4px",
+                "--TableCell-paddingY": "16px",
                 "--TableCell-paddingX": "8px",
               }}
             >
@@ -340,7 +371,7 @@ function ProductTable() {
               <tbody>
                 {data?.products
                   ?.sort(getComparator(order, "name"))
-                  ?.map((row) => (
+                  ?.map((row, index) => (
                     <tr key={row.id}>
                       <td style={{ textAlign: "center", width: 120 }}>
                         <Checkbox
@@ -378,11 +409,14 @@ function ProductTable() {
                               justifyItems="center"
                               alignItems="center"
                             >
-                              <img
-                                src={`${process.env.REACT_APP_API_URL}${mainImage[0]?.file_path}`}
-                                alt="product"
-                                style={{ width: 100, height: 100 }}
-                              />
+                              {mainImage[index] ? (
+                                <img
+                                  src={`${process.env.REACT_APP_API_URL}${mainImage[index]?.file_path}`}
+                                  alt="product"
+                                  style={{ width: 100, height: 100 }}
+                                />
+                              ) : null}
+
                               <Stack>
                                 <Typography
                                   level="body-xs"
@@ -415,7 +449,7 @@ function ProductTable() {
                         }}
                       >
                         <Typography level="body-xs">
-                          {new Intl.NumberFormat("en-US", {
+                          {new Intl.NumberFormat("vi-VN", {
                             style: "currency",
                             currency: "VND",
                           }).format(row.base_price)}
@@ -447,43 +481,126 @@ function ProductTable() {
                             justifyContent: "center",
                           }}
                         >
-                          <RowMenu />
+                          <RowMenu
+                            onEdit={() => navigate(`/products/${row.id}`)}
+                            onDelete={() => {
+                              setSelectedProduct(row);
+                              setOpenDelete(true);
+                            }}
+                          />
                         </Box>
                       </td>
                     </tr>
                   ))}
+                {selected.length > 0 && (
+                  <tr>
+                    <td colSpan={7} style={{ padding: 0 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 2,
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          padding: 2,
+                        }}
+                      >
+                        <Typography level="body-xs">
+                          {selected.length} selected
+                        </Typography>
+
+                        <Box
+                          sx={{
+                            display: "flex",
+                            gap: 2,
+                          }}
+                        >
+                          
+                          <Button
+                            color='neutral'
+                            variant="outlined"
+                            size="sm"
+                            onClick={() => {
+                              setSelected(data?.products?.map((row) => row.id));
+                            }}
+                          >
+                            Select all
+                          </Button>
+
+                          <Button
+                            color="danger"
+                            size="sm"
+                            onClick={() => setOpenDelete(true)}
+                          >
+                            Delete
+                          </Button>
+                        </Box>
+                      </Box>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </Table>
           </Sheet>
 
           <Box
-          className="Pagination-laptopUp"
-          sx={{
-            pt: 2,
-            gap: 1,
-            [`& .${iconButtonClasses.root}`]: { borderRadius: "50%" },
-            display: {
-              xs: "none",
-              md: "flex",
-            },
-            justifyContent: "flex-end",
-          }}
-        >
-          <Pagination
-            current={data?.current_page || 1}
-            total={data?.total_item_count || 0}
-            onChange={(page) => setPage(page)}
-            showSizeChanger
-            onShowSizeChange={(current, size) => setPageSize(size)}
-            // showTotal={(total, range) =>
-            //   `${range[0]}-${range[1]} of ${total} items`
-            // }
-            // hideOnSinglePage
-            // itemRender={itemRender}
-          />
-        </Box>
+            className="Pagination-laptopUp"
+            sx={{
+              pt: 2,
+              gap: 1,
+              [`& .${iconButtonClasses.root}`]: { borderRadius: "50%" },
+              display: {
+                xs: "none",
+                md: "flex",
+              },
+              justifyContent: "flex-end",
+            }}
+          >
+            <Pagination
+              current={data?.current_page || 1}
+              total={data?.total_item_count || 0}
+              onChange={(page) => setPage(page)}
+              showSizeChanger
+              onShowSizeChange={(current, size) => setPageSize(size)}
+              defaultPageSize={pageSize}
+              // showTotal={(total, range) =>
+              //   `${range[0]}-${range[1]} of ${total} items`
+              // }
+              // hideOnSinglePage
+              // itemRender={itemRender}
+            />
+          </Box>
         </>
       )}
+      <ConfirmModal
+        open={openDelete}
+        onClose={() => {
+          setOpenDelete(false);
+          setSelectedProduct({});
+        }}
+        onConfirm={async () => {
+          if (selected.length > 0) {
+            await handleDeleteSelected().then(() => {
+              toast.success("Products deleted successfully");
+            });
+            console.log("deleting multiple products");
+            setSelected([]);
+          } else {
+            await handleDelete(selectedProduct.id).then(() => {
+              toast.success("Product deleted successfully");
+            });
+          }
+
+          setOpenDelete(false);
+        }}
+        title={
+          selected.length > 0
+            ? "Delete selected products?"
+            : `Delete ${selectedProduct.product_name}?`
+        }
+        description="This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </React.Fragment>
   );
 }

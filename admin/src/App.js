@@ -18,6 +18,7 @@ import { createTheme, ThemeProvider } from "@mui/material";
 import ProductDetail from "pages/ProductPage/components/ProductDetail";
 import ProductCreate from "pages/ProductPage/components/ProductCreate";
 import PATHS from "constants"
+import OrderTable from "pages/OrdersPage/components/OrderTable";
 
 const router = createBrowserRouter([
   {
@@ -49,6 +50,12 @@ const router = createBrowserRouter([
       {
         path: "/orders",
         element: <OrdersPage />,
+        children: [
+          {
+            path: "/orders",
+            element: <OrderTable />,
+          }
+        ]
       },
       {
         path: "/categories",

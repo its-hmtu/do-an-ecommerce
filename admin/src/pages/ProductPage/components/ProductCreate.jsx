@@ -132,8 +132,8 @@ function ProductCreate() {
   };
 
   useEffect(() => {
-    console.log(submitData);
-  }, [submitData]);
+    console.log(variations);
+  }, [variations]);
 
   const handleOnSpecsChange = (value, key) => {
     setSpecsValue((prevValue) => ({

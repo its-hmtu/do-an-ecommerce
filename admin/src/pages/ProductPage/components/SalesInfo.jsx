@@ -13,6 +13,7 @@ import {
   Typography,
 } from "@mui/joy";
 import DropZone from "components/DropZone";
+import NumbericFormatAdapter from "components/NumbericFormatAdapter";
 import React from "react";
 
 function SalesInfo({
@@ -265,10 +266,15 @@ function SalesInfo({
                             </Typography>
                           </Button>
                         }
-                        type="number"
+                        // type="number"
                         onChange={(e) => onVariationChange(e, variationIndex)}
                         name="price"
                         value={variation.price}
+                        slotProps={{
+                          input: {
+                            component: NumbericFormatAdapter,
+                          },
+                        }}
                         required
                       />
                     </td>
@@ -312,11 +318,16 @@ function SalesInfo({
                     </Typography>
                   </Button>
                 }
-                type="number"
+                // type="number"
                 name="price"
                 value={variations[0]?.price}
                 required
                 onChange={(e) => onVariationChange(e, 0)}
+                slotProps={{
+                  input: {
+                    component: NumbericFormatAdapter,
+                  },
+                }}
               />
             </FormControl>
             <FormControl>

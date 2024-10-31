@@ -7,14 +7,15 @@ import { uploadFile, removeImage, uploadSingleFile } from "api/upload.api";
 import ConfirmModal from "components/ConfirmModal";
 import { ToastMessageContext } from "contexts/ToastMessageContext";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import BasicInfo from "./BasicInfo";
 import SalesInfo from "./SalesInfo";
 import SpecsInfo from "./SpecsInfo";
 import { toast } from "react-toastify";
-import { createProduct } from "api/products.api";
+import { createProduct, getSingleProduct, updateProduct } from "api/products.api";
 
 function ProductDetail() {
+  const { id } = useParams();
   const [isImagePreview, setIsImagePreview] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ function ProductDetail() {
   const [isAddVariation, setIsAddVariation] = useState(false);
   const [filesCount, setFilesCount] = useState(0);
   const [coverImageCount, setCoverImageCount] = useState(0);
+  const [toBeRemovedImages, setToBeRemovedImages] = useState([]);
   const [variations, setVariations] = useState([
     {
       name: "",
@@ -59,6 +61,8 @@ function ProductDetail() {
     category: [],
   });
 
+  const [originalData, setOriginalData] = useState({})
+
   const { data: brands, isLoading: brandsLoading } = useQuery({
     queryKey: ["brands"],
     queryFn: getBrands,
@@ -69,13 +73,75 @@ function ProductDetail() {
     queryFn: getAllCategories,
   });
 
+  const getProduct = useQuery({
+    queryKey: ["product", id],
+    queryFn: () => getSingleProduct({ id }),
+    refetchOnWindowFocus: false,
+  })
+
+  useEffect(( ) => {
+    console.log("basic", basic);
+    console.log("specsValue", specsValue);
+    console.log("original",originalData)
+  })
+
+  useEffect(() => {
+    if (getProduct.isSuccess) {
+      const { product_name, product_description, categories, options, specification, images } = getProduct.data;
+      setBasic({
+        name: product_name,
+        description: product_description,
+        category: categories.map(({id}) => id),
+      });
+
+      if (options.length >= 1) {
+        setIsAddVariation(true);
+      } else if (options.length === 1 && options[0].color === "") {
+        setIsAddVariation(false);
+      }
+
+      setVariations(options.map(({ color, price, stock, images }) => ({
+        name: color,
+        price,
+        stock,
+        image: images[0],
+      })));
+
+      console.log(options)
+
+      setSpecsValue({
+        ...specification,
+        brand: specification.brand_id,
+        manufacture_date: 
+          new Date(specification.manufacture_date).toISOString().split("T")[0]
+        , // format date to yyyy-mm-dd
+        number_of_cameras: specification.number_of_cameras.toString(),
+      });
+
+      setUploadedFiles(images);
+      setFilesCount(images.length);
+      if (images.length > 0) {
+        setIsImagePreview(true);
+      }
+
+      setOriginalData({
+        ...getProduct.data
+      })
+
+      console.log(getProduct.data);
+    }
+  }, [getProduct.data, getProduct.isSuccess]);
+
   const mutate = useMutation({
-    mutationFn: (data) => createProduct(data),
+    mutationFn: ({id, data}) => updateProduct({id, data}),
     onSuccess: () => {
-      toast.success("Category created successfully");
-      // navigate("/categories");
+      navigate("/products");
     },
   });
+
+  useEffect(() => {
+    console.log("specValue", specsValue);
+  }, [specsValue]);
 
   const upload = useMutation({
     mutationFn: (files) => uploadFile(files, setProgress),
@@ -95,14 +161,6 @@ function ProductDetail() {
     },
   });
 
-  const remove = useMutation({
-    mutationFn: (id) => removeImage(id),
-    onSuccess: (data) => {
-      toast.success("Image removed successfully");
-      console.log(data);
-    },
-  });
-
   const handleSubmit = (e) => {
     e.preventDefault();
     const options = variations.map((variation) => ({
@@ -110,9 +168,7 @@ function ProductDetail() {
       price: variation.price,
       stock: variation.stock,
       image_id: variation.image?.id,
-    }))
-
-    // get the lowest price from the variations and set it as the base price or if there is only one variation, set it as the base price
+    }));
 
     const product_images_ids = uploadedFiles.map((file) => file.id);
     const newSubmitData = {
@@ -126,11 +182,15 @@ function ProductDetail() {
 
     setSubmitData(newSubmitData);
 
-    mutate.mutate(newSubmitData);
+    mutate.mutate({id, data: newSubmitData}, {
+      onSuccess: () => {
+        toast.success("Product updated successfully");
+      },
+    });
   };
 
   useEffect(() => {
-    console.log(submitData);
+    console.log("submitData", submitData);
   }, [submitData]);
 
   const handleOnSpecsChange = (value, key) => {
@@ -226,11 +286,12 @@ function ProductDetail() {
     [uploadSingle, variations]
   );
 
-  const handleRemoveImage = (id, isMultiple) => {
-    remove.mutate(id);
-
+  const handleRemoveImage = (id) => {
+    // remove.mutate(id);
+    const image = uploadedFiles.find((file) => file.id === id);
     setUploadedFiles((prevFiles) => prevFiles.filter((file) => file.id !== id));
     setFilesCount((prevCount) => prevCount - 1);
+    setToBeRemovedImages((prevImages) => [...prevImages, image]);
 
     if (filesCount === 1) {
       setIsImagePreview(false);
@@ -238,17 +299,93 @@ function ProductDetail() {
   };
 
   const handleRemoveSingleImage = (id, variationIndex) => {
-    remove.mutate(id, {
-      onSuccess: () => {
-        setVariations((prevVariations) =>
-          prevVariations.map((variation, index) =>
-            index === variationIndex ? { ...variation, image: null } : variation
-          )
-        );
-      },
-    });
+    setVariations((prevVariations) => 
+      prevVariations.map((variation, index) => 
+        index === variationIndex ? { ...variation, image: null } : variation
+      )
+    )
+
+    const image = variations[variationIndex].image;
+
+    setToBeRemovedImages((prevImages) => [...prevImages, {
+      ...image,
+      variationIndex,
+    }]);
+
+    // remove.mutate(id, {
+    //   onSuccess: () => {
+    //     setVariations((prevVariations) =>
+    //       prevVariations.map((variation, index) =>
+    //         index === variationIndex ? { ...variation, image: null } : variation
+    //       )
+    //     );
+    //   },
+    // });
   };
 
+  // useEffect(() => {
+  //   console.log(toBeRemovedImages);
+  //   console.log(variations);
+  // })
+
+  const handleOnConfirm = () => {
+    // revert back to the original data
+    // setBasic({
+    //   name: originalData.product_name,
+    //   description: originalData.product_description,
+    //   category: originalData?.categorires.map(({id}) => id),
+    // })
+
+    // if (originalData.options.length >= 1) {
+    //   setIsAddVariation(true);
+    // } else if (originalData.options.length === 1 && originalData.options[0].color === "") {
+    //   setIsAddVariation(false);
+    // }
+
+    // setVariations(originalData.options.map(({ color, price, stock, images }) => ({
+    //   name: color,
+    //   price,
+    //   stock,
+    //   image: images[0],
+    // })));
+
+    // setSpecsValue({
+    //   ...originalData.specification,
+    //   brand: originalData.specification.brand_id,
+    //   manufacture_date: 
+    //     new Date(originalData.specification.manufacture_date).toISOString().split("T")[0]
+    //   , // format date to yyyy-mm-dd
+    // });
+
+    // setUploadedFiles(originalData.images);
+    // setFilesCount(originalData.images.length);
+    // setIsImagePreview(true);
+
+    const options = originalData?.options.map(({ color, price, stock, images }) => ({
+      color,
+      price,
+      stock,
+      image_id: images[0]?.id,
+    }));
+    const data = {
+      product_name: originalData.product_name,
+      product_description: originalData.product_description,
+      category_ids: originalData?.categories.map(({id}) => id),
+      options: options,
+      specs: {
+        ...originalData.specification,
+        brand: originalData.specification.brand_id,
+        manufacture_date: 
+          new Date(originalData.specification.manufacture_date).toISOString().split("T")[0]
+        , // format date to yyyy-mm-dd
+      },
+      product_images_ids: originalData.images.map(({id}) => id),
+    }
+
+    setOpen(false);
+
+    mutate.mutate({id, data});
+  }
   return (
     <>
       <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -366,10 +503,10 @@ function ProductDetail() {
             variant="solid"
             color="primary"
             type="submit"
-            disabled={mutate.isLoading || Object.values(basic).some((v) => !v)}
+            disabled={mutate.isLoading}
             onClick={handleSubmit}
           >
-            {mutate.isLoading ? "Creating..." : "Create"}
+            {mutate.isLoading ? "Update..." : "Update"}
           </Button>
         </Box>
       </Box>
@@ -377,7 +514,7 @@ function ProductDetail() {
       <ConfirmModal
         open={open}
         onClose={() => setOpen(false)}
-        onConfirm={() => navigate("/products")}
+        onConfirm={handleOnConfirm}
         title={"Discard changes?"}
         description={"Your changes will not be saved."}
         cancelText={"Keep editing"}
