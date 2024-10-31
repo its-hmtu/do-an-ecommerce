@@ -19,10 +19,11 @@ const {
 
 router.get("/", getProducts) 
 router.post('/', createProduct);
-router.delete('/:id', mustBeAuthenticated, isAdmin, deleteProduct);
+
+router.delete('/',  deleteProducts);
+router.delete('/:id',deleteProduct);
 // delete multiple products
-router.delete('/', mustBeAuthenticated, isAdmin, deleteProducts);
-router.put('/:id', mustBeAuthenticated, isAdmin, setUploadPath("./public/images/products"), upload.array("images", 6), updateProduct);
+router.put('/:id', updateProduct);
 router.get('/:id', getSingleProduct);
 router.get('/category/:id', getProductsByCategory);
 router.get('/search', getProductsBySearch);

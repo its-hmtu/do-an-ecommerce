@@ -10,6 +10,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false
     },
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     product_id: {
       type: DataTypes.INTEGER,
       allowNull: false
@@ -36,8 +40,9 @@ module.exports = (sequelize, DataTypes) => {
   })
   
   OrderItem.associate = (models) => {
-    OrderItem.belongsTo(models.Order)
-    OrderItem.belongsTo(models.Product)
+    OrderItem.belongsTo(models.Order, { foreignKey: 'order_id' });
+    OrderItem.belongsTo(models.Product, { foreignKey: 'product_id' });
+    OrderItem.belongsTo(models.User, { foreignKey: 'user_id' });
   }
 
   return OrderItem;

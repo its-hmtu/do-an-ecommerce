@@ -27,47 +27,58 @@ exports.getProducts = async (req, res, next) => {
       product_name: {
         [Op.like]: `%${q.replace("%20", " ")}%`,
       },
-    }
+    };
 
     const include = [
       {
         model: Category,
         attributes: ["id", "name"],
         through: {
-          attributes: []
-        }
-      }, 
+          attributes: [],
+        },
+        required: false,
+      },
       {
         model: ProductImage,
         as: "images",
         attributes: ["id", "file_path"],
-        // required: false,
+        required: false,
       },
       {
         model: Option,
-        as: 'options',
+        as: "options",
         include: [
           {
             model: OptionImage,
-            as: 'images',
-            attributes: ['id', 'file_path'],
+            as: "images",
+            attributes: ["id", "file_path"],
+            required: false,
           },
-        ],  
+        ],
         attributes: {
           include: [
-            'id', 'color', 'price',
-            [sequelize.literal('(SELECT stock FROM stocks WHERE stocks.option_id = options.id LIMIT 1)'), 'stock']
-          ]
-        }
+            "id",
+            "color",
+            "price",
+            [
+              sequelize.literal(
+                "(SELECT stock FROM stocks WHERE stocks.option_id = options.id LIMIT 1)"
+              ),
+              "stock",
+            ],
+          ],
+        },
+        required: false,
       },
       {
         model: Specification,
-        as: 'specification',
+        as: "specification",
         attributes: {
-          exclude: ['createdAt', 'updatedAt']
-        }
-      }
-    ]
+          exclude: ["createdAt", "updatedAt"],
+        },
+        required: false,
+      },
+    ];
 
     if (category) {
       include[0].where = { name: category };
@@ -158,8 +169,14 @@ exports.createProduct = async (req, res, next) => {
     let total_in_stock = 0;
 
     if (Array.isArray(options) && options.length > 0) {
-      base_price = options.length > 1 ? Math.min(...options.map((option) => Number(option.price))) : Number(options[0].price);
-      total_in_stock = options.reduce((acc, variation) => acc + Number(variation.stock), 0);
+      base_price =
+        options.length > 1
+          ? Math.min(...options.map((option) => Number(option.price)))
+          : Number(options[0].price);
+      total_in_stock = options.reduce(
+        (acc, variation) => acc + Number(variation.stock),
+        0
+      );
     }
 
     const newProduct = await Product.create(
@@ -179,7 +196,6 @@ exports.createProduct = async (req, res, next) => {
     } else {
       newProduct.availability = "out-of-stock";
     }
-
 
     if (category_ids != null && category_ids.length > 0) {
       const categories = await Category.findAll({
@@ -263,15 +279,13 @@ exports.createProduct = async (req, res, next) => {
           phone_model: specs.phone_model,
         },
         { transaction }
-      )
+      );
 
       newProduct.specification = newSpecs;
     }
 
-
     await newProduct.save({ transaction });
     await transaction.commit();
-    
 
     return res
       .status(201)
@@ -315,17 +329,24 @@ exports.deleteProduct = async (req, res, next) => {
 
 // delete multiple products
 exports.deleteProducts = async (req, res, next) => {
-  const { product_ids } = req.body;
+  const { ids } = req.query;
   const transaction = await sequelize.transaction({ autocommit: false });
-  console.log(product_ids);
-  if (!Array.isArray(product_ids) || product_ids.length === 0) {
+  console.log(ids);
+  
+  if (!ids) {
     res.status(400);
-    return next(new Error("Product ids are required"));
+    return next(new Error("Product ids required"));
   }
+
+  const product_ids = ids.split("%2C");
+  // ids is a string of comma separated values
+
   try {
     const products = await Product.findAll({
       where: {
-        id: product_ids,
+        id: {
+          [Op.in]: product_ids,
+        }
       },
       transaction,
     });
@@ -351,9 +372,14 @@ exports.deleteProducts = async (req, res, next) => {
 
 exports.updateProduct = async (req, res, next) => {
   const { id } = req.params;
-  const { rm_images, rm_categories } = req.query;
-  const { product_name, price, product_description, stock, categories_name } =
-    req.body;
+  const {
+    product_name,
+    product_description,
+    category_ids,
+    options,
+    specs,
+    product_images_ids,
+  } = req.body;
   const transaction = await sequelize.transaction({ autocommit: false });
 
   try {
@@ -364,46 +390,203 @@ exports.updateProduct = async (req, res, next) => {
       return next(new Error("Product not found"));
     }
 
+    let base_price = 0;
+    let total_in_stock = 0;
+
+    if (Array.isArray(options) && options.length > 0) {
+      base_price = options.length > 1 ? 
+        Math.min(...options.map((option) => Number(option.price)))
+        : Number(options[0].price);
+
+      total_in_stock = options.reduce(
+        (acc, variation) => acc + Number(variation.stock),
+        0
+      )
+    }
+
+    console.log(req.body)
+
     await product.update(
       {
         product_name: product_name || product.product_name,
-        price: price || product.price,
         product_description: product_description || product.product_description,
-        stock: stock || product.stock,
+        base_price: base_price || product.base_price,
+        total_in_stock: total_in_stock || product.total_in_stock,
+        brand_id: specs.brand || product.brand_id,
+        main_image_id: product_images_ids[0] || product.main_image_id,
       },
       { transaction }
     );
 
-    // remove images if included in rm_images
-    if (rm_images != null) {
-      const images = await ProductImage.findAll({
+    if (total_in_stock > 0) {
+      product.availability = "in-stock";
+    } else {
+      product.availability = "out-of-stock";
+    }
+
+    if (category_ids != null && category_ids.length > 0) {
+      const categories = await Category.findAll({
         where: {
-          id: rm_images.split("%2C"),
-        },
-        attributes: {
-          exclude: ["productId"],
+          id: category_ids,
         },
         transaction,
       });
 
-      for (let image of images) {
-        fs.unlinkSync(`public${image.file_path}`);
-        await image.destroy({ transaction });
+      await product.setCategories(categories, { transaction });
+    }
+
+    // update product images and remove the difference
+
+    const images = [];
+    const currentImages = await Upload.findAll({
+      where: {
+        product_id: product.id,
+      },
+      transaction,
+    })
+
+    for (let i = 0; i < product_images_ids.length; i++) {
+      const image = await Upload.findByPk(product_images_ids[i], {
+        transaction,
+      });
+
+      if (image) {
+        image.product_id = product.id;
+        await image.save({ transaction });
+        images.push(image);
       }
     }
 
-    // remove categories if included in rm_categories
-    if (rm_categories != null) {
-      const categories = await Category.findAll({
-        where: {
-          name: rm_categories.split("%2C"),
-        },
-        transaction,
-      });
-
-      await product.removeCategories(categories, { transaction });
+    for (let i = 0; i < currentImages.length; i++) {
+      if (!product_images_ids.includes(currentImages[i].id)) {
+        currentImages[i].product_id = null;
+        await currentImages[i].save({ transaction });
+      }
     }
 
+    product.images = images;
+
+    // update options and remove the difference
+    const currentOptions = await Option.findAll({
+      where: {
+        product_id: product.id,
+      },
+      transaction,
+    });
+
+    // compare the current options with the new options, only update if there is a difference
+
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].id) {
+        const currentOption = currentOptions.find( option => option.id === options[i].id);
+        if (currentOption) {
+          currentOption.color = options[i].color || currentOption.color;
+          currentOption.price = options[i].price || currentOption.price;
+          await currentOption.save({ transaction });
+        
+          const optionImage = await Upload.findByPk(options[i].image_id, {
+            transaction,
+          });
+
+          if (optionImage) {
+            optionImage.option_id = currentOption.id;
+            await optionImage.save({ transaction });
+          }
+
+          if (options[i].stock != null) {
+            const stock = await Stock.findOne({
+              where: {
+                product_id: product.id,
+                option_id: currentOption.id,
+              },
+              transaction,
+            });
+
+            if (stock) {
+              stock.stock = options[i].stock;
+              await stock.save({ transaction });
+            } else {
+              await Stock.create(
+                {
+                  product_id: product.id,
+                  option_id: currentOption.id,
+                  stock: options[i].stock,
+                },
+                { transaction }
+              );
+            }
+          }
+        }
+      } else {
+        const newOption = await Option.create(
+          {
+            product_id: product.id,
+            color: options[i].color,
+            price: options[i].price,
+          },
+          { transaction }
+        );
+
+        const optionImage = await Upload.findByPk(options[i].image_id, {
+          transaction,
+        });
+
+        if (optionImage) {
+          optionImage.option_id = newOption.id;
+          await optionImage.save({ transaction });
+        }
+
+        if (options[i].stock != null) {
+          await Stock.create(
+            {
+              product_id: product.id,
+              option_id: newOption.id,
+              stock: options[i].stock,
+            },
+            { transaction }
+          );
+
+        }
+      }
+    }
+
+    for (let i = 0; i < currentOptions.length; i++) {
+      if (!options.map(option => option.id).includes(currentOptions[i].id)) {
+        await currentOptions[i].destroy({ transaction });
+      }
+    }
+    // update specs
+
+    const currentSpecs = await Specification.findOne({
+      where: {
+        product_id: product.id,
+      },
+      transaction,
+    });
+
+    if (currentSpecs) {
+      currentSpecs.brand_id = specs.brand || currentSpecs.brand_id;
+      currentSpecs.storage_capacity = specs.storage_capacity || currentSpecs.storage_capacity;
+      currentSpecs.number_of_cameras = specs.number_of_cameras || currentSpecs.number_of_cameras;
+      currentSpecs.camera_resolution = specs.camera_resolution || currentSpecs.camera_resolution;
+      currentSpecs.ram = specs.ram || currentSpecs.ram;
+      currentSpecs.rom = specs.rom || currentSpecs.rom;
+      currentSpecs.battery_capacity = specs.battery_capacity || currentSpecs.battery_capacity;
+      currentSpecs.processor = specs.processor || currentSpecs.processor;
+      currentSpecs.screen_size = specs.screen_size || currentSpecs.screen_size;
+      currentSpecs.operating_system = specs.operating_system || currentSpecs.operating_system;
+      currentSpecs.dimensions = specs.dimensions || currentSpecs.dimensions;
+      currentSpecs.cable_type = specs.cable_type || currentSpecs.cable_type;
+      currentSpecs.sim_type = specs.sim_type || currentSpecs.sim_type;
+      currentSpecs.manufacture_date = specs.manufacture_date || currentSpecs.manufacture_date;
+      currentSpecs.warranty_duration = specs.warranty_duration || currentSpecs.warranty_duration;
+      currentSpecs.condition = specs.condition || currentSpecs.condition;
+      currentSpecs.phone_model = specs.phone_model || currentSpecs.phone_model;
+
+      await currentSpecs.save({ transaction });
+    }
+
+    await product.save({ transaction });
     await transaction.commit();
 
     return res.status(200).json({ message: "Product updated" });
@@ -427,11 +610,13 @@ exports.getSingleProduct = async (req, res, next) => {
         {
           model: Category,
           attributes: ["id", "name"],
+          required: false,
         },
         {
           model: ProductImage,
           as: "images",
-          attributes: ["id", "file_path"],
+          attributes: ["id", "file_path", "file_size"],
+          required: false,
         },
         // {
         //   model: Review,
@@ -445,14 +630,38 @@ exports.getSingleProduct = async (req, res, next) => {
         // },
         {
           model: Option,
-          as: 'options',
+          as: "options",
+          include: [
+            {
+              model: OptionImage,
+              as: "images",
+              attributes: ["id", "file_path"],
+              required: false,
+            },
+          ],
           attributes: {
             include: [
-              'id', 'name', 'value', 'color', 'price',
-              [sequelize.literal('(SELECT stock FROM stocks WHERE stocks.option_id = options.id LIMIT 1)'), 'stock']
-            ]
-          }
-        }
+              "id",
+              "color",
+              "price",
+              [
+                sequelize.literal(
+                  "(SELECT stock FROM stocks WHERE stocks.option_id = options.id LIMIT 1)"
+                ),
+                "stock",
+              ],
+            ],
+          },
+          required: false,
+        },
+        {
+          model: Specification,
+          as: "specification",
+          attributes: {
+            exclude: ["createdAt", "updatedAt"],
+          },
+          required: false,
+        },
       ],
     });
 
