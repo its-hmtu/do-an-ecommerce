@@ -1,11 +1,11 @@
-import { createBrowserRouter, RouterProvider, useLocation } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import MainLayout from "layouts/MainLayout";
 import LoginPage from "pages/LoginPage";
 import DashboardPage from "pages/DashboardPage";
 import { CssVarsProvider, CssBaseline, GlobalStyles } from "@mui/joy";
 import OrdersPage from "pages/OrdersPage";
 import RolesPage from "pages/RolesPage";
-import { useEffect } from "react";
+import { useEffect, useCallback, useState } from "react";
 import ProductPage from "pages/ProductPage";
 import ProductTable from "pages/ProductPage/components/ProductTable";
 import ProductDetailsPage from "pages/ProductDetailsPage";
@@ -19,6 +19,15 @@ import ProductDetail from "pages/ProductPage/components/ProductDetail";
 import ProductCreate from "pages/ProductPage/components/ProductCreate";
 import PATHS from "constants"
 import OrderTable from "pages/OrdersPage/components/OrderTable";
+// import React, { useCallback, useState, useEffect } from "react";
+import {loadStripe} from '@stripe/stripe-js';
+import {
+  EmbeddedCheckoutProvider,
+  EmbeddedCheckout
+} from '@stripe/react-stripe-js'
+import CheckoutForm from "components/CheckoutForm";
+import Return from "components/Return";
+import OrderDetail from "pages/OrdersPage/components/OrderDetail";
 
 const router = createBrowserRouter([
   {
@@ -54,6 +63,10 @@ const router = createBrowserRouter([
           {
             path: "/orders",
             element: <OrderTable />,
+          },
+          {
+            path: "/orders/:id",
+            element: <OrderDetail />
           }
         ]
       },
@@ -99,6 +112,14 @@ const router = createBrowserRouter([
     path: "/login",
     element: <LoginPage />,
   },
+  {
+    path: "/checkout",
+    element: <CheckoutForm />,
+  }, 
+  {
+    path: "/return",
+    element: <Return />, 
+  }
 ]);
 
 function App() {
@@ -133,3 +154,7 @@ function App() {
 }
 
 export default App;
+
+// Make sure to call `loadStripe` outside of a component’s render to avoid
+// recreating the `Stripe` object on every render.
+// This is your test secret API key.

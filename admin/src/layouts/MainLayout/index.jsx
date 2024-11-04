@@ -18,8 +18,8 @@ import PATHS from "constants";
 function MainLayout() {
   const queryClient = useQueryClient();
   const isUser = sessionStorage.getItem("token");
-  const location = useLocation();
-  const navigate = useNavigate();
+  // const location = useLocation();
+  // const navigate = useNavigate();
   // useEffect(() => {
   //   if (location.pathname === PATHS.HOME && !isUser) {
   //     navigate(PATHS.LOGIN);

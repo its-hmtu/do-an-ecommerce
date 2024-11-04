@@ -11,7 +11,6 @@ function OrdersPage() {
   return (
     <>
       <Outlet />
-      
     </>
   );
 }

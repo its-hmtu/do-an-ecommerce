@@ -29,6 +29,8 @@ import {
   TabList,
   Tab,
   TabPanel,
+  tabClasses,
+  Stack,
 } from "@mui/joy";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import SearchIcon from "@mui/icons-material/Search";
@@ -52,21 +54,25 @@ import { getComparator } from "utils/helper";
 import RowMenu from "components/RowMenu";
 import { useNavigate } from "react-router-dom";
 import SearchBox from "components/SearchBox";
+import { Pagination } from "antd";
+import TabPanelAll from "./TabPanelAll";
 
 const OrderTable = () => {
   const navigate = useNavigate();
   const [order, setOrder] = React.useState("desc");
   const [selected, setSelected] = React.useState([]);
   const [open, setOpen] = React.useState(false);
+  const [page, setPage] = React.useState(1);
+  const [pageSize, setPageSize] = React.useState(10);
 
-  const { data: orders, isLoading } = useQuery({
+  const {
+    data: orders,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: "orders",
     queryFn: getOrders,
   });
-
-  useEffect(() => {
-    console.log(orders);
-  }, [orders]);
 
   return (
     <React.Fragment>
@@ -106,180 +112,165 @@ const OrderTable = () => {
         <SearchBox width={250} />
         <Filter />
       </Box>
-
-      <Tabs defaultValue={0}>
-        <TabList 
+      <Box
+        sx={{
+          display: "flex",
+          mb: 1,
+          gap: 1,
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: { xs: "start", sm: "center" },
+          flexWrap: "wrap",
+          justifyContent: "space-between",
+          padding: 0,
+        }}
+      >
+        <Typography level="h2" component="h1">
+          My Orders
+        </Typography>
+        <Box
           sx={{
-            bgcolor: 'transparent',
+            display: "flex",
+            gap: 2,
+          }}
+        >
+          <Button
+            color="primary"
+            startDecorator={<DownloadRounded />}
+            size="sm"
+          >
+            Export
+          </Button>
+        </Box>
+      </Box>
+      <Tabs
+        defaultValue={0}
+        sx={{
+          borderRadius: "sm",
+          backgroundColor: "transparent",
+        }}
+      >
+        <TabList
+          color="primary"
+          disableUnderline
+          sx={{
+            pt: 1,
+            justifyContent: "flex-start",
+            [`&& .${tabClasses.root}`]: {
+              flex: "initial",
+              bgcolor: "transparent",
+              "&:hover": {
+                bgcolor: "transparent",
+              },
+              [`&.${tabClasses.selected}`]: {
+                color: "primary.plainColor",
+                "&::after": {
+                  height: 3,
+                  borderTopLeftRadius: 0,
+                  borderTopRightRadius: 0,
+                  bgcolor: "primary.500",
+                },
+              },
+            },
           }}
         >
           <Tab>All</Tab>
           <Tab>Paid</Tab>
-          <Tab>To ship</Tab>
+          <Tab>
+            To ship
+            <Chip
+              color="primary"
+              size="sm"
+              sx={{
+                ml: 1,
+              }}
+            >
+              {orders?.data.filter((order) => order.status === "paid").length || 0}
+            </Chip>
+          </Tab>
           <Tab>Shipped</Tab>
           <Tab>Delivered</Tab>
           <Tab>Cancelled</Tab>
         </TabList>
-        <TabPanel value={0}>
-          <Table
-            aria-labelledby="tableTitle"
-            stickyHeader
-            hoverRow
-            sx={{
-              "--TableCell-headBackground":
-                "var(--joy-palette-background-level1)",
-              "--Table-headerUnderlineThickness": "1px",
-              "--TableRow-hoverBackground":
-                "var(--joy-palette-background-level1)",
-              "--TableCell-paddingY": "4px",
-              "--TableCell-paddingX": "8px",
+        <TabPanel
+          value={0}
+          sx={{
+            paddingInline: 0,
+          }}
+        >
+          <TabPanelAll
+            orders={orders}
+            pageSize={pageSize}
+            handleSetPage={(page) => setPage(page)}
+            handleSetPageSize={(pageSize) => setPageSize(pageSize)}
+          />
+        </TabPanel>
+        <TabPanel value={1} sx={{
+            paddingInline: 0,
+          }}>
+          <TabPanelAll
+            orders={{
+              ...orders,
+              data: orders?.data.filter((order) => order.status === "paid"),
             }}
-          >
-            <thead>
-              <tr>
-                <th
-                  style={{
-                    width: 48,
-                    textAlign: "center",
-                    padding: "12px 6px",
-                  }}
-                >
-                  <Checkbox
-                    size="sm"
-                    indeterminate={
-                      selected.length > 0 && selected.length !== orders?.length
-                    }
-                    checked={selected.length === orders?.length}
-                    onChange={(event) => {
-                      setSelected(
-                        event.target.checked ? orders?.map((row) => row.id) : []
-                      );
-                    }}
-                    color={
-                      selected.length > 0 || selected.length === orders?.length
-                        ? "primary"
-                        : undefined
-                    }
-                    sx={{ verticalAlign: "text-bottom" }}
-                  />
-                </th>
-                <th style={{ width: 120, padding: "12px 6px" }}>
-                  <Link
-                    underline="none"
-                    color="primary"
-                    component="button"
-                    onClick={() => setOrder(order === "asc" ? "desc" : "asc")}
-                    endDecorator={<ArrowDropDownIcon />}
-                    sx={[
-                      {
-                        fontWeight: "lg",
-                        "& svg": {
-                          transition: "0.2s",
-                          transform:
-                            order === "desc"
-                              ? "rotate(0deg)"
-                              : "rotate(180deg)",
-                        },
-                      },
-                      order === "desc"
-                        ? { "& svg": { transform: "rotate(0deg)" } }
-                        : { "& svg": { transform: "rotate(180deg)" } },
-                    ]}
-                  >
-                    Order ID
-                  </Link>
-                </th>
-                <th style={{ width: 140, padding: "12px 6px" }}>Date</th>
-                <th style={{ width: 140, padding: "12px 6px" }}>Status</th>
-                <th style={{ width: 240, padding: "12px 6px" }}>Customer</th>
-                <th style={{ width: 140, padding: "12px 6px" }}> </th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders?.sort(getComparator(order, "id")).map((row) => (
-                <tr key={row.id}>
-                  <td style={{ textAlign: "center", width: 120 }}>
-                    <Checkbox
-                      size="sm"
-                      checked={selected.includes(row.id)}
-                      color={selected.includes(row.id) ? "primary" : undefined}
-                      onChange={(event) => {
-                        setSelected((ids) =>
-                          event.target.checked
-                            ? ids.concat(row.id)
-                            : ids.filter((itemId) => itemId !== row.id)
-                        );
-                      }}
-                      slotProps={{ checkbox: { sx: { textAlign: "left" } } }}
-                      sx={{ verticalAlign: "text-bottom" }}
-                    />
-                  </td>
-                  <td>
-                    <Typography level="body-xs">{row.id}</Typography>
-                  </td>
-                  <td>
-                    <Typography level="body-xs">
-                      {new Date(row.createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                        hour: "numeric",
-                        minute: "numeric",
-                        hour12: true,
-                      })}
-                    </Typography>
-                  </td>
-                  <td>
-                    <Chip
-                      variant="soft"
-                      size="sm"
-                      startDecorator={
-                        {
-                          paid: <CheckRoundedIcon />,
-                          pending: <AutorenewRoundedIcon />,
-                          shipped: <LocalShippingRounded />,
-                          delivered: <CheckRoundedIcon />,
-                          cancelled: <BlockIcon />,
-                        }[row.status]
-                      }
-                      color={
-                        {
-                          paid: "success",
-                          pending: "neutral",
-                          shipped: "success",
-                          delivered: "success",
-                          cancelled: "danger",
-                        }[row.status]
-                      }
-                    >
-                      {row.status}
-                    </Chip>
-                  </td>
-                  <td>
-                    <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-                      <Avatar size="sm">{row.user.first_name}</Avatar>
-                      <div>
-                        <Typography level="body-xs">
-                          {row.user.first_name + " " + row.user.last_name}
-                        </Typography>
-                        <Typography level="body-xs">
-                          {row.user.email}
-                        </Typography>
-                      </div>
-                    </Box>
-                  </td>
-                  <td>
-                    <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-                      <Link level="body-xs" component="button">
-                        Download
-                      </Link>
-                      <RowMenu />
-                    </Box>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+            pageSize={pageSize}
+            handleSetPage={(page) => setPage(page)}
+            handleSetPageSize={(pageSize) => setPageSize(pageSize)}
+          />
+        </TabPanel>
+        <TabPanel value={2} sx={{
+            paddingInline: 0,
+          }}>
+          <TabPanelAll
+            orders={{
+              ...orders,
+              data: orders?.data.filter((order) => order.status === "paid"),
+            }}
+            pageSize={pageSize}
+            handleSetPage={(page) => setPage(page)}
+            handleSetPageSize={(pageSize) => setPageSize(pageSize)}
+          />
+        </TabPanel>
+
+        <TabPanel value={3} sx={{
+            paddingInline: 0,
+          }}>
+          <TabPanelAll
+            orders={{
+              ...orders,
+              data: orders?.data.filter((order) => order.status === "shipped"),
+            }}
+            pageSize={pageSize}
+            handleSetPage={(page) => setPage(page)}
+            handleSetPageSize={(pageSize) => setPageSize(pageSize)}
+          />
+        </TabPanel>
+
+        <TabPanel value={4} sx={{
+            paddingInline: 0,
+          }}>
+          <TabPanelAll
+            orders={{
+              ...orders,
+              data: orders?.data.filter((order) => order.status === "delivered"),
+            }}
+            pageSize={pageSize}
+            handleSetPage={(page) => setPage(page)}
+            handleSetPageSize={(pageSize) => setPageSize(pageSize)}
+          />
+        </TabPanel>
+
+        <TabPanel value={5} sx={{
+            paddingInline: 0,
+          }}s>
+          <TabPanelAll
+            orders={{
+              ...orders,
+              data: orders?.data.filter((order) => order.status === "cancelled"),
+            }}
+            pageSize={pageSize}
+            handleSetPage={(page) => setPage(page)}
+            handleSetPageSize={(pageSize) => setPageSize(pageSize)}
+          />
         </TabPanel>
       </Tabs>
     </React.Fragment>
