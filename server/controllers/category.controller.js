@@ -8,6 +8,7 @@ const {
 } = require("../models");
 const fs = require("fs");
 const { Op } = require("sequelize");
+const {client: redisClient, REDIS_CACHE_5_MINUTES} = require("../config/redis");
 
 exports.getCategories = async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
@@ -44,7 +45,7 @@ exports.getCategories = async (req, res, next) => {
             "original_name",
             "mime_type",
           ],
-          // required: false,
+          required: false,
         },
       ],
       distinct: true,
@@ -152,6 +153,15 @@ exports.getAll = async (req, res, next) => {
     }
 
     const totalItemCount = categories.length;
+
+    // await redisClient.setEx(
+    //   req.originalUrl,
+    //   REDIS_CACHE_5_MINUTES,
+    //   JSON.stringify({
+    //     data: categories,
+    //     total_item_count: totalItemCount,
+    //   })
+    // )
 
     return res.status(200).json({
       total_item_count: totalItemCount,

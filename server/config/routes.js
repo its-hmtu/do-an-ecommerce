@@ -6,15 +6,18 @@ const adminRoutes = require("../routes/admin.route");
 const uploadRoutes = require("../routes/upload.route");
 const brandRoutes = require("../routes/brand.route");
 const orderRoutes = require("../routes/order.route");
+const saleRoutes = require('../routes/sale.route');
+const BASE_URL = "/api";
 
 module.exports = (app) => {
   app.use("/", indexRouter);
   // !-- Do not remove this line --! //
-  app.use("/api/account", userRoutes);
-  app.use("/api", categoryRoutes);
-  app.use("/api/products", productRoutes);
-  app.use("/api/admin", adminRoutes);
-  app.use("/api/upload", uploadRoutes);
-  app.use("/api/brands", brandRoutes);
-  app.use("/api/orders", orderRoutes);
+  app.use(`${BASE_URL}/account`, userRoutes);
+  app.use(`${BASE_URL}/categories`, categoryRoutes);
+  app.use(`${BASE_URL}/products`, productRoutes);
+  app.use(`${BASE_URL}/admin`, adminRoutes);
+  app.use(`${BASE_URL}/upload`, uploadRoutes);
+  app.use(`${BASE_URL}/brands`, brandRoutes);
+  app.use(`${BASE_URL}/orders`, orderRoutes);
+  app.use(`${BASE_URL}/sale`, saleRoutes);
 };

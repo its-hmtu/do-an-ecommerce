@@ -12,13 +12,29 @@ module.exports = (sequelize, DataTypes) => {
     },
     user_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'users',
         key: 'id'
       }
     },
-    total_price: {
+    total: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false
+    },
+    subtotal: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false
+    },
+    tax: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false
+    },
+    shipping: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false
+    },
+    discount: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false
     },
@@ -28,7 +44,9 @@ module.exports = (sequelize, DataTypes) => {
         'paid',
         'shipped',
         'delivered',
-        'canceled'
+        'canceled',
+        'processing',
+        'completed'
       ),
       allowNull: false
     },
@@ -38,12 +56,65 @@ module.exports = (sequelize, DataTypes) => {
     },
     address_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'addresses',
         key: 'id'
       }
-    }
+    },
+    payment_method: {
+      type: DataTypes.ENUM(
+        'credit_card',
+        'paypal',
+        'cash_on_delivery'
+      ),
+      allowNull: true
+    },
+    payment_status: {
+      type: DataTypes.ENUM(
+        'pending',
+        'paid',
+        'failed'
+      ),
+      allowNull: true
+    },
+    payment_date: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    ship_date: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    delivery_date: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    is_paid: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
+    guest_email: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    guest_first_name: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    guest_last_name: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    guest_phone: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    guest_address: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
   }, {
     timestamps: true,
     tableName: 'orders'
@@ -56,7 +127,7 @@ module.exports = (sequelize, DataTypes) => {
   Order.associate = (models) => {
     Order.belongsTo(models.User, {onDelete: 'CASCADE', foreignKey: 'user_id'})
     Order.hasMany(models.OrderItem, {foreignKey: 'order_id', onDelete: 'CASCADE'});
-    Order.belongsTo(models.Address, {foreignKey: 'address_id'});
+    Order.belongsTo(models.Address, {foreignKey: 'address_id', onDelete: 'CASCADE'});
   }
 
   return Order;

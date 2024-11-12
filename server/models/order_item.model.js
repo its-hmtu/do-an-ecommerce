@@ -12,27 +12,23 @@ module.exports = (sequelize, DataTypes) => {
     },
     user_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     product_id: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    name: {
-      type: DataTypes.STRING(50),
-      allowNull: false
+    option_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true
     },
     quantity: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    price: {
+    unit_price: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: true
-    },
-    slug: {
-      type: DataTypes.STRING,
-      allowNull: false
     }
   }, {
     timestamps: true,
@@ -43,6 +39,7 @@ module.exports = (sequelize, DataTypes) => {
     OrderItem.belongsTo(models.Order, { foreignKey: 'order_id', onDelete: 'CASCADE' });
     OrderItem.belongsTo(models.Product, { foreignKey: 'product_id', onDelete: 'CASCADE' });
     OrderItem.belongsTo(models.User, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+    OrderItem.belongsTo(models.Option, { foreignKey: 'option_id', onDelete: 'CASCADE' });
   }
 
   return OrderItem;

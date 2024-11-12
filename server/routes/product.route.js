@@ -16,6 +16,7 @@ const {
   getProductsByCategory,
   getProductsBySearch
 } = require('../controllers/product.controller');
+// const checkCache = require('../middlewares/cache.middleware');
 
 router.get("/", getProducts) 
 router.post('/', createProduct);

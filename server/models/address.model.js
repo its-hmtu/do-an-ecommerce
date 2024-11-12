@@ -33,6 +33,7 @@ module.exports = function (sequelize, DataTypes) {
 
   Address.associate = function (models) {
     Address.belongsTo(models.User, {onDelete: 'CASCADE', foreignKey: 'user_id'})
+    Address.hasMany(models.Order, {onDelete: 'CASCADE', foreignKey: 'address_id'})
   }
 
   return Address;

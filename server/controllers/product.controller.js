@@ -11,7 +11,8 @@ const {
   sequelize,
 } = require("../models");
 const fs = require("fs");
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
+const {client: redisClient, REDIS_CACHE_5_MINUTES }= require("../config/redis");
 
 exports.getProducts = async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
@@ -35,6 +36,11 @@ exports.getProducts = async (req, res, next) => {
         attributes: ["id", "name"],
         through: {
           attributes: [],
+        },
+        where: {
+          name: {
+            [Op.like]: `%${category}%`,
+          },
         },
         required: false,
       },
@@ -138,6 +144,16 @@ exports.getProducts = async (req, res, next) => {
       total_pages: totalPages,
       current_page: currentPage,
     };
+
+
+    // await redisClient.setEx(
+    //   `products:${page}:${pageSize}:${q}:${category}:${sort}:${order}`,
+    //   REDIS_CACHE_5_MINUTES,
+    //   JSON.stringify({
+    //     ...pagination,
+    //     products: products.rows,
+    //   })
+    // )
 
     return res.status(200).json({
       data: {
