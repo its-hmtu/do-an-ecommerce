@@ -13,6 +13,7 @@ import SalesInfo from "./SalesInfo";
 import SpecsInfo from "./SpecsInfo";
 import { toast } from "react-toastify";
 import { createProduct, getSingleProduct, updateProduct } from "api/products.api";
+import AddNewModal from "components/AddNewModal";
 
 function ProductDetail() {
   const { id } = useParams();
@@ -115,7 +116,7 @@ function ProductDetail() {
         manufacture_date: 
           new Date(specification.manufacture_date).toISOString().split("T")[0]
         , // format date to yyyy-mm-dd
-        number_of_cameras: specification.number_of_cameras.toString(),
+        number_of_cameras: specification?.number_of_cameras?.toString(),
       });
 
       setUploadedFiles(images);
@@ -428,7 +429,7 @@ function ProductDetail() {
         }}
       >
         <Typography level="h2" component="h1">
-          Create product
+          Product Details
         </Typography>
       </Box>
 
@@ -463,6 +464,7 @@ function ProductDetail() {
           brands={brands}
           specsValue={specsValue}
           onClick={handleOnSpecsChange}
+         
         />
 
         <Divider />

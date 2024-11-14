@@ -17,6 +17,8 @@ import {
 import DropZone from "components/DropZone";
 import PreviewTable from "components/PreviewTable";
 import React from "react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 function BasicInfo({
   data,
@@ -66,12 +68,23 @@ function BasicInfo({
             <Typography color="danger">*</Typography>
           </FormLabel>
         </Tooltip>
-        <Textarea
+        {/* <Textarea
           placeholder="Enter enter"
           minRows={3}
           name="description"
           value={data.description}
           onChange={(e) => handleOnChange(e)}
+        /> */}
+        <ReactQuill
+        style={{
+          "ql-container": {
+            height: "unset"
+          }
+        }} 
+          theme="snow" 
+          value={data.description}
+          onChange={(value) => handleOnChange({target: {name: "description", value}})}
+          ref={focusRef}
         />
       </FormControl>
       <Stack
@@ -97,7 +110,6 @@ function BasicInfo({
               // width: "25%",
               maxHeight: "200px",
             }}
-            multiple
             name="category"
             value={data.category}
             onChange={(e, newValue) =>

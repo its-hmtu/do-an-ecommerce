@@ -44,6 +44,7 @@ function TabPanelAll({ orders, pageSize, handleSetPage, handleSetPageSize }) {
             padding: "8px 16px",
           }}
           startDecorator={<LocalShippingRounded />}
+          onClick={() => navigate("/orders/mass-ship")}
         >
           Mass Ship
         </Button>

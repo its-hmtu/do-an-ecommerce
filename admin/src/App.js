@@ -1,11 +1,15 @@
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
 import MainLayout from "layouts/MainLayout";
 import LoginPage from "pages/LoginPage";
 import DashboardPage from "pages/DashboardPage";
 import { CssVarsProvider, CssBaseline, GlobalStyles } from "@mui/joy";
 import OrdersPage from "pages/OrdersPage";
 import RolesPage from "pages/RolesPage";
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, lazy, Suspense } from "react";
 import ProductPage from "pages/ProductPage";
 import ProductTable from "pages/ProductPage/components/ProductTable";
 import ProductDetailsPage from "pages/ProductDetailsPage";
@@ -17,17 +21,21 @@ import ToastMessageProvider from "contexts/ToastMessageContext";
 import { createTheme, ThemeProvider } from "@mui/material";
 import ProductDetail from "pages/ProductPage/components/ProductDetail";
 import ProductCreate from "pages/ProductPage/components/ProductCreate";
-import PATHS from "constants"
+import PATHS from "constants";
 import OrderTable from "pages/OrdersPage/components/OrderTable";
 // import React, { useCallback, useState, useEffect } from "react";
-import {loadStripe} from '@stripe/stripe-js';
-import {
-  EmbeddedCheckoutProvider,
-  EmbeddedCheckout
-} from '@stripe/react-stripe-js'
-import CheckoutForm from "components/CheckoutForm";
+// import { loadStripe } from "@stripe/stripe-js";
+// import {
+//   EmbeddedCheckoutProvider,
+//   EmbeddedCheckout,
+// } from "@stripe/react-stripe-js";
+// import CheckoutForm from "components/CheckoutForm";
 import Return from "components/Return";
-import OrderDetail from "pages/OrdersPage/components/OrderDetail";
+import Fallback from "components/Fallback";
+import OrderMassShip from "pages/OrdersPage/components/OrderMassShip";
+const OrderDetail = lazy(() =>
+  import("pages/OrdersPage/components/OrderDetail")
+);
 
 const router = createBrowserRouter([
   {
@@ -52,8 +60,8 @@ const router = createBrowserRouter([
           },
           {
             path: "/products/create",
-            element: <ProductCreate />
-          }
+            element: <ProductCreate />,
+          },
         ],
       },
       {
@@ -66,9 +74,21 @@ const router = createBrowserRouter([
           },
           {
             path: "/orders/:id",
-            element: <OrderDetail />
-          }
-        ]
+            element: (
+              <Suspense fallback={<Fallback />}>
+                <OrderDetail />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/orders/mass-ship",
+            element: (
+              <Suspense fallback={<Fallback />}>
+                <OrderMassShip />
+              </Suspense>
+            ),
+          },
+        ],
       },
       {
         path: "/categories",
@@ -112,14 +132,14 @@ const router = createBrowserRouter([
     path: "/login",
     element: <LoginPage />,
   },
-  {
-    path: "/checkout",
-    element: <CheckoutForm />,
-  }, 
-  {
-    path: "/return",
-    element: <Return />, 
-  }
+  // {
+  //   path: "/checkout",
+  //   element: <CheckoutForm />,
+  // },
+  // {
+  //   path: "/return",
+  //   element: <Return />,
+  // },
 ]);
 
 function App() {
@@ -131,7 +151,7 @@ function App() {
   //   }
   // }, []);
 
-  const defaultTheme = createTheme({palette: {mode: "light"}});
+  const defaultTheme = createTheme({ palette: { mode: "light" } });
 
   return (
     <ThemeProvider theme={defaultTheme}>

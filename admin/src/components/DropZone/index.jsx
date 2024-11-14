@@ -18,6 +18,7 @@ function DropZone({
       accept={{
         "image/jpeg": [],
         "image/png": [],
+        "image/webp": [],
       }}
       minSize={1024}
       maxSize={3072000}

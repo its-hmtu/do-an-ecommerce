@@ -203,7 +203,7 @@ function ProductTable() {
             </Typography>
             <Divider sx={{ my: 2 }} />
             <Sheet sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <Filter />
+              {/* <Filter categoryData={categoryData} /> */}
               <Button color="primary" onClick={() => setOpen(false)}>
                 Submit
               </Button>
@@ -334,7 +334,7 @@ function ProductTable() {
                   </th>
 
                   {/* <th style={{ width: 100, padding: "12px 6px" }}> </th> */}
-                  <th style={{ width: 140, padding: "12px 6px" }}>
+                  <th style={{ width: 160, padding: "12px 6px" }}>
                     <Link
                       underline="none"
                       color="primary"
@@ -361,7 +361,7 @@ function ProductTable() {
                     </Link>
                   </th>
                   {/* <th style={{ width: 140, padding: "12px 6px" }}>Name</th> */}
-                  <th style={{ width: 80, padding: "12px 6px" }}>Sales</th>
+                  <th style={{ width: 60, padding: "12px 24px" }}>Sales</th>
                   <th style={{ width: 80, padding: "12px 16px" }}>Price</th>
                   <th style={{ width: 80, padding: "12px 6px" }}>Stock</th>
                   <th style={{ width: 80, padding: "12px 6px" }}>Created at</th>
@@ -438,9 +438,11 @@ function ProductTable() {
                           </RouterLink>
                         </Typography>
                       </td>
-                      <td>
+                      <td style={{
+                          padding: "12px 24px",
+                        }}>
                         <Typography level="body-xs">
-                          {row.total_sold}
+                          {row.total_sold || 0}
                         </Typography>
                       </td>
                       <td
