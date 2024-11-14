@@ -10,10 +10,10 @@ const {
 } = require("../models");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { Op } = require("sequelize");
-const {
-  client: redisClient,
-  REDIS_CACHE_5_MINUTES,
-} = require("../config/redis");
+// const {
+//   client: redisClient,
+//   REDIS_CACHE_5_MINUTES,
+// } = require("../config/redis");
 const transporter = require("../config/mailer");
 const nodemailer = require("nodemailer");
 const { generateTrackingOrder } = require("../utils/helper");

@@ -55,6 +55,9 @@ exports.getStatistics = async (req, res, next) => {
 
   try {
     const { startDate, endDate } = getStartEndDates(range);
+    const previousStartDate = moment(startDate).subtract(endDate - startDate, "ms").toDate();
+    const previousEndDate = startDate;
+
     const orders = await Order.findAll({
       where: {
         status: "completed",
@@ -83,8 +86,62 @@ exports.getStatistics = async (req, res, next) => {
       ],
     });
 
+    const cancelledOrders = await Order.findAll({
+      where: {
+        status: "cancelled",
+        createdAt: { [Op.gte]: startDate, [Op.lt]: endDate },
+      },
+      include: [
+        {
+          model: OrderItem,
+          as: "order_items",
+          attributes: ["product_id", "quantity", "unit_price"],
+          include: [
+            {
+              model: Product,
+              as: "product",
+              attributes: ["product_name"],
+              include: [
+                {
+                  model: Category,
+                  as: "categories",
+                  attributes: ["id","name"],
+                },
+              ]
+            },
+          ]
+        },
+      ],
+    })
+
     const totalSales = Number(orders.reduce((acc, order) => acc + +order.total, 0).toFixed(2));
     const totalOrders = orders.length;
+    const totalCancelledOrders = cancelledOrders.length;
+    const salesPerOrder = totalOrders > 0 ? Number((totalSales / totalOrders).toFixed(2)) : 0;
+
+    const previousOrders = await Order.findAll({
+      where: {
+        status: "completed",
+        createdAt: { [Op.gte]: previousStartDate, [Op.lt]: previousEndDate },
+      },
+    })
+
+    const previousCancelledOrders = await Order.findAll({
+      where: {
+        status: "cancelled",
+        createdAt: { [Op.gte]: previousStartDate, [Op.lt]: previousEndDate },
+      },
+    })
+
+    const totalPreviousSales = Number(previousOrders.reduce((acc, order) => acc + +order.total, 0).toFixed(2));
+    const totalPreviousOrders = previousOrders.length;
+    const totalPreviousCancelledOrders = previousCancelledOrders.length;
+    const salesPerOrderPrevious = totalPreviousOrders > 0 ? Number((totalPreviousSales / totalPreviousOrders).toFixed(2)) : 0;
+
+    const salesPercentageDiff = totalPreviousSales > 0 ? Number((((totalSales - totalPreviousSales) / totalPreviousSales) * 100).toFixed(2)) : 0;
+    const ordersPercentageDiff = totalPreviousOrders > 0 ? Number((((totalOrders - totalPreviousOrders) / totalPreviousOrders) * 100).toFixed(2)) : 0;
+    const cancelledOrdersPercentageDiff = totalPreviousCancelledOrders > 0 ? Number((((totalCancelledOrders - totalPreviousCancelledOrders) / totalPreviousCancelledOrders) * 100).toFixed(2)) : 0;
+    const salesPerOrderPercentageDiff = salesPerOrderPrevious > 0 ? Number((((salesPerOrder - salesPerOrderPrevious) / salesPerOrderPrevious) * 100).toFixed(2)) : 0;
 
     const generateChartData = () => {
       const currentDateTime = moment();
@@ -174,8 +231,15 @@ exports.getStatistics = async (req, res, next) => {
     const uniqueCustomers = [
       ...new Set(orders.map((order) => order.user_id || order.guest_email)),
     ];
+    const previousUniqueCustomers = [
+      ...new Set(previousOrders.map((order) => order.user_id || order.guest_email)),
+    ];
 
-    const previousOrders = await Order.findAll({
+    const totalCustomers = uniqueCustomers.length;
+    const totalPreviousCustomers = previousUniqueCustomers.length;
+    const totalCustomersPercentageDiff = totalPreviousCustomers > 0 ? Number((((totalCustomers - totalPreviousCustomers) / totalPreviousCustomers) * 100).toFixed(2)) : 0;
+
+    const previousOrdersIn12 = await Order.findAll({
       where: {
         status: "completed",
         createdAt: { [Op.gte]: twelveMonthsBeforeStart, [Op.lt]: startDate },
@@ -183,7 +247,7 @@ exports.getStatistics = async (req, res, next) => {
     });
 
     const previousCustomerSet = new Set(
-      previousOrders.map((order) => order.user_id || order.guest_email)
+      previousOrdersIn12.map((order) => order.user_id || order.guest_email)
     );
     const existingCustomers = uniqueCustomers.filter((customer) =>
       previousCustomerSet.has(customer)
@@ -194,6 +258,18 @@ exports.getStatistics = async (req, res, next) => {
       (existingCustomers / uniqueCustomers.length) * 100 || 0;
     const newCustomersPercentage =
       (newCustomers / uniqueCustomers.length) * 100 || 0;
+    const returningRate = Number(((existingCustomers / uniqueCustomers.length) * 100).toFixed(2)) || 0;
+
+    const previousExistingCustomers = previousUniqueCustomers.filter((customer) =>
+      previousCustomerSet.has(customer)
+    ).length;
+    const previousNewCustomers = previousUniqueCustomers.length - previousExistingCustomers;
+    const previousReturningRate = Number(((previousExistingCustomers / previousUniqueCustomers.length) * 100).toFixed(2)) || 0;
+    const previousExistingCustomersPercentage = (previousExistingCustomers / previousUniqueCustomers.length) * 100 || 0;
+    const previousNewCustomersPercentage = (previousNewCustomers / previousUniqueCustomers.length) * 100 || 0; 
+    const existingCustomersPercentageDiff = previousExistingCustomersPercentage > 0 ? Number((((existingCustomersPercentage - previousExistingCustomersPercentage) / previousExistingCustomersPercentage) * 100).toFixed(2)) : 0;
+    const newCustomersPercentageDiff = previousNewCustomersPercentage > 0 ? Number((((newCustomersPercentage - previousNewCustomersPercentage) / previousNewCustomersPercentage) * 100).toFixed(2)) : 0;
+    const returningRatePercentageDiff = previousReturningRate > 0 ? Number((((returningRate - previousReturningRate) / previousReturningRate) * 100).toFixed(2)) : 0;
 
     const productRankingData = {};
     orders.forEach((order) => {
@@ -257,10 +333,20 @@ exports.getStatistics = async (req, res, next) => {
       category_ranking: categoryRanking,
       total_sales: totalSales,
       total_orders: totalOrders,
+      cancelled_orders: totalCancelledOrders,
+      sales_per_order: salesPerOrder,
+      total_customers: totalCustomers,
       existing_customers: existingCustomers,
       new_customers: newCustomers,
-      sales_per_order: totalOrders > 0 ? Number((totalSales / totalOrders).toFixed(2)) : 0,
-      total_customers: uniqueCustomers.length,
+      returning_rate: returningRate,
+      sales_percentage_diff: salesPercentageDiff,
+      orders_percentage_diff: ordersPercentageDiff,
+      cancelled_orders_percentage_diff: cancelledOrdersPercentageDiff,
+      sales_per_order_percentage_diff: salesPerOrderPercentageDiff,
+      customers_percentage_diff: totalCustomersPercentageDiff,
+      existing_customers_percentage_diff: existingCustomersPercentageDiff,
+      new_customers_percentage_diff: newCustomersPercentageDiff,
+      returning_rate_percentage_diff: returningRatePercentageDiff,
     });
   } catch (error) {
     next(error);

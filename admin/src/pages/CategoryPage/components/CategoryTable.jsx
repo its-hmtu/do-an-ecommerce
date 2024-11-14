@@ -5,50 +5,29 @@ import {
   Checkbox,
   Chip,
   Divider,
-  FormControl,
-  FormLabel,
   IconButton,
   Input,
   Link,
   Modal,
   ModalClose,
   ModalDialog,
-  Option,
-  Select,
   Sheet,
   Table,
   Typography,
-  Avatar,
-  Dropdown,
-  MenuButton,
-  Menu,
-  MenuItem,
   iconButtonClasses,
   Breadcrumbs,
   Link as MuiLink,
-  Snackbar,
 } from "@mui/joy";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
-import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
-import BlockIcon from "@mui/icons-material/Block";
-import MoreHorizRoundedIcon from "@mui/icons-material/MoreHorizRounded";
-import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getCategories, deleteCategory } from "api/categories.api";
 import { useNavigate } from "react-router-dom";
 import {
   AddCircleRounded,
-  CheckCircle,
   ChevronRightRounded,
-  Close,
   DownloadRounded,
-  HomeRounded,
-  Info,
-  Warning,
 } from "@mui/icons-material";
 import RowMenu from "components/RowMenu";
 import { getComparator } from "utils/helper";

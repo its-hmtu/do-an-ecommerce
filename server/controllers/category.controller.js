@@ -8,7 +8,7 @@ const {
 } = require("../models");
 const fs = require("fs");
 const { Op } = require("sequelize");
-const {client: redisClient, REDIS_CACHE_5_MINUTES} = require("../config/redis");
+// const {client: redisClient, REDIS_CACHE_5_MINUTES} = require("../config/redis");
 
 exports.getCategories = async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;

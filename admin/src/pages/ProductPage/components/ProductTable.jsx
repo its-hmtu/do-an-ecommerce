@@ -3,42 +3,30 @@ import {
   Box,
   Button,
   Checkbox,
-  Chip,
   Divider,
-  FormControl,
-  FormLabel,
   IconButton,
   Input,
   Link,
-  Menu,
-  MenuItem,
   Modal,
   ModalClose,
   ModalDialog,
-  Option,
-  Select,
   Sheet,
   Table,
   Typography,
   iconButtonClasses,
-  Dropdown,
-  MenuButton,
   CircularProgress,
   Breadcrumbs,
   Stack,
 } from "@mui/joy";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
-import BlockIcon from "@mui/icons-material/Block";
-import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
-import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
-import MoreHorizRoundedIcon from "@mui/icons-material/MoreHorizRounded";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import Avatar from "@mui/joy/Avatar";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { deleteMultipleProducts, deleteProduct, getProducts } from "api/products.api";
+import {
+  deleteMultipleProducts,
+  deleteProduct,
+  getProducts,
+} from "api/products.api";
 import { getAllCategories, getCategories } from "api/categories.api";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import RowMenu from "components/RowMenu";
@@ -52,7 +40,6 @@ import {
 import Filter from "components/Filter";
 import SearchBox from "components/SearchBox";
 import { Pagination } from "antd";
-import itemRender from "utils/itemRender";
 import ConfirmModal from "components/ConfirmModal";
 import { toast } from "react-toastify";
 
@@ -93,7 +80,7 @@ function ProductTable() {
     onSuccess: () => {
       queryClient.invalidateQueries("products");
     },
-  })
+  });
 
   useEffect(() => {
     refetch();
@@ -115,7 +102,7 @@ function ProductTable() {
 
   const handleDeleteSelected = async () => {
     await deleteMultipleProductsMutation.mutateAsync(selected);
-  }
+  };
 
   return (
     <React.Fragment>
@@ -250,126 +237,109 @@ function ProductTable() {
         </IconButton>
       </Box>
 
-      {isLoading ? (
-        <Box
+      <>
+        <Typography level="h4">
+          {`${data?.total_item_count || 0} ${
+            data?.total_item_count > 1 ? "Products" : "Product"
+          }`}
+        </Typography>
+        <Sheet
+          className="OrderTableContainer"
+          variant="outlined"
           sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "flex-start",
-            height: "100%",
+            display: { xs: "none", sm: "initial" },
+            width: "100%",
+            borderRadius: "sm",
+            flexShrink: 1,
+            overflow: "auto",
+            minHeight: 0,
           }}
         >
-          <CircularProgress
+          <Table
+            aria-labelledby="tableTitle"
+            stickyHeader
+            hoverRow
             sx={{
-              ".MuiCircularProgress-progress": {
-                stroke: "var(--CircularProgress-progressColor)!important",
-              },
-            }}
-          />
-        </Box>
-      ) : (
-        <>
-          <Typography level="h4">
-            {`${data?.total_item_count || 0} ${
-              data?.total_item_count > 1 ? "Products" : "Product"
-            }`}
-          </Typography>
-          <Sheet
-            className="OrderTableContainer"
-            variant="outlined"
-            sx={{
-              display: { xs: "none", sm: "initial" },
-              width: "100%",
-              borderRadius: "sm",
-              flexShrink: 1,
-              overflow: "auto",
-              minHeight: 0,
+              "--TableCell-headBackground":
+                "var(--joy-palette-background-level1)",
+              "--Table-headerUnderlineThickness": "1px",
+              "--TableRow-hoverBackground":
+                "var(--joy-palette-background-level1)",
+              "--TableCell-paddingY": "16px",
+              "--TableCell-paddingX": "8px",
             }}
           >
-            <Table
-              aria-labelledby="tableTitle"
-              stickyHeader
-              hoverRow
-              sx={{
-                "--TableCell-headBackground":
-                  "var(--joy-palette-background-level1)",
-                "--Table-headerUnderlineThickness": "1px",
-                "--TableRow-hoverBackground":
-                  "var(--joy-palette-background-level1)",
-                "--TableCell-paddingY": "16px",
-                "--TableCell-paddingX": "8px",
-              }}
-            >
-              <thead>
-                <tr>
-                  <th
-                    style={{
-                      width: 30,
-                      textAlign: "center",
-                      padding: "12px 6px",
+            <thead>
+              <tr>
+                <th
+                  style={{
+                    width: 30,
+                    textAlign: "center",
+                    padding: "12px 6px",
+                  }}
+                >
+                  <Checkbox
+                    size="sm"
+                    indeterminate={
+                      selected.length > 0 &&
+                      selected.length !== data?.products?.length
+                    }
+                    checked={selected.length === data?.products?.length}
+                    onChange={(event) => {
+                      setSelected(
+                        event.target.checked
+                          ? data?.products?.map((row) => row.id)
+                          : []
+                      );
                     }}
-                  >
-                    <Checkbox
-                      size="sm"
-                      indeterminate={
-                        selected.length > 0 &&
-                        selected.length !== data?.products?.length
-                      }
-                      checked={selected.length === data?.products?.length}
-                      onChange={(event) => {
-                        setSelected(
-                          event.target.checked
-                            ? data?.products?.map((row) => row.id)
-                            : []
-                        );
-                      }}
-                      color={
-                        selected.length > 0 ||
-                        selected.length === data?.products?.length
-                          ? "primary"
-                          : undefined
-                      }
-                      sx={{ verticalAlign: "text-bottom" }}
-                    />
-                  </th>
+                    color={
+                      selected.length > 0 ||
+                      selected.length === data?.products?.length
+                        ? "primary"
+                        : undefined
+                    }
+                    sx={{ verticalAlign: "text-bottom" }}
+                  />
+                </th>
 
-                  {/* <th style={{ width: 100, padding: "12px 6px" }}> </th> */}
-                  <th style={{ width: 160, padding: "12px 6px" }}>
-                    <Link
-                      underline="none"
-                      color="primary"
-                      component="button"
-                      onClick={() => setOrder(order === "asc" ? "desc" : "asc")}
-                      endDecorator={<ArrowDropDownIcon />}
-                      sx={[
-                        {
-                          fontWeight: "lg",
-                          "& svg": {
-                            transition: "0.2s",
-                            transform:
-                              order === "desc"
-                                ? "rotate(0deg)"
-                                : "rotate(180deg)",
-                          },
+                {/* <th style={{ width: 100, padding: "12px 6px" }}> </th> */}
+                <th style={{ width: 160, padding: "12px 6px" }}>
+                  <Link
+                    underline="none"
+                    color="primary"
+                    component="button"
+                    onClick={() => setOrder(order === "asc" ? "desc" : "asc")}
+                    endDecorator={<ArrowDropDownIcon />}
+                    sx={[
+                      {
+                        fontWeight: "lg",
+                        "& svg": {
+                          transition: "0.2s",
+                          transform:
+                            order === "desc"
+                              ? "rotate(0deg)"
+                              : "rotate(180deg)",
                         },
-                        order === "desc"
-                          ? { "& svg": { transform: "rotate(0deg)" } }
-                          : { "& svg": { transform: "rotate(180deg)" } },
-                      ]}
-                    >
-                      Product(s)
-                    </Link>
-                  </th>
-                  {/* <th style={{ width: 140, padding: "12px 6px" }}>Name</th> */}
-                  <th style={{ width: 60, padding: "12px 24px" }}>Sales</th>
-                  <th style={{ width: 80, padding: "12px 16px" }}>Price</th>
-                  <th style={{ width: 80, padding: "12px 6px" }}>Stock</th>
-                  <th style={{ width: 80, padding: "12px 6px" }}>Created at</th>
-                  <th style={{ width: 30, padding: "12px 6px" }}> </th>
-                </tr>
-              </thead>
-              <tbody>
-                {data?.products
+                      },
+                      order === "desc"
+                        ? { "& svg": { transform: "rotate(0deg)" } }
+                        : { "& svg": { transform: "rotate(180deg)" } },
+                    ]}
+                  >
+                    Product(s)
+                  </Link>
+                </th>
+                {/* <th style={{ width: 140, padding: "12px 6px" }}>Name</th> */}
+                <th style={{ width: 60, padding: "12px 24px" }}>Sales</th>
+                <th style={{ width: 80, padding: "12px 16px" }}>Price</th>
+                <th style={{ width: 80, padding: "12px 6px" }}>Stock</th>
+                <th style={{ width: 80, padding: "12px 6px" }}>Created at</th>
+                <th style={{ width: 30, padding: "12px 6px" }}> </th>
+              </tr>
+            </thead>
+            <tbody>
+              {data?.products.length > 0 ? (
+                data?.products
                   ?.sort(getComparator(order, "name"))
                   ?.map((row, index) => (
                     <tr key={row.id}>
@@ -438,9 +408,11 @@ function ProductTable() {
                           </RouterLink>
                         </Typography>
                       </td>
-                      <td style={{
+                      <td
+                        style={{
                           padding: "12px 24px",
-                        }}>
+                        }}
+                      >
                         <Typography level="body-xs">
                           {row.total_sold || 0}
                         </Typography>
@@ -493,86 +465,114 @@ function ProductTable() {
                         </Box>
                       </td>
                     </tr>
-                  ))}
-                {selected.length > 0 && (
-                  <tr>
-                    <td colSpan={7} style={{ padding: 0 }}>
+                  ))
+              ) : (
+                <tr>
+                  <td colSpan={7}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        flexDirection: "column",
+                        gap: 1,
+                        alignItems: "center",
+                        height: 200,
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          fontSize: 16,
+                          color: "#757575",
+                        }}
+                      >
+                        No products found
+                      </Typography>
+
+                      <Button size="sm" color="primary" variant="plain">
+                        Refresh
+                      </Button>
+                    </Box>
+                  </td>
+                </tr>
+              )}
+              {selected.length > 0 && (
+                <tr>
+                  <td colSpan={7} style={{ padding: 0 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        gap: 2,
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: 2,
+                      }}
+                    >
+                      <Typography level="body-xs">
+                        {selected.length} selected
+                      </Typography>
+
                       <Box
                         sx={{
                           display: "flex",
                           gap: 2,
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          padding: 2,
                         }}
                       >
-                        <Typography level="body-xs">
-                          {selected.length} selected
-                        </Typography>
-
-                        <Box
-                          sx={{
-                            display: "flex",
-                            gap: 2,
+                        <Button
+                          color="neutral"
+                          variant="outlined"
+                          size="sm"
+                          onClick={() => {
+                            setSelected(data?.products?.map((row) => row.id));
                           }}
                         >
-                          
-                          <Button
-                            color='neutral'
-                            variant="outlined"
-                            size="sm"
-                            onClick={() => {
-                              setSelected(data?.products?.map((row) => row.id));
-                            }}
-                          >
-                            Select all
-                          </Button>
+                          Select all
+                        </Button>
 
-                          <Button
-                            color="danger"
-                            size="sm"
-                            onClick={() => setOpenDelete(true)}
-                          >
-                            Delete
-                          </Button>
-                        </Box>
+                        <Button
+                          color="danger"
+                          size="sm"
+                          onClick={() => setOpenDelete(true)}
+                        >
+                          Delete
+                        </Button>
                       </Box>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </Table>
-          </Sheet>
+                    </Box>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+        </Sheet>
 
-          <Box
-            className="Pagination-laptopUp"
-            sx={{
-              pt: 2,
-              gap: 1,
-              [`& .${iconButtonClasses.root}`]: { borderRadius: "50%" },
-              display: {
-                xs: "none",
-                md: "flex",
-              },
-              justifyContent: "flex-end",
-            }}
-          >
-            <Pagination
-              current={data?.current_page || 1}
-              total={data?.total_item_count || 0}
-              onChange={(page) => setPage(page)}
-              showSizeChanger
-              onShowSizeChange={(current, size) => setPageSize(size)}
-              defaultPageSize={pageSize}
-              // showTotal={(total, range) =>
-              //   `${range[0]}-${range[1]} of ${total} items`
-              // }
-              // hideOnSinglePage
-              // itemRender={itemRender}
-            />
-          </Box>
-        </>
-      )}
+        <Box
+          className="Pagination-laptopUp"
+          sx={{
+            pt: 2,
+            gap: 1,
+            [`& .${iconButtonClasses.root}`]: { borderRadius: "50%" },
+            display: {
+              xs: "none",
+              md: "flex",
+            },
+            justifyContent: "flex-end",
+          }}
+        >
+          <Pagination
+            current={data?.current_page || 1}
+            total={data?.total_item_count || 0}
+            onChange={(page) => setPage(page)}
+            showSizeChanger
+            onShowSizeChange={(current, size) => setPageSize(size)}
+            defaultPageSize={pageSize}
+            // showTotal={(total, range) =>
+            //   `${range[0]}-${range[1]} of ${total} items`
+            // }
+            // hideOnSinglePage
+            // itemRender={itemRender}
+          />
+        </Box>
+      </>
+
       <ConfirmModal
         open={openDelete}
         onClose={() => {

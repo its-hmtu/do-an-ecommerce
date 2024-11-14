@@ -145,7 +145,7 @@ function DashboardPage() {
       helpTitle:
         "Total value of placed orders (paid and unpaid) over the selected time period, including sales from cancelled and return/refund orders.",
       total: data?.total_sales,
-      percentage: data?.sales_percentage,
+      percentage: data?.sales_percentage_diff,
       type: "sales",
     },
     {
@@ -153,7 +153,7 @@ function DashboardPage() {
       helpTitle:
         "Total number of placed orders (paid and unpaid) over the selected time period, including cancelled and return/refund orders.",
       total: data?.total_orders,
-      percentage: data?.orders_percentage,
+      percentage: data?.orders_percentage_diff,
       type: "orders",
     },
     {
@@ -161,16 +161,48 @@ function DashboardPage() {
       helpTitle:
         "Total number of placed orders (paid and unpaid) over the selected time period, including cancelled and return/refund orders.",
       total: data?.total_orders,
-      percentage: data?.orders_percentage,
-      type: "orders",
+      percentage: data?.cancelled_orders_percentage_diff,
+      type: "cancelled_orders",
     },
     {
       title: "Sales per Order",
       helpTitle:
         "Average value of product(s) from your store sold in a single order, over the selected time period. Total sales divided by total number of orders.",
       total: data?.sales_per_order,
-      percentage: data?.orders_percentage,
-      type: "sales",
+      percentage: data?.sales_per_order_percentage_diff,
+      type: "sales_per_order",
+    },
+    {
+      title: "Total Customers",
+      helpTitle:
+        "Total number of customers who created an account over the selected time period.",
+      total: data?.total_customers,
+      percentage: data?.total_customers_percentage_diff,
+      type: "total_customers",
+    },
+    {
+      title: "New Customers",
+      helpTitle:
+        "Total number of new customers who created an account over the selected time period.",
+      total: data?.new_customers,
+      percentage: data?.new_customers_percentage_diff,
+      type: "new_customers",
+    },
+    {
+      title: "Existing Customers",
+      helpTitle:
+        "Total number of existing customers who created an account over the selected time period.",
+      total: data?.existing_customers,
+      percentage: data?.existing_customers_percentage_diff,
+      type: "existing_customers",
+    },
+    {
+      title: "Returning Rate",
+      helpTitle:
+        "Percentage of customers who made more than one order over the selected time period.",
+      total: data?.returning_rate,
+      percentage: data?.returning_rate_percentage_diff,
+      type: "returning_rate",
     },
   ];
 
@@ -348,11 +380,12 @@ function DashboardPage() {
           flexDirection: "row",
         }}
       >
-        {sumaryCards.map((item, index) => (
+        {sumaryCards.slice(0, 4).map((item, index) => (
           <SumaryCard
             title={item.title}
             helpTitle={item.helpTitle}
             total={item.total}
+            range={statisticQuery.range}
             percentage={item.percentage}
             type={item.type}
           />
@@ -439,7 +472,7 @@ function DashboardPage() {
         >
           <ResponsiveContainer
             width="40%"
-            height={300}
+            height={266.3}
             style={{
               marginBottom: "24px",
               border: "2px solid #f0f0f0",
@@ -490,44 +523,53 @@ function DashboardPage() {
               <Legend />
             </PieChart>
           </ResponsiveContainer>
-          <Stack
-            gap={2}
-            direction="row"
-            width={"60%"}
-            justifyContent="space-between"
-            sx={{
-              "& > *": {
-                width: "100%",
-              },
-            }}
-          >
-            <Card>
-              <SumaryCard
-                title="Total Customers"
-                helpTitle="Total number of new customers who created an account over the selected time period."
-                total={data?.total_customers}
-                percentage={data?.new_customers_percentage}
-                type="customers"
-              />
-            </Card>
-            <Card>
-              <SumaryCard
-                title="New Customers"
-                helpTitle="Total number of new customers who created an account over the selected time period."
-                total={data?.new_customers}
-                percentage={data?.new_customers_percentage}
-                type="customers"
-              />
-            </Card>
-            <Card>
-              <SumaryCard
-                title="Existing Customers"
-                helpTitle="Total number of new customers who created an account over the selected time period."
-                total={data?.existing_customers}
-                percentage={data?.new_customers_percentage}
-                type="customers"
-              />
-            </Card>
+          <Stack width={"60%"} gap={2}>
+            <Stack
+              gap={2}
+              direction="row"
+              justifyContent="space-between"
+              sx={{
+                "& > *": {
+                  width: "100%",
+                },
+              }}
+            >
+              {sumaryCards.slice(4, 7).map((item, index) => (
+                <Card>
+                  <SumaryCard
+                    title={item.title}
+                    helpTitle={item.helpTitle}
+                    total={item.total}
+                    range={statisticQuery.range}
+                    percentage={item.percentage}
+                    type={item.type}
+                  />
+                </Card>
+              ))}
+            </Stack>
+            <Stack
+              gap={2}
+              direction="row"
+              justifyContent="space-between"
+              sx={{
+                "& > *": {
+                  width: "32.23%",
+                },
+              }}
+            >
+              {sumaryCards.slice(7).map((item, index) => (
+                <Card>
+                  <SumaryCard
+                    title={item.title}
+                    helpTitle={item.helpTitle}
+                    total={item.total}
+                    range={statisticQuery.range}
+                    percentage={item.percentage}
+                    type={item.type}
+                  />
+                </Card>
+              ))}
+            </Stack>
           </Stack>
         </Box>
       </Box>
@@ -604,9 +646,14 @@ function DashboardPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="4" style={{
-                      textAlign: 'center'
-                    }}>No data</td>
+                    <td
+                      colSpan="4"
+                      style={{
+                        textAlign: "center",
+                      }}
+                    >
+                      No data
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -684,9 +731,14 @@ function DashboardPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="4" style={{
-                      textAlign: 'center'
-                    }}>No data</td>
+                    <td
+                      colSpan="4"
+                      style={{
+                        textAlign: "center",
+                      }}
+                    >
+                      No data
+                    </td>
                   </tr>
                 )}
               </tbody>
