@@ -1,153 +1,266 @@
-const { Order, OrderItem } = require("../models");
+const { Order, OrderItem, Product, Category } = require("../models");
 const { Op } = require("sequelize");
 const moment = require("moment");
 
 exports.getStatistics = async (req, res, next) => {
   const { range, date, week, month, year, paid } = req.query;
 
-  let startDate, endDate;
-
-  switch (range) {
-    case "today":
-      startDate = moment().startOf("day").toDate();
-      endDate = moment().endOf("day").toDate();
-      break;
-    case "yesterday":
-      startDate = moment().subtract(1, "day").startOf("day").toDate();
-      endDate = moment().subtract(1, "day").endOf("day").toDate();
-      break;
-    case "last7days":
-      startDate = moment().subtract(7, "days").startOf("day").toDate();
-      endDate = moment().endOf("day").toDate();
-      break;
-    case "last30days":
-      startDate = moment().subtract(30, "days").startOf("day").toDate();
-      endDate = moment().endOf("day").toDate();
-      break;
-    case "date":
-      startDate = moment(date).startOf("day").toDate();
-      endDate = moment(date).endOf("day").toDate();
-      break;
-    case "week":
-      startDate = moment(week, "YYYY-WW").startOf("week").toDate();
-      endDate = moment(week, "YYYY-WW").endOf("week").toDate();
-      break;
-    case "month":
-      startDate = moment(`${year}-${month}-01`).startOf("month").toDate();
-      endDate = moment(`${year}-${month}-01`).endOf("month").toDate();
-      break;
-    case "year":
-      startDate = moment(`${year}-01-01`).startOf("year").toDate();
-      endDate = moment(`${year}-12-31`).endOf("year").toDate();
-      break;
-    default:
-      return res.status(400).json({ message: "Invalid range specified" });
-  }
+  const getStartEndDates = (range) => {
+    const today = moment().startOf("day");
+    switch (range) {
+      case "today":
+        return {
+          startDate: today.toDate(),
+          endDate: today.endOf("day").toDate(),
+        };
+      case "yesterday":
+        return {
+          startDate: today.subtract(1, "day").startOf("day").toDate(),
+          endDate: today.endOf("day").toDate(),
+        };
+      case "last7days":
+        return {
+          startDate: today.subtract(7, "days").toDate(),
+          endDate: moment().toDate(),
+        };
+      case "last30days":
+        return {
+          startDate: today.subtract(30, "days").toDate(),
+          endDate: moment().toDate(),
+        };
+      case "date":
+        return {
+          startDate: moment(date).startOf("day").toDate(),
+          endDate: moment(date).endOf("day").toDate(),
+        };
+      case "week":
+        return {
+          startDate: moment(week, "YYYY-WW").startOf("week").toDate(),
+          endDate: moment(week, "YYYY-WW").endOf("week").toDate(),
+        };
+      case "month":
+        return {
+          startDate: moment(`${year}-${month}-01`).startOf("month").toDate(),
+          endDate: moment(`${year}-${month}-01`).endOf("month").toDate(),
+        };
+      case "year":
+        return {
+          startDate: moment(`${year}-01-01`).startOf("year").toDate(),
+          endDate: moment(`${year}-12-31`).endOf("year").toDate(),
+        };
+      default:
+        throw new Error("Invalid range specified");
+    }
+  };
 
   try {
-    const whereCondition = {
-      status: "completed",
-      createdAt: {
-        [Op.gte]: startDate,
-        [Op.lt]: endDate,
-      },
-    };
-
+    const { startDate, endDate } = getStartEndDates(range);
     const orders = await Order.findAll({
-      where: whereCondition,
+      where: {
+        status: "completed",
+        createdAt: { [Op.gte]: startDate, [Op.lt]: endDate },
+      },
       include: [
         {
           model: OrderItem,
           as: "order_items",
-          attributes: ["product_id", "quantity"],
+          attributes: ["product_id", "quantity", "unit_price"],
+          include: [
+            {
+              model: Product,
+              as: "product",
+              attributes: ["product_name"],
+              include: [
+                {
+                  model: Category,
+                  as: "categories",
+                  attributes: ["id","name"],
+                },
+              ]
+            },
+          ]
         },
       ],
     });
 
-    const totalSales = orders.reduce((acc, order) => acc + +order.total, 0);
+    const totalSales = Number(orders.reduce((acc, order) => acc + +order.total, 0).toFixed(2));
     const totalOrders = orders.length;
 
-    // const productRanking = orders.reduce((acc, order) => {
-    //   order.order_items.forEach((item) => {
-    //     if (acc[item.product_id]) {
-    //       acc[item.product_id] += +item.quantity;
-    //     } else {
-    //       acc[item.product_id] = +item.quantity;
-    //     }
-    //   });
-    //   return acc;
-    // }, {});
+    const generateChartData = () => {
+      const currentDateTime = moment();
+      const chartDataGenerators = {
+        date: () => generateHourlyData(),
+        today: () => generateHourlyData(),
+        yesterday: () => generateHourlyData(),
+        week: () => generateDailyData(7),
+        month: () => generateDailyData(moment(startDate).daysInMonth()),
+        year: () => generateMonthlyData(),
+        last7days: () => generateDailyData(7),
+        last30days: () => generateDailyData(30),
+      };
+      return chartDataGenerators[range]?.();
 
-    // const sortedProductRanking = Object.keys(productRanking).sort(
-    //   (a, b) => productRanking[b] - productRanking[a]
-    // );
+      function generateHourlyData() {
+        return Array.from({ length: 24 }, (_, hour) => {
+          const hourStart = moment(startDate).add(hour, "hours");
+          const hourEnd = hourStart.clone().add(1, "hour");
 
-    let chartData = [];
-    if (range === "date" || range === "today" || range === "yesterday") {
-      const hours = Array.from({ length: 24 }, (_, i) => i);
-      const currentDateTime = moment(); // Get current date and time
-      const selectedDate = moment(date).startOf("day"); // Start of the selected day
-
-      chartData = hours.map((hour) => {
-        const hourString = `${hour.toString().padStart(2, "0")}:00`;
-
-        // Define the start and end of the hour interval
-        const hourStart = selectedDate.clone().add(hour, "hours");
-        const hourEnd = hourStart.clone().add(1, "hour");
-
-        const sales = orders.reduce((acc, order) => {
-          const orderDateTime = moment(order.createdAt);
-
-          // Check if order was created within the hour interval
-          return orderDateTime.isBetween(hourStart, hourEnd, null, "[)")
-            ? acc + Number(order.total)
-            : acc;
-        }, 0);
-
-        return {
-          hourRange: hourString,
-          sales: hourStart.isBefore(currentDateTime) ? sales : null, // Only show data up to the current time
-          orders: orders.filter((order) =>
-            moment(order.createdAt).isBetween(hourStart, hourEnd, null, "[)")
-          ).length,
-        };
-      });
-    } else {
-      const dateRange = [];
-      let currentDate = moment(startDate);
-      while (currentDate.isSameOrBefore(endDate)) {
-        dateRange.push(currentDate.format("YYYY-MM-DD"));
-        currentDate = currentDate.add(1, "day");
+          return buildChartDataEntry(
+            hourStart,
+            hourEnd,
+            `${hour.toString().padStart(2, "0")}:00`
+          );
+        });
       }
 
-      chartData = dateRange.reduce((acc, date) => {
-        const sales = orders.reduce((acc, order) => {
-          const orderDate = moment(order.createdAt).format("YYYY-MM-DD");
-          return orderDate === date ? acc + +order.total : acc;
-        }, 0);
+      function generateDailyData(days) {
+        return Array.from({ length: days }, (_, day) => {
+          const dayStart = moment(startDate).add(day, "days");
+          const dayEnd = dayStart.clone().add(1, "day");
 
-        // return in { x , y } format
+          return buildChartDataEntry(dayStart, dayEnd, `${day + 1}`);
+        });
+      }
+
+      function generateMonthlyData() {
+        return Array.from({ length: 12 }, (_, month) => {
+          const monthStart = moment(startDate)
+            .add(month, "months")
+            .startOf("month");
+          const monthEnd = monthStart.clone().endOf("month");
+
+          return buildChartDataEntry(
+            monthStart,
+            monthEnd,
+            monthStart.format("MMM")
+          );
+        });
+      }
+
+      function buildChartDataEntry(start, end, label) {
+        const sales = orders.reduce(
+          (acc, order) =>
+            moment(order.createdAt).isBetween(start, end, null, "[)")
+              ? acc + Number(order.total)
+              : acc,
+          0
+        );
+
+        const orderCount = orders.filter((order) =>
+          moment(order.createdAt).isBetween(start, end, null, "[)")
+        ).length;
+
+        const uniqueCustomers = new Set(
+          orders
+            .filter((order) =>
+              moment(order.createdAt).isBetween(start, end, null, "[)")
+            )
+            .map((order) => order.user_id || order.guest_email)
+        ).size;
+
         return {
-          ...acc,
-          date: date,
-          sales: sales,
+          label,
+          sales: start.isBefore(currentDateTime) ? Number(sales.toFixed(2)) : null,
+          orders: start.isBefore(currentDateTime) ? orderCount : null,
+          customers: start.isBefore(currentDateTime) ? uniqueCustomers : null,
         };
-      }, {});
-    }
+      }
+    };
 
-    return res.json({
-      data: chartData,
+    const chartData = generateChartData();
+    const twelveMonthsBeforeStart = moment(startDate)
+      .subtract(12, "months")
+      .toDate();
+    const uniqueCustomers = [
+      ...new Set(orders.map((order) => order.user_id || order.guest_email)),
+    ];
+
+    const previousOrders = await Order.findAll({
+      where: {
+        status: "completed",
+        createdAt: { [Op.gte]: twelveMonthsBeforeStart, [Op.lt]: startDate },
+      },
+    });
+
+    const previousCustomerSet = new Set(
+      previousOrders.map((order) => order.user_id || order.guest_email)
+    );
+    const existingCustomers = uniqueCustomers.filter((customer) =>
+      previousCustomerSet.has(customer)
+    ).length;
+    const newCustomers = uniqueCustomers.length - existingCustomers;
+
+    const existingCustomersPercentage =
+      (existingCustomers / uniqueCustomers.length) * 100 || 0;
+    const newCustomersPercentage =
+      (newCustomers / uniqueCustomers.length) * 100 || 0;
+
+    const productRankingData = {};
+    orders.forEach((order) => {
+      order?.order_items?.forEach((item) => {
+        const { product_id, quantity, unit_price } = item;
+        if (!productRankingData[product_id]) {
+          productRankingData[product_id] = { quantity: 0, sales: 0 };
+        }
+        productRankingData[product_id].quantity += Number(quantity);
+        productRankingData[product_id].sales += Number(quantity) * Number(unit_price);
+      });
+    });
+
+    const categoryRankingData = {};
+    orders.forEach((order) => {
+      order?.order_items?.forEach((item) => {
+        const { product } = item;
+        const { categories } = product;
+        categories.forEach((category) => {
+          const { id, name } = category;
+          if (!categoryRankingData[id]) {
+            categoryRankingData[id] = { quantity: 0, sales: 0 };
+          }
+          categoryRankingData[id].quantity += Number(item.quantity);
+          categoryRankingData[id].sales += Number(item.quantity) * Number(item.unit_price);
+        });
+      });
+    })
+
+    const productRanking = Object.entries(productRankingData)
+      .map(([product_id, data]) => ({
+        product_id: product_id,
+        units_sold: data.quantity,
+        total_sales: Number(data.sales.toFixed(2)),
+      }))
+      .sort((a, b) => b.units_sold - a.units_sold).slice(0, 5);
+
+    const categoryRanking = Object.entries(categoryRankingData)
+      .map(([category_id, data]) => ({
+        category_id: category_id,
+        units_sold: data.quantity,
+        total_sales: Number(data.sales.toFixed(2)),
+      }))
+      .sort((a, b) => b.units_sold - a.units_sold).slice(0, 5);
+
+    res.json({
+      data: {
+        line_chart_data: chartData,
+        customers_percentages: [
+          {
+            type: "Existing Customer",
+            percentage: existingCustomersPercentage.toFixed(2),
+          },
+          {
+            type: "New Customer",
+            percentage: newCustomersPercentage.toFixed(2),
+          },
+        ],
+      },
+      product_ranking: productRanking,
+      category_ranking: categoryRanking,
       total_sales: totalSales,
       total_orders: totalOrders,
-      // Average value of product(s) from your store sold in a single order, over the selected time period. Total sales divided by total number of orders
-      sales_per_order: totalOrders > 0 ? totalSales / totalOrders : 0,
-      total_customers: orders.reduce((acc, order) => {
-        if ((order.user_id && !acc.includes(order.user_id)) || (order.guest_email && !acc.includes(order.guest_email))) {
-          acc.push(order.user_id) || acc.push(order.guest_email);
-        }
-        return acc;
-      }
-      , []).length,
+      existing_customers: existingCustomers,
+      new_customers: newCustomers,
+      sales_per_order: totalOrders > 0 ? Number((totalSales / totalOrders).toFixed(2)) : 0,
+      total_customers: uniqueCustomers.length,
     });
   } catch (error) {
     next(error);
