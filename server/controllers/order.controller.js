@@ -261,17 +261,28 @@ exports.getOrders = async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   const pageSize = parseInt(req.query.limit) || 10;
   const order = req.query.order || "DESC";
-  const q = req.query.q || "";
+  const q = req.query.q || null;
   const sort = req.query.sort || "createdAt";
   const offset = (page - 1) * pageSize;
+  const isPaid = req.query.is_paid || null;
 
   try {
+    const whereCondition = {
+     
+    }
+
+    if (q) {
+      whereCondition.status = {
+        [Op.like]: `%${q}%`,
+      }
+    }
+
+    if (isPaid) {
+      whereCondition.is_paid = isPaid;
+    }
+    
     const orders = await Order.findAndCountAll({
-      where: {
-        status: {
-          [Op.like]: `%${q}%`,
-        },
-      },
+      where: whereCondition,
       // exclude: ['tracking_number'],
       include: [
         {
@@ -326,6 +337,7 @@ exports.getOrders = async (req, res, next) => {
 
     res.status(200).json({
       data: orders.rows,
+      total: orders.count,
       ...pagination,
     });
   } catch (e) {
@@ -374,6 +386,7 @@ exports.getOrdersByStatus = async (req, res, next) => {
       message: "Orders retrieved successfully",
       success: true,
       data: orders,
+      total: orders.length,
     });
   } catch (e) {
     next(e);

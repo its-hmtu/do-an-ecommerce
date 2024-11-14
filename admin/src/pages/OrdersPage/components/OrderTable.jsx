@@ -2,28 +2,9 @@ import React, { lazy, Suspense, useEffect } from "react";
 import {
   Box,
   Button,
-  Checkbox,
   Chip,
-  Divider,
-  FormControl,
-  FormLabel,
-  IconButton,
-  Input,
   Link,
-  Modal,
-  ModalClose,
-  ModalDialog,
-  Option,
-  Select,
-  Sheet,
-  Table,
   Typography,
-  Avatar,
-  Dropdown,
-  MenuButton,
-  Menu,
-  MenuItem,
-  iconButtonClasses,
   Breadcrumbs,
   Tabs,
   TabList,
@@ -33,29 +14,15 @@ import {
   Stack,
   TextField,
 } from "@mui/joy";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import SearchIcon from "@mui/icons-material/Search";
-import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
-import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
-import BlockIcon from "@mui/icons-material/Block";
-import MoreHorizRoundedIcon from "@mui/icons-material/MoreHorizRounded";
-import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
-import {
-  ChevronRightRounded,
-  DownloadRounded,
-  HomeRounded,
-  LocalShippingRounded,
-} from "@mui/icons-material";
+import { ChevronRightRounded, DownloadRounded } from "@mui/icons-material";
 import Filter from "components/Filter";
 import { useQuery } from "@tanstack/react-query";
-import { exportToExcel, getOrders } from "api/orders.api";
+import { exportToExcel, getOrders, getOrdersByStatus } from "api/orders.api";
 import { getComparator } from "utils/helper";
 import RowMenu from "components/RowMenu";
 import { useNavigate } from "react-router-dom";
 import SearchBox from "components/SearchBox";
-import { Pagination, DatePicker } from "antd";
+import { DatePicker } from "antd";
 import { CircularProgress } from "@mui/material";
 import { saveAs } from "file-saver";
 import moment from "moment";
@@ -83,8 +50,30 @@ const OrderTable = () => {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: "orders",
-    queryFn: getOrders,
+    queryKey: [
+      "orders",
+      { q: status, page, limit: pageSize, order, sort: "createdAt" },
+    ],
+    queryFn: () =>
+      getOrders({
+        q: status,
+        page: page,
+        is_paid: paid,
+        limit: pageSize,
+        order: order,
+        sort: "createdAt",
+      }),
+  });
+
+  useEffect(() => {
+    refetch();
+  }, [status, page, pageSize, order, paid, refetch]);
+
+  const {
+    data: ordersByStatus,
+  } = useQuery({
+    queryKey: ["orders", { status: "pending" }],
+    queryFn: () => getOrdersByStatus("pending"),
   });
 
   const handleExport = async () => {
@@ -191,7 +180,7 @@ const OrderTable = () => {
             size="sm"
             onClick={handleExport}
           >
-            Export report
+            Export Report
           </Button>
         </Box>
       </Box>
@@ -267,8 +256,7 @@ const OrderTable = () => {
                 ml: 1,
               }}
             >
-              {orders?.data.filter((order) => order.status === "pending")
-                .length || 0}
+              {ordersByStatus?.total || 0}
             </Chip>
           </Tab>
           <Tab>Shipped</Tab>
@@ -297,10 +285,7 @@ const OrderTable = () => {
           }}
         >
           <TabPanelAll
-            orders={{
-              ...orders,
-              data: orders?.data.filter((order) => order.is_paid === true),
-            }}
+            orders={orders}
             pageSize={pageSize}
             handleSetPage={(page) => setPage(page)}
             handleSetPageSize={(pageSize) => setPageSize(pageSize)}
@@ -313,10 +298,7 @@ const OrderTable = () => {
           }}
         >
           <TabPanelAll
-            orders={{
-              ...orders,
-              data: orders?.data.filter((order) => order.status === "pending"),
-            }}
+            orders={orders}
             pageSize={pageSize}
             handleSetPage={(page) => setPage(page)}
             handleSetPageSize={(pageSize) => setPageSize(pageSize)}
@@ -330,10 +312,7 @@ const OrderTable = () => {
           }}
         >
           <TabPanelAll
-            orders={{
-              ...orders,
-              data: orders?.data.filter((order) => order.status === "shipped"),
-            }}
+            orders={orders}
             pageSize={pageSize}
             handleSetPage={(page) => setPage(page)}
             handleSetPageSize={(pageSize) => setPageSize(pageSize)}
@@ -347,12 +326,7 @@ const OrderTable = () => {
           }}
         >
           <TabPanelAll
-            orders={{
-              ...orders,
-              data: orders?.data.filter(
-                (order) => order.status === "delivered"
-              ),
-            }}
+            orders={orders}
             pageSize={pageSize}
             handleSetPage={(page) => setPage(page)}
             handleSetPageSize={(pageSize) => setPageSize(pageSize)}
@@ -366,12 +340,7 @@ const OrderTable = () => {
           }}
         >
           <TabPanelAll
-            orders={{
-              ...orders,
-              data: orders?.data.filter(
-                (order) => order.status === "completed"
-              ),
-            }}
+            orders={orders}
             pageSize={pageSize}
             handleSetPage={(page) => setPage(page)}
             handleSetPageSize={(pageSize) => setPageSize(pageSize)}
@@ -386,12 +355,7 @@ const OrderTable = () => {
           s
         >
           <TabPanelAll
-            orders={{
-              ...orders,
-              data: orders?.data.filter(
-                (order) => order.status === "cancelled"
-              ),
-            }}
+            orders={orders}
             pageSize={pageSize}
             handleSetPage={(page) => setPage(page)}
             handleSetPageSize={(pageSize) => setPageSize(pageSize)}
@@ -405,10 +369,7 @@ const OrderTable = () => {
           }}
         >
           <TabPanelAll
-            orders={{
-              ...orders,
-              data: orders?.data.filter((order) => order.status === "refunded"),
-            }}
+            orders={orders}
             pageSize={pageSize}
             handleSetPage={(page) => setPage(page)}
             handleSetPageSize={(pageSize) => setPageSize(pageSize)}

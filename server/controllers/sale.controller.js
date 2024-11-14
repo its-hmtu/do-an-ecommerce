@@ -276,8 +276,9 @@ exports.getStatistics = async (req, res, next) => {
       order?.order_items?.forEach((item) => {
         const { product_id, quantity, unit_price } = item;
         if (!productRankingData[product_id]) {
-          productRankingData[product_id] = { quantity: 0, sales: 0 };
+          productRankingData[product_id] = { quantity: 0, sales: 0, product_name: "" };
         }
+        productRankingData[product_id].product_name = item.product.product_name;
         productRankingData[product_id].quantity += Number(quantity);
         productRankingData[product_id].sales += Number(quantity) * Number(unit_price);
       });
@@ -291,8 +292,9 @@ exports.getStatistics = async (req, res, next) => {
         categories.forEach((category) => {
           const { id, name } = category;
           if (!categoryRankingData[id]) {
-            categoryRankingData[id] = { quantity: 0, sales: 0 };
+            categoryRankingData[id] = { quantity: 0, sales: 0, category_name: "" };
           }
+          categoryRankingData[id].category_name = name;
           categoryRankingData[id].quantity += Number(item.quantity);
           categoryRankingData[id].sales += Number(item.quantity) * Number(item.unit_price);
         });
@@ -302,6 +304,7 @@ exports.getStatistics = async (req, res, next) => {
     const productRanking = Object.entries(productRankingData)
       .map(([product_id, data]) => ({
         product_id: product_id,
+        product_name: data.product_name,
         units_sold: data.quantity,
         total_sales: Number(data.sales.toFixed(2)),
       }))
@@ -310,25 +313,24 @@ exports.getStatistics = async (req, res, next) => {
     const categoryRanking = Object.entries(categoryRankingData)
       .map(([category_id, data]) => ({
         category_id: category_id,
+        category_name: data.category_name,
         units_sold: data.quantity,
         total_sales: Number(data.sales.toFixed(2)),
       }))
       .sort((a, b) => b.units_sold - a.units_sold).slice(0, 5);
 
     res.json({
-      data: {
-        line_chart_data: chartData,
-        customers_percentages: [
-          {
-            type: "Existing Customer",
-            percentage: existingCustomersPercentage.toFixed(2),
-          },
-          {
-            type: "New Customer",
-            percentage: newCustomersPercentage.toFixed(2),
-          },
-        ],
-      },
+      line_chart_data: chartData,
+      pie_chart_data: [
+        {
+          type: "Existing Customer",
+          percentage: existingCustomersPercentage.toFixed(2),
+        },
+        {
+          type: "New Customer",
+          percentage: newCustomersPercentage.toFixed(2),
+        },
+      ],
       product_ranking: productRanking,
       category_ranking: categoryRanking,
       total_sales: totalSales,

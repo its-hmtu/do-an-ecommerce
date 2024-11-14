@@ -35,6 +35,8 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import TabPanelAll from "pages/OrdersPage/components/TabPanelAll";
+import { getOrders } from "api/orders.api";
 
 function DashboardPage() {
   const [statisticQuery, setStatisticQuery] = useState({
@@ -251,6 +253,7 @@ function DashboardPage() {
       <Typography level="h2" component="h1">
         Dashboard
       </Typography>
+      <Typography level="h3">Insights</Typography>
       <Box
         sx={{
           display: "flex",
@@ -367,11 +370,10 @@ function DashboardPage() {
           startDecorator={<DownloadRoundedIcon />}
           size="sm"
         >
-          Export reports
+          Export Report
         </Button>
       </Box>
       <Typography level="body-md">Showing data for {pickerText} </Typography>
-
       <Card
         sx={{
           display: "flex",
@@ -391,7 +393,6 @@ function DashboardPage() {
           />
         ))}
       </Card>
-
       <Typography level="h4" component="h2">
         Trend Chart of Each Metric
       </Typography>
@@ -400,11 +401,15 @@ function DashboardPage() {
         height={400}
         style={{ marginBottom: "24px" }}
       >
-        <LineChart data={data?.data?.line_chart_data}>
+        <LineChart data={data?.line_chart_data}>
           <CartesianGrid strokeDasharray="0 0" />
-          <XAxis dataKey="label" tick={{ fill: "#888888", fontSize: 12 }} />
+          <XAxis
+            dataKey="label"
+            tick={{ fill: "#888888", fontSize: 12 }}
+            interval="preserveStartEnd"
+          />
           <YAxis yAxisId="sales" hide />
-          <YAxis yAxisId="orders" />
+          <YAxis yAxisId="orders" hide />
           <Tooltip
             labelFormatter={
               picker === "day"
@@ -418,15 +423,16 @@ function DashboardPage() {
                         : `${parseInt(value.split(":")[0]) + 1}:00`
                     }`;
                   }
-                : ""
+                : (value) => {
+                    return value;
+                  }
             }
           />
           <Legend
-            verticalAlign="top"
             height={36}
             align="center"
             wrapperStyle={{
-              top: 0,
+              bottom: 0,
               left: 0,
               right: 0,
               margin: "0 auto",
@@ -453,7 +459,6 @@ function DashboardPage() {
           />
         </LineChart>
       </ResponsiveContainer>
-
       <Box>
         <Typography level="h4" component="h2">
           Customers
@@ -472,7 +477,7 @@ function DashboardPage() {
         >
           <ResponsiveContainer
             width="40%"
-            height={266.3}
+            height={300}
             style={{
               marginBottom: "24px",
               border: "2px solid #f0f0f0",
@@ -481,7 +486,7 @@ function DashboardPage() {
           >
             <PieChart>
               <Pie
-                data={data?.data?.customers_percentages.map((item) => ({
+                data={data?.pie_chart_data.map((item) => ({
                   ...item,
                   percentage: parseFloat(item.percentage),
                 }))}
@@ -523,7 +528,7 @@ function DashboardPage() {
               <Legend />
             </PieChart>
           </ResponsiveContainer>
-          <Stack width={"60%"} gap={2}>
+          <Stack width={"60%"} justifyContent="space-between" height={300}>
             <Stack
               gap={2}
               direction="row"
@@ -573,7 +578,6 @@ function DashboardPage() {
           </Stack>
         </Box>
       </Box>
-
       <Stack gap={2} direction="row" justifyContent="space-between">
         <Stack gap={2}>
           <Typography
@@ -605,14 +609,7 @@ function DashboardPage() {
             <Table variant="soft" size="lg" stripe="odd">
               <thead>
                 <tr>
-                  <th
-                    style={{
-                      width: "10%",
-                    }}
-                  >
-                    Rank
-                  </th>
-                  <th>Product ID</th>
+                  <th>Product</th>
                   <th
                     style={{
                       width: "20%",
@@ -633,8 +630,7 @@ function DashboardPage() {
                 {data?.product_ranking && data?.product_ranking.length > 0 ? (
                   data?.product_ranking.map((item, index) => (
                     <tr>
-                      <td>#{index + 1}</td>
-                      <td>{item.product_id}</td>
+                      <td>{item.product_name}</td>
                       <td>{item.units_sold}</td>
                       <td>
                         {new Intl.NumberFormat("vi-VN", {
@@ -647,7 +643,7 @@ function DashboardPage() {
                 ) : (
                   <tr>
                     <td
-                      colSpan="4"
+                      colSpan="3"
                       style={{
                         textAlign: "center",
                       }}
@@ -690,14 +686,7 @@ function DashboardPage() {
             <Table variant="soft" size="lg" stripe="odd">
               <thead>
                 <tr>
-                  <th
-                    style={{
-                      width: "10%",
-                    }}
-                  >
-                    Rank
-                  </th>
-                  <th>Category ID</th>
+                  <th>Category</th>
                   <th
                     style={{
                       width: "20%",
@@ -718,8 +707,7 @@ function DashboardPage() {
                 {data?.category_ranking && data?.category_ranking.length > 0 ? (
                   data?.category_ranking.map((item, index) => (
                     <tr>
-                      <td>#{index + 1}</td>
-                      <td>{item.category_id}</td>
+                      <td>{item.category_name}</td>
                       <td>{item.units_sold}</td>
                       <td>
                         {new Intl.NumberFormat("vi-VN", {
@@ -732,7 +720,7 @@ function DashboardPage() {
                 ) : (
                   <tr>
                     <td
-                      colSpan="4"
+                      colSpan="3"
                       style={{
                         textAlign: "center",
                       }}

@@ -12,17 +12,13 @@ import {
   listItemButtonClasses,
   IconButton,
   Chip,
-  LinearProgress,
-  Button,
   Divider,
   Avatar,
-  Stack,
-  Card,
+  Badge,
 } from "@mui/joy";
 // import icon
 import BrightnessAutoRoundedIcon from "@mui/icons-material/BrightnessAutoRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
-import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
 import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
 import AssignmentRoundedIcon from "@mui/icons-material/AssignmentRounded";
@@ -39,6 +35,8 @@ import ColorSchemeToggle from "./ColorSchemeToggle";
 import { AdminPanelSettings, CategoryRounded } from "@mui/icons-material";
 import { closeSidebar } from "utils/sidebar";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { getOrdersByStatus } from "api/orders.api";
 
 function Toggler({ defaultExpanded = false, renderToggle, children }) {
   const [open, setOpen] = React.useState(defaultExpanded);
@@ -82,6 +80,16 @@ function Sidebar({ user }) {
   useEffect(() => {
     setSelected(location);
   }, [location]);
+
+  const {
+    data: orders,
+    isLoading,
+    refetch
+  } = useQuery({
+    queryKey: ["orders", { status: "pending" }],
+    queryFn: () =>
+      getOrdersByStatus("pending"),
+  });
 
   return (
     <Sheet
@@ -192,8 +200,12 @@ function Sidebar({ user }) {
               <ListItemButton selected={selected === "/orders"}>
                 <ShoppingCartRoundedIcon />
                 <ListItemContent>
-                  <Typography level="title-sm">Orders</Typography>
+                  <Typography level="title-sm"
+                  >Orders</Typography>
                 </ListItemContent>
+                <Chip size="sm" color="primary" variant="solid">
+                {orders?.total}
+              </Chip>
               </ListItemButton>
             </NavLink>
           </ListItem>

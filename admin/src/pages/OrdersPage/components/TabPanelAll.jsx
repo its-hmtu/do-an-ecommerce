@@ -32,8 +32,8 @@ function TabPanelAll({ orders, pageSize, handleSetPage, handleSetPageSize }) {
         }}
       >
         <Typography level="h4">
-          {`${orders?.data.length || 0} ${
-            orders?.data.length > 1 ? "Orders" : "Order"
+          {`${orders?.total || 0} ${
+            orders?.total > 1 ? "Orders" : "Order"
           }`}
         </Typography>
         <Button

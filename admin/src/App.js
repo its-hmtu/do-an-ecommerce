@@ -143,14 +143,6 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  // const location = useLocation();
-  // useEffect(() => {
-  //   const token = sessionStorage.getItem("token");
-  //   if (!token) {
-  //     router.navigate();
-  //   }
-  // }, []);
-
   const defaultTheme = createTheme({ palette: { mode: "light" } });
 
   return (

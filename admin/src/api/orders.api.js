@@ -3,6 +3,7 @@ import api from "api";
 const getOrders = async ({
   page = 1,
   limit = 10,
+  is_paid = null,
   q = "",
   sort = "createdAt",
   order = "desc",
@@ -12,6 +13,7 @@ const getOrders = async ({
       params: {
         page,
         limit,
+        is_paid,
         q,
         sort,
         order

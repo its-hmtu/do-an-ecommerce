@@ -18,15 +18,15 @@ import PATHS from "constants";
 function MainLayout() {
   const queryClient = useQueryClient();
   const isUser = sessionStorage.getItem("token");
-  // const location = useLocation();
-  // const navigate = useNavigate();
-  // useEffect(() => {
-  //   if (location.pathname === PATHS.HOME && !isUser) {
-  //     navigate(PATHS.LOGIN);
-  //   } else if (location.pathname === PATHS.LOGIN && isUser) {
-  //     navigate(PATHS.DASHBOARD);
-  //   }
-  // }, [location, isUser, navigate]);
+  const location = useLocation();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (location.pathname === PATHS.HOME && !isUser) {
+      navigate(PATHS.LOGIN);
+    } else if (location.pathname === PATHS.LOGIN && isUser) {
+      navigate(PATHS.DASHBOARD);
+    }
+  }, [location, isUser, navigate]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin"],
@@ -36,10 +36,6 @@ function MainLayout() {
     },
     enabled: !!isUser,
   });
-
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
 
   return (
     <>
@@ -68,7 +64,6 @@ function MainLayout() {
           <Outlet />
         </Box>
       </Box>
-      {/* <ToastMessage /> */}
       <ToastContainer stacked />
     </>
   );
