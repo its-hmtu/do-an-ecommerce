@@ -61,7 +61,9 @@ function BasicInfo({
           onChange={(e) => handleOnChange(e)}
         />
       </FormControl>
-      <FormControl>
+      <FormControl sx={{
+        height: "400px"
+      }}>
         <Tooltip arrow title="Required" placement="top" color="neutral" variant="outlined">
           <FormLabel>
             Description
@@ -78,7 +80,7 @@ function BasicInfo({
         <ReactQuill
         style={{
           "ql-container": {
-            height: "unset"
+            height: "100%"
           }
         }} 
           theme="snow" 

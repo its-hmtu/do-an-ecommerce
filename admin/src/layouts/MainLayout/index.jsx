@@ -35,6 +35,7 @@ function MainLayout() {
       queryClient.setQueryData(["admin"], data);
     },
     enabled: !!isUser,
+    refetchOnWindowFocus: false,
   });
 
   return (

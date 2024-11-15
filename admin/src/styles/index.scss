@@ -130,6 +130,11 @@ a {
   box-shadow: unset!important;
 }
 
+.quill {
+  height: 80%;
+}
+
 .ql-container {
-  height: unset!important;
+  font-family: inherit!important;
+  font-size: 14px!important;
 }

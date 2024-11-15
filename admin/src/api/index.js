@@ -105,4 +105,17 @@ const getRoles = async () => {
   }
 }
 
-export { adminLogin, getRoles, getCurrentAdmin, api as default };
+const adminLogout = async () => {
+  try {
+    const response = await api.post("/admin/logout");
+    if (response.data.success === false) {
+      throw new Error(response.data.message);
+    }
+    
+    return response.data;
+  } catch (e) {
+    return e.response.data;
+  }
+}
+
+export { adminLogin, adminLogout, getRoles, getCurrentAdmin, api as default };

@@ -54,10 +54,9 @@ function ConfirmModal({
             <Button variant="outlined" color="neutral" onClick={onClose}>
               {cancelText}
             </Button>
-            <Button variant="solid" color="danger" onClick={onConfirm}
+            <Button variant="soft" color="danger" onClick={onConfirm}
               {...(confirmText === 'Delete' && { startIcon: <DeleteRounded /> })}
             >
-              
               {confirmText}
             </Button>
           </Box>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Box,
   Typography,
@@ -39,18 +39,25 @@ import TabPanelAll from "pages/OrdersPage/components/TabPanelAll";
 import { getOrders } from "api/orders.api";
 
 function DashboardPage() {
-  const [statisticQuery, setStatisticQuery] = useState({
+  // const [statisticQuery, setStatisticQuery] = useState({
+  //   range: "today",
+  //   date: null,
+  //   week: null,
+  //   month: null,
+  //   year: null,
+  // });
+  const statisticQuery = useRef({
     range: "today",
     date: null,
     week: null,
     month: null,
     year: null,
-  });
+  })
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["statistics", statisticQuery],
     queryFn: () =>
       getStatistics({
-        ...statisticQuery,
+        ...statisticQuery.current,
       }),
   });
 
@@ -65,27 +72,41 @@ function DashboardPage() {
     setPickerText(dateString);
     setSelectedDate(date);
     if (picker === "day") {
-      setStatisticQuery({
+      statisticQuery.current = {
         range: "date",
         date: dateString,
-      });
+      }
     } else if (picker === "week") {
-      setStatisticQuery({
+      // setStatisticQuery({
+      //   range: "week",
+      //   // replace any letter in the string, but keep the `-`
+      //   week: dateString.replace(/[a-zA-Z]/g, ""),
+      // });
+      statisticQuery.current = {
         range: "week",
-        // replace any letter in the string, but keep the `-`
         week: dateString.replace(/[a-zA-Z]/g, ""),
-      });
+      }
     } else if (picker === "month") {
-      setStatisticQuery({
+      // setStatisticQuery({
+      //   range: "month",
+      //   month: dateString.split("-")[1],
+      //   year: dateString.split("-")[0],
+      // });
+      statisticQuery.current = {
         range: "month",
         month: dateString.split("-")[1],
         year: dateString.split("-")[0],
-      });
+      }
     } else if (picker === "year") {
-      setStatisticQuery({
+      // setStatisticQuery({
+      //   range: "year",
+      //   year: dateString,
+      // });
+
+      statisticQuery.current = {
         range: "year",
         year: dateString,
-      });
+      }
     }
   };
 
@@ -233,13 +254,20 @@ function DashboardPage() {
         onClick={() => {
           setOpenPicker(false);
           setPickerText(item.text);
-          setStatisticQuery({
+          // setStatisticQuery({
+          //   range: item.type,
+          //   date: null,
+          //   week: null,
+          //   month: null,
+          //   year: null,
+          // });
+          statisticQuery.current = {
             range: item.type,
             date: null,
             week: null,
             month: null,
             year: null,
-          });
+          }
           setSelectedDate(null);
         }}
       >

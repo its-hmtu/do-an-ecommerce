@@ -2,10 +2,10 @@ const express = require('express');
 const router = express.Router();
 const {
   getStatistics,
-  // getProductRanking
+  exportReports
 } = require('../controllers/sale.controller');
 
 router.get('/statistics', getStatistics);
-// router.get('/ranking/products',  getProductRanking);
+router.get('/export', exportReports);
 
 module.exports = router;

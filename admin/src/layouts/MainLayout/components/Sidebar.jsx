@@ -14,7 +14,6 @@ import {
   Chip,
   Divider,
   Avatar,
-  Badge,
 } from "@mui/joy";
 // import icon
 import BrightnessAutoRoundedIcon from "@mui/icons-material/BrightnessAutoRounded";
@@ -35,46 +34,17 @@ import ColorSchemeToggle from "./ColorSchemeToggle";
 import { AdminPanelSettings, CategoryRounded } from "@mui/icons-material";
 import { closeSidebar } from "utils/sidebar";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { getOrdersByStatus } from "api/orders.api";
+import { adminLogout } from "api";
+import ConfirmModal from "components/ConfirmModal";
 
-function Toggler({ defaultExpanded = false, renderToggle, children }) {
-  const [open, setOpen] = React.useState(defaultExpanded);
-  const location = window.location.pathname;
-
-  useEffect(() => {
-    if (location === "/users" || location === "/profile") {
-      setOpen(true);
-    } else {
-      setOpen(false);
-    }
-  }, [location]);
-
-  return (
-    <React.Fragment>
-      {renderToggle({ open, setOpen })}
-      <Box
-        sx={[
-          {
-            display: "grid",
-            transition: "0.2s ease",
-            "& > *": {
-              overflow: "hidden",
-            },
-          },
-          open ? { gridTemplateRows: "1fr" } : { gridTemplateRows: "0fr" },
-        ]}
-      >
-        {children}
-      </Box>
-    </React.Fragment>
-  );
-}
 
 function Sidebar({ user }) {
   const navigate = useNavigate();
   const location = useLocation().pathname;
   const [selected, setSelected] = React.useState(location);
+  const [openModal, setOpenModal] = React.useState(false);
 
   // get current location
   useEffect(() => {
@@ -91,7 +61,16 @@ function Sidebar({ user }) {
       getOrdersByStatus("pending"),
   });
 
+  const {mutate: logoutMutation, isPending} = useMutation({
+    mutationFn: adminLogout,
+    onSuccess: () => {
+      sessionStorage.removeItem("token");
+      navigate("/login");
+    }
+  })
+
   return (
+    <>
     <Sheet
       className="Sidebar"
       sx={{
@@ -279,41 +258,14 @@ function Sidebar({ user }) {
           </ListItem>
 
           <ListItem>
-            <ListItemButton color="danger">
+            <ListItemButton color="danger"
+              onClick={() => setOpenModal(true)}
+            >
               <LogoutRoundedIcon color="danger" />
               Logout
             </ListItemButton>
           </ListItem>
         </List>
-        {/* <Card
-          invertedColors
-          variant="soft"
-          color="warning"
-          size="sm"
-          sx={{ boxShadow: "none" }}
-        >
-          <Stack
-            direction="row"
-            sx={{ justifyContent: "space-between", alignItems: "center" }}
-          >
-            <Typography level="title-sm">Used space</Typography>
-            <IconButton size="sm">
-              <CloseRoundedIcon />
-            </IconButton>
-          </Stack>
-          <Typography level="body-xs">
-            Your team has used 80% of your available space. Need more?
-          </Typography>
-          <LinearProgress
-            variant="outlined"
-            value={80}
-            determinate
-            sx={{ my: 1 }}
-          />
-          <Button size="sm" variant="solid">
-            Upgrade plan
-          </Button>
-        </Card> */}
       </Box>
       <Divider />
       <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
@@ -331,6 +283,24 @@ function Sidebar({ user }) {
         </Box>
       </Box>
     </Sheet>
+    <ConfirmModal 
+      open={openModal}
+      title="Log out"
+      description={
+        "Are you sure you want to log out?"
+      }
+      onClose={
+        () => setOpenModal(false)
+      }
+      onConfirm={
+        () => {
+          logoutMutation();
+          setOpenModal(false);
+        }
+      }
+      confirmText="Log out"
+    />
+    </>
   );
 }
 
