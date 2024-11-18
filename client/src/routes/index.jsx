@@ -1,25 +1,39 @@
-import MainLayout from 'layouts/MainLayout'
-import HomePage from 'pages/HomePage'
-import LoginPage from 'pages/LoginPage'
-import { createBrowserRouter } from 'react-router-dom'
+import MainLayout from "layouts/MainLayout";
+import HomePage from "pages/HomePage";
+import LoginPage from "pages/LoginPage";
+import NotFoundPage from "pages/NotFoundPage";
+import { createBrowserRouter } from "react-router-dom";
 
 export default createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <MainLayout />,
     children: [
       {
-        path: '/',
-        element: <HomePage />
-      }
-    ]
-  }, 
+        path: "/",
+        element: <HomePage />,
+      },
+      {
+        path: "/mobile",
+        element: <div>Mobile</div>,
+      },
+      {
+        path: "/tablet",
+        element: <div>Tablet</div>,
+      },
+
+      {
+        path: "*",
+        element: <NotFoundPage />,
+      },
+    ],
+  },
   {
-    path: '/account/login',
+    path: "/account/login",
     element: <LoginPage />,
   },
   {
-    path: '/account/register',
+    path: "/account/register",
     element: <LoginPage register />,
-  }
-])
+  },
+]);

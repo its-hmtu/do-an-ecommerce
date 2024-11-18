@@ -7,6 +7,7 @@ import {
   Sheet,
   Link,
   Button,
+  Divider,
 } from "@mui/joy";
 import { Link as RLink } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
@@ -153,20 +154,21 @@ function Header() {
                 <RLink to={PATHS.LOGIN}>
                   <Typography
                     sx={{
-                      color: "Black",
+                      color: "black",
                       fontWeight: "bold",
                       fontSize: "1rem",
-                      ml: 3,
                     }}
                   >
                     Sign in
                   </Typography>
                 </RLink>
-                <span>/</span>
+                <Divider orientation="vertical" sx={{
+                  margin: "5px 0",
+                }}/>
                 <RLink to={PATHS.REGISTER}>
                   <Typography
                     sx={{
-                      color: "Black",
+                      color: "black",
                       fontWeight: "bold",
                       fontSize: "1rem",
                     }}

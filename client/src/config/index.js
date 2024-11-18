@@ -5,6 +5,8 @@ const PATHS = {
   HOME: `${BASE_PATH}`,
   LOGIN: `${BASE_PATH}account/login`,
   REGISTER: `${BASE_PATH}account/register`,
+  MOBILE: `${BASE_PATH}mobile`,
+  TABLET: `${BASE_PATH}tablet`,
 }
 
 const API_PATHS = {
