@@ -11,7 +11,6 @@ function ProductPage() {
 
   return (
     <>
-      
       <Outlet />
     </>
   )

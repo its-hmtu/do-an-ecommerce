@@ -172,7 +172,7 @@ function CategoryCreate() {
             onChange={handleOnChange}
           />
         </FormControl>
-        <FormControl>
+        {/* <FormControl>
           <FormLabel>Cover Image</FormLabel>
           {!imagePreview && <DropZone onDrop={onDrop} />}
         </FormControl>
@@ -223,7 +223,7 @@ function CategoryCreate() {
               </tr>
             </tbody>
           </Table>
-        )}
+        )} */}
         <Box
           sx={{
             display: "flex",

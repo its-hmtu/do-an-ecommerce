@@ -20,6 +20,7 @@ module.exports = (app) => {
       delete err.stack;
     }
     console.log(status === 500 ? err.message : "An error occurred");
+    console.log(err.stack);
     return res.status(status).json({
       message: status !== 500 ? err.message : "An error occurred",
       success: false,

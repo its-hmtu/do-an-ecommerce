@@ -6,6 +6,10 @@ var routesConfig = require('./config/routes');
 const connectDB = require('./config/database');
 const cors = require('cors');
 var express = require('express');
+const {
+  orderToDeliveredUpdater,
+  orderToCompleteUpdater
+} = require('./jobs/orderStatusUpdater');
 var app = express();
 
 const allowedOrigins = [
@@ -31,6 +35,8 @@ app.use(cors(
 ));
 
 connectDB();
+// orderToDeliveredUpdater.start();
+// orderToCompleteUpdater.start();
 viewConfig(app);
 utilitiesConfig(app);
 routesConfig(app);

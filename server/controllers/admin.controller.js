@@ -164,3 +164,8 @@ exports.deleteRole = async (req, res, next) => {
     return next(error);
   }
 }
+
+exports.logout = async (req, res, next) => {
+  res.clearCookie("da_refresh");
+  return res.status(200).json({ message: "Logout successful", success: true });
+}

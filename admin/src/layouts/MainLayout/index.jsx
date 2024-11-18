@@ -20,13 +20,13 @@ function MainLayout() {
   const isUser = sessionStorage.getItem("token");
   const location = useLocation();
   const navigate = useNavigate();
-  // useEffect(() => {
-  //   if (location.pathname === PATHS.HOME && !isUser) {
-  //     navigate(PATHS.LOGIN);
-  //   } else if (location.pathname === PATHS.LOGIN && isUser) {
-  //     navigate(PATHS.DASHBOARD);
-  //   }
-  // }, [location, isUser, navigate]);
+  useEffect(() => {
+    if (location.pathname === PATHS.HOME && !isUser) {
+      navigate(PATHS.LOGIN);
+    } else if (location.pathname === PATHS.LOGIN && isUser) {
+      navigate(PATHS.DASHBOARD);
+    }
+  }, [location, isUser, navigate]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin"],
@@ -35,11 +35,8 @@ function MainLayout() {
       queryClient.setQueryData(["admin"], data);
     },
     enabled: !!isUser,
+    refetchOnWindowFocus: false,
   });
-
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
 
   return (
     <>
@@ -68,7 +65,6 @@ function MainLayout() {
           <Outlet />
         </Box>
       </Box>
-      {/* <ToastMessage /> */}
       <ToastContainer stacked />
     </>
   );

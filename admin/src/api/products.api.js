@@ -35,7 +35,7 @@ const getSingleProduct = async ({id}) => {
     const {data} = await api.get(`/products/${id}`);
 
     if (data.success === false) {
-      throw new Error(data.message);
+      return data;
     }
 
     return data.data;
@@ -62,4 +62,51 @@ const createProduct = async (data) => {
   }
 }
 
-export { getProducts, getSingleProduct, createProduct };
+const updateProduct = async ({id, data}) => {
+  try {
+    console.log("data", data);
+    const response = await api.put(`/products/${id}`, data, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (response.data.success === false) {
+      return response.data;
+    }
+
+    return response.data.data;
+  } catch (e) {
+    return e.response.data;
+  }
+}
+
+const deleteProduct = async ({id}) => {
+  try {
+    const response = await api.delete(`/products/${id}`);
+
+    if (response.data.success === false) {
+      return response.data;
+    }
+
+    return response.data.data;
+  } catch (e) {
+    return e.response.data;
+  }
+}
+
+const deleteMultipleProducts = async ({product_ids}) => {
+  try {
+    const response = await api.delete(`/products?ids=${product_ids.join("%2C")}`);
+
+    if (response.data.success === false) {
+      return response.data;
+    }
+
+    return response.data;
+  } catch (e) {
+    return e.response;
+  }
+}
+
+export { getProducts, getSingleProduct, createProduct, updateProduct, deleteProduct, deleteMultipleProducts };

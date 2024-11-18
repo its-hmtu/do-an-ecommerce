@@ -53,10 +53,11 @@ module.exports = function(sequelize, DataTypes) {
   });
 
   User.associate = function(models) {
-    User.hasMany(models.Order);
+    User.hasMany(models.Order, {foreignKey: 'user_id'});
+    User.hasMany(models.OrderItem, {foreignKey: 'user_id'});
     User.belongsToMany(models.Role, {through: 'users_roles', foreignKey: 'user_id', otherKey: 'role_id'});
     User.hasMany(models.Review);
-    User.hasMany(models.Address);
+    User.hasMany(models.Address, {foreignKey: 'user_id'});
   };
 
   User.beforeCreate(user => {

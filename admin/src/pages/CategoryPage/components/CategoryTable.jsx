@@ -5,50 +5,29 @@ import {
   Checkbox,
   Chip,
   Divider,
-  FormControl,
-  FormLabel,
   IconButton,
   Input,
   Link,
   Modal,
   ModalClose,
   ModalDialog,
-  Option,
-  Select,
   Sheet,
   Table,
   Typography,
-  Avatar,
-  Dropdown,
-  MenuButton,
-  Menu,
-  MenuItem,
   iconButtonClasses,
   Breadcrumbs,
   Link as MuiLink,
-  Snackbar,
 } from "@mui/joy";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
-import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
-import BlockIcon from "@mui/icons-material/Block";
-import MoreHorizRoundedIcon from "@mui/icons-material/MoreHorizRounded";
-import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getCategories, deleteCategory } from "api/categories.api";
 import { useNavigate } from "react-router-dom";
 import {
   AddCircleRounded,
-  CheckCircle,
   ChevronRightRounded,
-  Close,
   DownloadRounded,
-  HomeRounded,
-  Info,
-  Warning,
 } from "@mui/icons-material";
 import RowMenu from "components/RowMenu";
 import { getComparator } from "utils/helper";
@@ -58,7 +37,6 @@ import ConfirmModal from "components/ConfirmModal";
 import { ToastMessageContext } from "contexts/ToastMessageContext";
 import { Pagination } from "antd";
 import { toast } from "react-toastify";
-
 
 const CategoryTable = () => {
   const navigate = useNavigate();
@@ -77,7 +55,8 @@ const CategoryTable = () => {
   const queryClient = useQueryClient();
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["categories", { page, limit: pageSize, q: searchValue }],
-    queryFn: () => getCategories({ page: page, limit: pageSize, q: searchValue }),
+    queryFn: () =>
+      getCategories({ page: page, limit: pageSize, q: searchValue }),
   });
 
   // delete category using tanstack/react-query
@@ -112,37 +91,6 @@ const CategoryTable = () => {
   useEffect(() => {
     refetch();
   }, [page, pageSize, refetch, searchValue]);
-
-  const itemRender = (_, type, originalElement) => {
-    if (type === "prev" && data?.current_page > 1) {
-      return (
-        <Button
-          size="sm"
-          variant="outlined"
-          color="neutral"
-          startDecorator={<KeyboardArrowLeftIcon />}
-          
-        >
-          Previous
-        </Button>
-      );
-    }
-
-    if (type === "next") {
-      return (
-        <Button
-          size="sm"
-          variant="outlined"
-          color="neutral"
-          endDecorator={<KeyboardArrowRightIcon />}
-        >
-          Next
-        </Button>
-      );
-    }
-  
-    return originalElement;
-  };
 
   return (
     <React.Fragment>
@@ -338,117 +286,155 @@ const CategoryTable = () => {
             </tr>
           </thead>
           <tbody>
-            {dataFilteredList?.sort(getComparator(order, "name")).map((row) => (
-              <tr key={row.id}>
-                <td style={{ textAlign: "center", width: 120 }}>
-                  <Checkbox
-                    size="sm"
-                    checked={selected.includes(row.id)}
-                    color={selected.includes(row.id) ? "primary" : undefined}
-                    onChange={(event) => {
-                      setSelected((ids) =>
-                        event.target.checked
-                          ? ids.concat(row.id)
-                          : ids.filter((itemId) => itemId !== row.id)
-                      );
-                    }}
-                    slotProps={{ checkbox: { sx: { textAlign: "left" } } }}
-                    sx={{ verticalAlign: "text-bottom" }}
-                  />
-                </td>
-                <td>
-                  <Typography
-                    level="body-xs"
+            {dataFilteredList.length > 0 ? (
+              dataFilteredList
+                ?.sort(getComparator(order, "name"))
+                .map((row) => (
+                  <tr key={row.id}>
+                    <td style={{ textAlign: "center", width: 120 }}>
+                      <Checkbox
+                        size="sm"
+                        checked={selected.includes(row.id)}
+                        color={
+                          selected.includes(row.id) ? "primary" : undefined
+                        }
+                        onChange={(event) => {
+                          setSelected((ids) =>
+                            event.target.checked
+                              ? ids.concat(row.id)
+                              : ids.filter((itemId) => itemId !== row.id)
+                          );
+                        }}
+                        slotProps={{ checkbox: { sx: { textAlign: "left" } } }}
+                        sx={{ verticalAlign: "text-bottom" }}
+                      />
+                    </td>
+                    <td>
+                      <Typography
+                        level="body-xs"
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                        }}
+                      >
+                        {/* if the row is the last of the list then is must be the newly created then add a badge to it */}
+                        {row.name}
+                        {isNewlyCreated(row.createdAt) ? (
+                          <Chip color="success" size="sm">
+                            New
+                          </Chip>
+                        ) : null}
+                      </Typography>
+                    </td>
+                    <td>
+                      <Typography level="body-xs">{row.description}</Typography>
+                    </td>
+                    <td>
+                      <Typography level="body-xs">
+                        {new Date(row.createdAt).toLocaleString("en-US", {
+                          month: "numeric",
+                          day: "numeric",
+                          year: "numeric",
+                          hour: "numeric",
+                          minute: "numeric",
+                          hour12: false,
+                        })}
+                      </Typography>
+                    </td>
+                    <td>
+                      <Typography level="body-xs">
+                        {new Date(row.updatedAt).toLocaleString("en-US", {
+                          month: "numeric",
+                          day: "numeric",
+                          year: "numeric",
+                          hour: "numeric",
+                          minute: "numeric",
+                          hour12: false,
+                        })}
+                      </Typography>
+                    </td>
+                    <td>
+                      <Box
+                        sx={{ display: "flex", gap: 2, alignItems: "center" }}
+                      >
+                        <Link level="body-xs" component="button">
+                          Download
+                        </Link>
+                        <RowMenu
+                          onEdit={() => {
+                            navigate(`/categories/${row.id}/edit`);
+                          }}
+                          onDelete={() => {
+                            setOpenDelete(true);
+                            setSelectedCategory(row);
+                          }}
+                        />
+                      </Box>
+                    </td>
+                  </tr>
+                ))
+            ) : (
+              <tr>
+                <td colSpan={6}>
+                  <Box
                     sx={{
                       display: "flex",
-                      alignItems: "center",
+                      justifyContent: "center",
+                      flexDirection: "column",
                       gap: 1,
+                      alignItems: "center",
+                      height: 200,
                     }}
                   >
-                    {/* if the row is the last of the list then is must be the newly created then add a badge to it */}
-                    {row.name}
-                    {isNewlyCreated(row.createdAt) ? (
-                      <Chip color="success" size="sm">
-                        New
-                      </Chip>
-                    ) : null}
-                  </Typography>
-                </td>
-                <td>
-                  <Typography level="body-xs">{row.description}</Typography>
-                </td>
-                <td>
-                  <Typography level="body-xs">
-                    {new Date(row.createdAt).toLocaleString("en-US", {
-                      month: "numeric",
-                      day: "numeric",
-                      year: "numeric",
-                      hour: "numeric",
-                      minute: "numeric",
-                      hour12: false,
-                    })}
-                  </Typography>
-                </td>
-                <td>
-                  <Typography level="body-xs">
-                    {new Date(row.updatedAt).toLocaleString("en-US", {
-                      month: "numeric",
-                      day: "numeric",
-                      year: "numeric",
-                      hour: "numeric",
-                      minute: "numeric",
-                      hour12: false,
-                    })}
-                  </Typography>
-                </td>
-                <td>
-                  <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-                    <Link level="body-xs" component="button">
-                      Download
-                    </Link>
-                    <RowMenu
-                      onEdit={() => {
-                        navigate(`/categories/${row.id}/edit`);
+                    <Typography
+                      sx={{
+                        fontSize: 16,
+                        color: "#757575",
                       }}
-                      onDelete={() => {
-                        setOpenDelete(true);
-                        setSelectedCategory(row);
-                      }}
-                    />
+                    >
+                      No categories found
+                    </Typography>
+
+                    <Button size="sm" color="primary" variant="plain">
+                      Refresh
+                    </Button>
                   </Box>
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </Table>
       </Sheet>
-      <Box
-        className="Pagination-laptopUp"
-        sx={{
-          pt: 2,
-          gap: 1,
-          [`& .${iconButtonClasses.root}`]: { borderRadius: "50%" },
-          display: {
-            xs: "none",
-            md: "flex",
-          },
-        }}
-      >
-        <Box sx={{ flex: 1 }} />
-        <Pagination
-          current={data?.current_page || 1}
-          total={data?.total_item_count || 0}
-          onChange={(page) => setPage(page)}
-          showSizeChanger
-          onShowSizeChange={(current, size) => setPageSize(size)}
-          showTotal={(total, range) =>
-            `${range[0]}-${range[1]} of ${total} items`
-          }
-          // hideOnSinglePage
-          itemRender={itemRender}
-        />
-        <Box sx={{ flex: 1 }} />
-      </Box>
+      {dataFilteredList.length > 0 && (
+        <Box
+          className="Pagination-laptopUp"
+          sx={{
+            pt: 2,
+            gap: 1,
+            [`& .${iconButtonClasses.root}`]: { borderRadius: "50%" },
+            display: {
+              xs: "none",
+              md: "flex",
+            },
+          }}
+        >
+          <Box sx={{ flex: 1 }} />
+          <Pagination
+            current={data?.current_page || 1}
+            total={data?.total_item_count || 0}
+            onChange={(page) => setPage(page)}
+            showSizeChanger
+            onShowSizeChange={(current, size) => setPageSize(size)}
+            showTotal={(total, range) =>
+              `${range[0]}-${range[1]} of ${total} items`
+            }
+            defaultPageSize={pageSize}
+            
+          />
+          <Box sx={{ flex: 1 }} />
+        </Box>
+      )}
       <ConfirmModal
         open={openDelete}
         onClose={() => {

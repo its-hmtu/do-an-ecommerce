@@ -7,28 +7,28 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     }, 
     order_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false
+    },
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
     },
     product_id: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    name: {
-      type: DataTypes.STRING(50),
-      allowNull: false
+    option_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true
     },
     quantity: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    price: {
+    unit_price: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: true
-    },
-    slug: {
-      type: DataTypes.STRING,
-      allowNull: false
     }
   }, {
     timestamps: true,
@@ -36,8 +36,10 @@ module.exports = (sequelize, DataTypes) => {
   })
   
   OrderItem.associate = (models) => {
-    OrderItem.belongsTo(models.Order)
-    OrderItem.belongsTo(models.Product)
+    OrderItem.belongsTo(models.Order, { foreignKey: 'order_id', onDelete: 'CASCADE' });
+    OrderItem.belongsTo(models.Product, { foreignKey: 'product_id', onDelete: 'CASCADE' });
+    OrderItem.belongsTo(models.User, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+    OrderItem.belongsTo(models.Option, { foreignKey: 'option_id', onDelete: 'CASCADE' });
   }
 
   return OrderItem;

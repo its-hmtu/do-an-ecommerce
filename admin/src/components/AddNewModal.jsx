@@ -1,13 +1,14 @@
 import { DeleteRounded } from '@mui/icons-material'
-import { Box, Button, DialogTitle, Divider, Modal, ModalDialog, Typography } from '@mui/joy'
+import { Box, Button, DialogTitle, Divider, Input, Modal, ModalDialog, Typography } from '@mui/joy'
 import React from 'react'
 
-function ConfirmModal({
+function AddNewModal({
   open,
   onClose,
   onConfirm,
-  title,
   description,
+  newValue,
+  setNewValue,
   cancelText = 'Cancel',
   confirmText = 'Confirm',
 }) {
@@ -27,22 +28,17 @@ function ConfirmModal({
             textColor="inherit"
             sx={{ fontWeight: 'lg'}}
           >
-            {title}
+            Add new value
           </DialogTitle>
           <Divider
             sx={{
               backgroundColor: 'grey',
             }}
           />
-          <Typography
-            component="p"
-            id="modal-description"
-            level="body"
-            textColor="inherit"
-            sx={{ mb: 1 }}
-          >
-            {description}
-          </Typography>
+          <Input placeholder="Please enter" required name="newValue"
+            onChange={(e) => setNewValue(e.target.value)}
+          />
+
           <Box
             sx={{
               display: 'flex',
@@ -54,11 +50,11 @@ function ConfirmModal({
             <Button variant="outlined" color="neutral" onClick={onClose}>
               {cancelText}
             </Button>
-            <Button variant="solid" color="danger" onClick={onConfirm}
-              {...(confirmText === 'Delete' && { startIcon: <DeleteRounded /> })}
+            <Button variant="solid" color="primary" onClick={onConfirm}
+              // {...(confirmText === 'Delete' && { startIcon: <DeleteRounded /> })}
             >
               
-              {confirmText}
+              {/* {confirmText} */} Add
             </Button>
           </Box>
         </ModalDialog>
@@ -66,4 +62,4 @@ function ConfirmModal({
   )
 }
 
-export default ConfirmModal
+export default AddNewModal

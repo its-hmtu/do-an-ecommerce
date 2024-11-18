@@ -13,22 +13,21 @@ const {
   getSinglecategory,
   deleteCategory
 } = require("../controllers/category.controller");
+const checkCache = require("../middlewares/cache.middleware");
 
-router.get("/categories", getCategories);
+router.get("/", getCategories);
 
-router.get("/categories/all", getAll);
+router.get("/all", getAll);
 
 router.post(
-  "/categories",
-  mustBeAuthenticated,
-  isAdmin,
+  "/",
   setUploadPath("./public/images/categories"),
   upload.array("images", 6),
   createCategory
 );
 
-router.get("/categories/:id", getSinglecategory);
+router.get("/:id", getSinglecategory);
 
-router.delete("/categories/:id", mustBeAuthenticated, isAdmin, deleteCategory);
+router.delete("/:id", deleteCategory);
 
 module.exports = router;
