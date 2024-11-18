@@ -84,7 +84,7 @@ module.exports = function(sequelize, DataTypes) {
       // email: this.email,
       roles: this.roles.map(role => role.name)
     }, process.env.JWT_SECRET, {
-      expiresIn: '1h'
+      expiresIn: '10m'
     });
   }
 

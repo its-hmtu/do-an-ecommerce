@@ -87,9 +87,9 @@ exports.register = async (req, res) => {
 }
 
 exports.login = async (req, res) => {
-  const {user_name, password} = req.body;
+  const {email, password} = req.body;
 
-  if (!user_name || user_name.trim() === '') {
+  if (!email || email.trim() === '') {
     return res.status(400).json({ message: 'Username is required' });
   }
 
@@ -99,7 +99,7 @@ exports.login = async (req, res) => {
 
   const user = await User.findOne({
     where: {
-      username: sanitizeInput(user_name)
+      email: sanitizeInput(email)
     },
     include: [
       {
@@ -119,6 +119,18 @@ exports.login = async (req, res) => {
   }
 
   const token = user.generateToken();
+  const refresh_token = user.generateRefreshToken();
+
+  res.cookie('refresh_token', refresh_token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'None',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  });
 
   return res.status(200).json({ message: 'Login successful', token });
+}
+
+exports.getUserData = async (req, res, next) => {
+  return res.status(200).json({ user: req.user });
 }

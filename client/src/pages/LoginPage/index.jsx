@@ -25,6 +25,7 @@ import {
   Close,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { useLogin } from "hooks";
 function LoginPage({ register = false }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -40,35 +41,40 @@ function LoginPage({ register = false }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isRegister, setIsRegister] = useState(register);
 
-  const { mutate, isPending } = useMutation({
-    onSuccess: (data) => {
-      console.log(data);
-      if (data.status !== 200) {
-        setError({
-          message: data.message,
-        });
-        setShake(true);
-        setTimeout(() => {
-          setShake(false);
-        }, 500);
-      } else {
-        queryClient.setQueryData(["admin"], data);
-        console.log(data);
-        // alert(data);
-        navigate("/dashboard");
-      }
-    },
-    onError: (error) => {
-      console.log(error);
-      setError({
-        message: error.message,
-      });
-      setShake(true);
-      setTimeout(() => {
-        setShake(false);
-      }, 500);
-    },
-  });
+  // const { mutate, isPending } = useMutation({
+  //   onSuccess: (data) => {
+  //     console.log(data);
+  //     if (data.status !== 200) {
+  //       setError({
+  //         message: data.message,
+  //       });
+  //       setShake(true);
+  //       setTimeout(() => {
+  //         setShake(false);
+  //       }, 500);
+  //     } else {
+  //       queryClient.setQueryData(["admin"], data);
+  //       console.log(data);
+  //       // alert(data);
+  //       navigate("/dashboard");
+  //     }
+  //   },
+  //   onError: (error) => {
+  //     console.log(error);
+  //     setError({
+  //       message: error.message,
+  //     });
+  //     setShake(true);
+  //     setTimeout(() => {
+  //       setShake(false);
+  //     }, 500);
+  //   },
+  // });
+
+  const { mutate, isPending} = useLogin({
+    email: cred.email,
+    password: cred.password,
+  })
 
   useEffect(() => {
     console.log(isPending);
@@ -102,7 +108,7 @@ function LoginPage({ register = false }) {
       errors.password = "Password is required";
     } else if (cred.password.length < 8) {
       errors.password = "Password must be at least 8 characters";
-    } else if (cred.password !== cred.confirm_password) {
+    } else if (isRegister && cred.password !== cred.confirm_password) {
       errors.password = "Passwords do not match";
     }
     return errors;
@@ -120,8 +126,20 @@ function LoginPage({ register = false }) {
         setShake(false);
       }, 500);
       return;
-    } else if (cred && cred.email && cred.password && cred.confirm_password) {
-      mutate(cred);
+    } 
+
+    if (isRegister) {
+      if (cred && cred.email && cred.password && cred.confirm_password) {
+        mutate(cred)
+      }
+    } else {
+      if (cred && cred.email && cred.password) {
+        mutate(cred, {
+          onSuccess: (data) => {
+            navigate("/")
+          }
+        })
+      }
     }
   };
 

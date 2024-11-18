@@ -3,7 +3,7 @@ const { Role, User} = require('../models');
 
 
 exports.verifyToken = (req, res, next) => {
-  const token = req.headers.authorization.split(' ')[1];
+  const token = req.headers.authorization?.split(' ')[1];
   if (!token) {
     res.status(401)
     return next(new Error("Token not provided"));
