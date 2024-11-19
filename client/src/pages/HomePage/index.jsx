@@ -129,7 +129,7 @@ function HomePage() {
       </Box>
 
       <Box>
-        <Stack direction="row" gap={2} sx={{ mt: 4, justifyContent: "space-between", flexWrap: "wrap"  }}>
+        <Stack direction="row" gap={1} sx={{ mt: 4, justifyContent: "space-between", flexWrap: "wrap"  }}>
           {Array.from({ length: 10 }).map((_, index) => (
             <Stack sx={{ width: "calc(100% / )"}}>
               <ProductCard key={index} />
