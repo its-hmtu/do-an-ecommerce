@@ -4,7 +4,7 @@ import router from 'routes'
 
 function App() {
   return (
-    <CssVarsProvider disableTransitionOnChange defaultMode='dark'>
+    <CssVarsProvider disableTransitionOnChange defaultMode='light' mode='light'>
       <CssBaseline />
       <GlobalStyles
         styles={{

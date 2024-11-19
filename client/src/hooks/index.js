@@ -1,5 +1,5 @@
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
-import { getUserApi, loginApi } from "api/user";
+import { getUserApi, loginApi, registerApi } from "api/user";
 
 const useLogin = ({email, password}) => {
   return useMutation({
@@ -12,10 +12,18 @@ const useGetUser = () => {
     queryKey: 'user',
     queryFn: getUserApi,
     retry: 3,
+    retryCooldown: 5000,
+  })
+}
+
+const useRegister = ({email, password, username, confirm_password, first_name, last_name}) => {
+  return useMutation({
+    mutationFn: () => registerApi({email, password, username, confirm_password, first_name, last_name}) 
   })
 }
 
 export {
   useLogin,
+  useRegister,
   useGetUser
 }

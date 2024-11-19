@@ -2,42 +2,51 @@ const {User, Role, UserRole} = require('../models');
 const Op = require('sequelize').Op;
 const sanitizeInput = require('../utils/sanitize').sanitizeInput;
 
-exports.register = async (req, res) => {
+exports.register = async (req, res, next) => {
   const {email, password, confirm_password,username, first_name, last_name} = req.body;
   const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   
   if (!username || username.trim() === '') {
-    return res.status(400).json({ message: 'Username is required' });
+    res.status(400)
+    return next(new Error('Username is required'));
   } 
   if (!first_name || first_name.trim() === '') {
-    return res.status(400).json({message: 'First name is required'});
+    res.status(400)
+    return next(new Error('First name is required'));
   }
   if (!last_name || last_name.trim() === '') {
-    return res.status(400).json({message: 'Last name is required'});
+    res.status(400)
+    return next(new Error('Last name is required'));
   }
 
   if (!email || email.trim() === '') {
-    return res.status(400).json({ message: 'Email is required' });
+    res.status(400)
+    return next(new Error('Email is required'));
   }
 
   if (!emailRegex.test(email)) {
-    return res.status(400).json({ message: 'Invalid email format' });
+    res.status(400)
+    return next(new Error('Invalid email address'));
   }
 
   if (!password || password.trim() === '') {
-    return res.status(400).json({ message: 'Password is required' });
+    res.status(400)
+    return next(new Error('Password is required'));
   }
 
   if (!confirm_password || confirm_password.trim() === '') {
-    return res.status(400).json({ message: 'Confirm password is required' });
+    res.status(400)
+    return next(new Error('Confirm password is required'));
   }
 
   if (password !== confirm_password) {
-    return res.status(400).json({ message: 'Password and confirm password do not match'});
+    res.status(400)
+    return next(new Error('Passwords do not match'));
   }
 
   if (password.length < 6) {
-    return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+    res.status(400)
+    return next(new Error('Password must be at least 6 characters'));
   }
 
   const user = await User.findOne({
@@ -48,10 +57,12 @@ exports.register = async (req, res) => {
 
   if (user) {
     if (user.email === email) {
-      return res.status(400).json({ message: 'Email already exists' });
+      res.status(400)
+      return next(new Error('Email already exists'));
     }
     if (user.username === username) {
-      return res.status(400).json({ message: 'Username already exists' });
+      res.status(400)
+      return next(new Error('Username already exists'));
     }
   }
 
@@ -110,11 +121,11 @@ exports.login = async (req, res) => {
   })
 
   if (!user) {
-    return res.status(404).json({ message: 'User not found' });
+    return res.status(404).json({ message: 'Invaid email or password' });
   } else {
     const isValidPassword = await user.isValidPassword(sanitizeInput(password));
     if (!isValidPassword) {
-      return res.status(401).json({ message: 'Invalid password' });
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
   }
 

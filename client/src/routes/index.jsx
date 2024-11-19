@@ -2,6 +2,7 @@ import MainLayout from "layouts/MainLayout";
 import HomePage from "pages/HomePage";
 import LoginPage from "pages/LoginPage";
 import NotFoundPage from "pages/NotFoundPage";
+import RegisterPage from "pages/RegisterPage";
 import { createBrowserRouter } from "react-router-dom";
 
 export default createBrowserRouter([
@@ -34,6 +35,6 @@ export default createBrowserRouter([
   },
   {
     path: "/account/register",
-    element: <LoginPage register />,
+    element: <RegisterPage />,
   },
 ]);

@@ -9,38 +9,46 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Checkbox,
   Button,
   Alert,
   CircularProgress,
 } from "@mui/joy";
-import { useQueryClient } from "@tanstack/react-query";
 import {
   Error,
   Visibility,
   VisibilityOff,
   Google,
   BadgeRounded,
+  Check,
+  Close,
 } from "@mui/icons-material";
-import { Link as RLink , useNavigate } from "react-router-dom";
-import { useLogin } from "hooks";
+import { useNavigate, Link as RLink } from "react-router-dom";
+import { useRegister } from "hooks";
 import { PATHS } from "config";
 
-function LoginPage() {
-  const queryClient = useQueryClient();
+function RegisterPage() {
   const navigate = useNavigate();
   const [cred, setCred] = useState({
     email: "",
+    username: "",
     password: "",
+    confirm_password: "",
+    first_name: "",
+    last_name: "",
   });
   const [error, setError] = useState({});
   const [warning, setWarning] = useState({});
   const [shake, setShake] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const { mutate: loginMutate, isPending: isLoginPending } = useLogin({
+  const { mutate: registerMutate, isPending: isRegisterPending } = useRegister({
     email: cred.email,
     password: cred.password,
+    username: cred.username,
+    confirm_password: cred.confirm_password,
+    first_name: cred.first_name,
+    last_name: cred.last_name,
   });
 
   const handleChange = (e) => {
@@ -64,6 +72,8 @@ function LoginPage() {
       errors.password = "Password is required";
     } else if (cred.password.length < 8) {
       errors.password = "Password must be at least 8 characters";
+    } else if (cred.password !== cred.confirm_password) {
+      errors.password = "Passwords do not match";
     }
     return errors;
   };
@@ -82,8 +92,16 @@ function LoginPage() {
       return;
     }
 
-    if (cred && cred.email && cred.password) {
-      loginMutate(cred, {
+    if (
+      cred &&
+      cred.email &&
+      cred.password &&
+      cred.confirm_password &&
+      cred.username &&
+      cred.first_name &&
+      cred.last_name
+    ) {
+      registerMutate(cred, {
         onSuccess: () => {
           navigate("/");
         },
@@ -101,8 +119,35 @@ function LoginPage() {
     }
   };
 
+  const renderValidatePass = () => {
+    if (cred.password.length === 0) {
+      return <Check />;
+    }
+
+    if (cred.password.length >= 8) {
+      return <Check color="success" />;
+    }
+
+    if (cred.password.length < 8) {
+      return <Close color="danger" />;
+    }
+  };
+
+  const renderValPassNotIncludeEmail = () => {
+    if (cred.password.length === 0) {
+      return <Check />;
+    }
+    if (cred.password.length >= 8) {
+      if (cred.password.includes(cred.email)) {
+        return <Close color="danger" />;
+      }
+      return <Check color="success" />;
+    }
+
+    return <Check color="success" />;
+  };
+
   return (
-    // Create a login form with Joy UI
     <Box
       sx={{
         width: { xs: "100%" },
@@ -158,17 +203,17 @@ function LoginPage() {
           <Stack sx={{ gap: 4 }}>
             <Stack sx={{ gap: 1 }}>
               <Typography component="h1" level="h3">
-                Log in to your account
+                Create an account
               </Typography>
               <Typography level="body-sm">
-                Don't have an account?{" "}
-                <Link component={RLink} to={PATHS.REGISTER}>
+                Have an account?{" "}
+                <Link component={RLink} to={PATHS.LOGIN}>
                   <Typography
                     level="title-sm"
                     color="primary"
                     sx={{ textAlign: "center" }}
                   >
-                    Register here.
+                    Login here.
                   </Typography>
                 </Link>
               </Typography>
@@ -227,7 +272,51 @@ function LoginPage() {
                 <Typography color={"warning"}>{warning.password}</Typography>
               </Alert>
             )}
-            <form>
+            <form style={{}}>
+              <Stack
+                direction="row"
+                gap={2}
+                width={"100%"}
+                justifyContent={"space-between"}
+              >
+                <FormControl
+                  required
+                  sx={{
+                    width: "45%",
+                  }}
+                >
+                  <FormLabel>First Name</FormLabel>
+                  <Input
+                    type="text"
+                    name="first_name"
+                    value={cred.first_name}
+                    onChange={handleChange}
+                  />
+                </FormControl>
+                <FormControl
+                  required
+                  sx={{
+                    width: "50%",
+                  }}
+                >
+                  <FormLabel>Last Name</FormLabel>
+                  <Input
+                    type="text"
+                    name="last_name"
+                    value={cred.last_name}
+                    onChange={handleChange}
+                  />
+                </FormControl>
+              </Stack>
+              <FormControl required>
+                <FormLabel>Username</FormLabel>
+                <Input
+                  type="text"
+                  name="username"
+                  value={cred.username}
+                  onChange={handleChange}
+                />
+              </FormControl>
               <FormControl required>
                 <FormLabel>Email</FormLabel>
                 <Input
@@ -253,7 +342,60 @@ function LoginPage() {
                     </IconButton>
                   }
                 />
+
+                <Stack sx={{ mt: 1 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "start",
+                      alignItems: "center",
+                      gap: 1,
+                    }}
+                  >
+                    {renderValidatePass()}
+                    <Typography level="body-sm" color="neutral">
+                      Password must be at least 8 characters
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "start",
+                      alignItems: "center",
+                      gap: 1,
+                    }}
+                  >
+                    {
+                      // password must not include email
+                      renderValPassNotIncludeEmail()
+                    }
+                    <Typography level="body-sm" color="neutral">
+                      Does not include your email
+                    </Typography>
+                  </Box>
+                </Stack>
               </FormControl>
+
+              <FormControl required>
+                <FormLabel>Confirm password</FormLabel>
+                <Input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirm_password"
+                  value={cred.confirm_password}
+                  onChange={handleChange}
+                  endDecorator={
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                    >
+                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  }
+                />
+              </FormControl>
+
               <Stack
                 sx={{
                   gap: 2,
@@ -262,26 +404,11 @@ function LoginPage() {
                   alignItems: "start",
                 }}
               >
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "start",
-                    flexDirection: "column",
-                    gap: 2,
-                  }}
-                >
-                  <Checkbox size="sm" label="Remember me" name="persistent" />
-                  <Link level="title-sm" href="#replace-with-a-link">
-                    Forgot your password?
-                  </Link>
-                </Box>
-
                 <Button
                   type="submit"
                   fullWidth
                   onClick={handleSubmit}
-                  disabled={isLoginPending}
+                  disabled={isRegisterPending || Object.values(cred).some(value => !value)}
                   sx={{
                     // disabled background color
                     "&.MuiButton-root.Mui-disabled": {
@@ -295,10 +422,10 @@ function LoginPage() {
                     },
                   }}
                 >
-                  {isLoginPending ? (
+                  {isRegisterPending ? (
                     <CircularProgress variant="plain" />
                   ) : (
-                    "Login"
+                    "Register"
                   )}
                 </Button>
                 {/* {!isRegister} */}
@@ -316,4 +443,4 @@ function LoginPage() {
   );
 }
 
-export default LoginPage;
+export default RegisterPage;

@@ -7,10 +7,12 @@ const PATHS = {
   REGISTER: `${BASE_PATH}account/register`,
   MOBILE: `${BASE_PATH}mobile`,
   TABLET: `${BASE_PATH}tablet`,
+  PRODUCT: `${BASE_PATH}products/:id`,
 }
 
 const API_PATHS = {
   LOGIN: `${BASE_API_PATH}/account/login`,
+  REGISTER: `${BASE_API_PATH}/account/register`,
   USER: `${BASE_API_PATH}/account/me`,
   REFRESH: `${BASE_API_PATH}/refresh`,
 }

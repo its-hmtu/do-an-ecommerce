@@ -25,7 +25,7 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response && error.response.status === 401) {
+    if (error.response && error.response.status === 401 && !error.response.data.message === 'Invalid password') {
       try {
         const response = await axiosInstance.get(API_PATHS.REFRESH, {
           withCredentials: true,
