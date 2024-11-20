@@ -1,9 +1,9 @@
 @import "./MainLayout/";
 
 .slider-container {
-  max-width: 70%;
+  max-width: 100%;
   padding-top: 16px;
-  .slick-slide {
-    width: 892px!important;
-  }
+  // .slick-slide {
+  //   width: 892px!important;
+  // }
 }

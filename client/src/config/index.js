@@ -13,12 +13,15 @@ const PATHS = {
 const API_PATHS = {
   LOGIN: `${BASE_API_PATH}/account/login`,
   REGISTER: `${BASE_API_PATH}/account/register`,
+  LOGOUT: `${BASE_API_PATH}/account/logout`,
   USER: `${BASE_API_PATH}/account/me`,
   REFRESH: `${BASE_API_PATH}/refresh`,
+  PRODUCTS: `${BASE_API_PATH}/products`,
 }
 
 const queryKeys = {
-  
+  user: "user",
+  products: "products"
 }
 
 export {

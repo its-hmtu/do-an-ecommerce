@@ -50,6 +50,21 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ENUM('in-stock', 'out-of-stock'),
       allowNull: false,
       defaultValue: 'in-stock'
+    },
+    views: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+    featured: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
+    sales: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
     }
   }, {
     timestamps: true,
@@ -85,11 +100,7 @@ module.exports = (sequelize, DataTypes) => {
 
     Product.hasMany(models.Review);
     Product.hasMany(models.ProductImage, {as: 'images', foreignKey: 'product_id'});
-    Product.belongsToMany(models.Category, {
-      through: models.ProductCategory,
-      foreignKey: 'product_id',
-      otherKey: 'category_id'
-    });
+    Product.belongsTo(models.Category, {foreignKey: 'category_id', onDelete: 'CASCADE'});
 
     Product.hasMany(models.Option, {foreignKey: 'product_id', onDelete: 'cascade', onUpdate: 'cascade'});
     Product.hasMany(models.Stock, {foreignKey: 'product_id', onDelete: 'cascade', onUpdate: 'cascade'});
@@ -97,6 +108,7 @@ module.exports = (sequelize, DataTypes) => {
       as: 'specification',
       foreignKey: 'product_id', onDelete: 'cascade', onUpdate: 'cascade'});
     Product.belongsTo(models.Brand, {foreignKey: 'brand_id', onDelete: 'cascade', onUpdate: 'cascade'});
+    Product.hasMany(models.Discount, {foreignKey: 'product_id', onDelete: 'cascade', onUpdate: 'cascade'});
   }
 
   return Product;

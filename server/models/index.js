@@ -76,6 +76,7 @@ db.ProductImage = require('./product_image.model')(sequelize, Sequelize);
 db.OptionImage = require('./option_image.model')(sequelize, Sequelize);
 db.Brand = require('./brand.model')(sequelize, Sequelize);
 db.Specification = require('./specification.model')(sequelize, Sequelize);
+db.Discount = require('./discount.model')(sequelize, Sequelize);
 
 db.Cart = require('./cart.model')(sequelize, Sequelize);
 db.CartItem = require('./cart_item.model')(sequelize, Sequelize);

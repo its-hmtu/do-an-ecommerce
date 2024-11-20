@@ -22,6 +22,7 @@ exports.getProducts = async (req, res, next) => {
   const category = req.query.category || "";
   const sort = req.query.sort || "createdAt";
   const offset = (page - 1) * pageSize;
+  const featured = req.query.featured || false;
 
   try {
     const whereCondition = {
@@ -132,6 +133,10 @@ exports.getProducts = async (req, res, next) => {
         product.dataValues.average_rating = 0;
       }
     });
+
+    if (featured) {
+      products.rows = products.rows.filter((product) => product.featured === true);
+    }
 
     const totalItemCount = products.count;
     const currentItemCount = products.rows.length;

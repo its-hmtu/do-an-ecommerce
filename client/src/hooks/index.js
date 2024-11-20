@@ -1,5 +1,7 @@
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
-import { getUserApi, loginApi, registerApi } from "api/user";
+import { getUserApi, loginApi, registerApi, logoutApi } from "api/user";
+import { queryKeys } from "config";
+import Cookies from "js-cookie";
 
 const useLogin = ({email, password}) => {
   return useMutation({
@@ -7,12 +9,13 @@ const useLogin = ({email, password}) => {
   })
 }
 
-const useGetUser = () => {
+const useGetUser = (enabled) => {
   return useQuery({
-    queryKey: 'user',
+    queryKey: queryKeys.user,
     queryFn: getUserApi,
     retry: 3,
     retryCooldown: 5000,
+    enabled: enabled
   })
 }
 
@@ -22,8 +25,19 @@ const useRegister = ({email, password, username, confirm_password, first_name, l
   })
 }
 
+const useLogout = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => logoutApi(),
+    onSuccess: () => {
+      queryClient.invalidateQueries(queryKeys.user);
+    }
+  })
+}
+
 export {
   useLogin,
   useRegister,
-  useGetUser
+  useGetUser,
+  useLogout,
 }

@@ -9,6 +9,7 @@ import "slick-carousel/slick/slick-theme.css";
 import slickImg from "assets/images/slick-img.png";
 import { brands } from "config/constants";
 import ProductCard from "components/ProductCard";
+import { useProducts } from "hooks/product";
 
 const categories = [
   {
@@ -45,6 +46,8 @@ const settings = {
 };
 
 function HomePage() {
+  const {data, isLoading} = useProducts();
+
   return (
     <Box
       sx={{
@@ -54,49 +57,7 @@ function HomePage() {
         paddingBottom: 3,
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          gap: "48px",
-        }}
-      >
-        <Box
-          sx={{
-            maxWidth: 217,
-            width: "100%",
-          }}
-        >
-          <Stack
-            sx={{
-              borderRight: "2px solid #e0e0e0",
-
-              padding: "24px 16px 16px 6px",
-              gap: 2,
-            }}
-          >
-            {categories.map((category) => (
-              <Link
-                to={category.to}
-                sx={{
-                  width: "100%",
-                }}
-                component={NavLink}
-              >
-                <Typography
-                  color="neutral"
-                  sx={{
-                    width: "100%",
-                    justifyContent: "space-between",
-                  }}
-                  endDecorator={<ChevronRightRounded />}
-                >
-                  {category.label}
-                </Typography>
-              </Link>
-            ))}
-          </Stack>
-        </Box>
-
+      
         <div className="slider-container">
           <Slider {...settings}>
             <div>
@@ -110,33 +71,73 @@ function HomePage() {
             </div>
           </Slider>
         </div>
-      </div>
+        
 
+      <Stack
+        direction="row"
+        gap={"15px"}
+        sx={{
+          justifyContent: "flex-start",
+          flexWrap: "wrap",
+          marginTop: "50px",
+        }}
+      >
+        {brands.map((brand) => (
+          <Button
+            variant="outlined"
+            key={brand.name}
+            color="neutral"
+            sx={{
+              backgroundColor: "#fff",
+              "&:hover": {
+                backgroundColor: "#fff",
+              },
+            }}
+          >
+            <img
+              src={brand.image}
+              alt={brand.name}
+              style={{
+                width: "80px",
+              }}
+            />
+          </Button>
+        ))}
+      </Stack>
+
+      {/* Featured Mobile Phones */}
       <Box>
         <Typography level="h3" sx={{ mt: 4 }}>
           Featured Mobile Phones
         </Typography>
-        <Stack direction="row" gap={2} sx={{ mt: 2 }}>
-          {brands.slice(0, 10).map((brand) => (
-            <Button variant="outlined" key={brand.name} color="neutral">
-              {brand.name}
-            </Button>
+        <Stack
+          direction="row"
+          gap={3}
+          sx={{ mt: 4, justifyContent: "flex-start", flexWrap: "wrap" }}
+        >
+          {Array.from({ length: 10 }).map((_, index) => (
+            <ProductCard key={index} />
           ))}
-          <Button variant="outlined" color="neutral">
-            View All
-          </Button>
         </Stack>
       </Box>
 
+      {/* Featured Tablets */}
       <Box>
-        <Stack direction="row" gap={1} sx={{ mt: 4, justifyContent: "space-between", flexWrap: "wrap"  }}>
+        <Typography level="h3" sx={{ mt: 4 }}>
+          Featured Tablets
+        </Typography>
+        <Stack
+          direction="row"
+          gap={3}
+          sx={{ mt: 4, justifyContent: "flex-start", flexWrap: "wrap" }}
+        >
           {Array.from({ length: 10 }).map((_, index) => (
-            <Stack sx={{ width: "calc(100% / )"}}>
-              <ProductCard key={index} />
-            </Stack>
+            <ProductCard key={index} />
           ))}
         </Stack>
       </Box>
+
+      {/*  */}
     </Box>
   );
 }

@@ -27,6 +27,17 @@ const loginApi = async ({
   return response.data;
 }
 
+const logoutApi = async () => {
+  const response = await axiosInstance.get(API_PATHS.LOGOUT);
+
+  if (response.status !== 200) {
+    return response.data
+  }
+
+  Cookies.remove('access_token');
+  return response.data;
+}
+
 const registerApi = async ({
   email,
   password,
@@ -55,4 +66,5 @@ export {
   loginApi,
   getUserApi,
   registerApi,
+  logoutApi
 }

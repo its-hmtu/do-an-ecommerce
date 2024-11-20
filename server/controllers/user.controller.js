@@ -142,6 +142,11 @@ exports.login = async (req, res) => {
   return res.status(200).json({ message: 'Login successful', token });
 }
 
+exports.logout = async (req, res) => {
+  res.clearCookie('refresh_token');
+  return res.status(200).json({ message: 'Logout successful' });
+}
+
 exports.getUserData = async (req, res, next) => {
   return res.status(200).json({ user: req.user });
 }
