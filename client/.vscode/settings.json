@@ -1,0 +1,16 @@
+{
+  "sqltools.connections": [
+    {
+      "mysqlOptions": {
+        "authProtocol": "default",
+        "enableSsl": "Disabled"
+      },
+      "server": "localhost",
+      "port": 3307,
+      "driver": "MySQL",
+      "name": "localhost:3007",
+      "database": "do-an-ecommerce",
+      "username": "root"
+    }
+  ]
+}

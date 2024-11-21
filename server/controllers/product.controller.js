@@ -11,8 +11,12 @@ const {
   sequelize,
 } = require("../models");
 const fs = require("fs");
-const { Op, where } = require("sequelize");
-const {client: redisClient, REDIS_CACHE_5_MINUTES }= require("../config/redis");
+const { Op } = require("sequelize");
+const {
+  client: redisClient,
+  REDIS_CACHE_5_MINUTES,
+} = require("../config/redis");
+const { group } = require("console");
 
 exports.getProducts = async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
@@ -22,7 +26,6 @@ exports.getProducts = async (req, res, next) => {
   const category = req.query.category || "";
   const sort = req.query.sort || "createdAt";
   const offset = (page - 1) * pageSize;
-  const featured = req.query.featured || false;
 
   try {
     const whereCondition = {
@@ -134,8 +137,29 @@ exports.getProducts = async (req, res, next) => {
       }
     });
 
-    if (featured) {
-      products.rows = products.rows.filter((product) => product.featured === true);
+    let featuredProducts = [];
+
+    const featured = products.rows.filter(
+      (product) => product.featured === true
+    );
+
+    // format the rows to the featured products based on categories, make the category the key
+
+    for (let i = 0; i < featured.length; i++) {
+      let product = featured[i];
+      let category = product.categories[0].name;
+      let index = featuredProducts.findIndex(
+        (item) => item.category === category
+      );
+
+      if (index === -1) {
+        featuredProducts.push({
+          category: category,
+          products: [product],
+        });
+      } else {
+        featuredProducts[index].products.push(product);
+      }
     }
 
     const totalItemCount = products.count;
@@ -150,7 +174,6 @@ exports.getProducts = async (req, res, next) => {
       current_page: currentPage,
     };
 
-
     // await redisClient.setEx(
     //   `products:${page}:${pageSize}:${q}:${category}:${sort}:${order}`,
     //   REDIS_CACHE_5_MINUTES,
@@ -164,6 +187,7 @@ exports.getProducts = async (req, res, next) => {
       data: {
         ...pagination,
         products: products.rows,
+        featured: featuredProducts,
       },
     });
   } catch (e) {
@@ -353,7 +377,7 @@ exports.deleteProducts = async (req, res, next) => {
   const { ids } = req.query;
   const transaction = await sequelize.transaction({ autocommit: false });
   console.log(ids);
-  
+
   if (!ids) {
     res.status(400);
     return next(new Error("Product ids required"));
@@ -367,7 +391,7 @@ exports.deleteProducts = async (req, res, next) => {
       where: {
         id: {
           [Op.in]: product_ids,
-        }
+        },
       },
       transaction,
     });
@@ -415,17 +439,18 @@ exports.updateProduct = async (req, res, next) => {
     let total_in_stock = 0;
 
     if (Array.isArray(options) && options.length > 0) {
-      base_price = options.length > 1 ? 
-        Math.min(...options.map((option) => Number(option.price)))
-        : Number(options[0].price);
+      base_price =
+        options.length > 1
+          ? Math.min(...options.map((option) => Number(option.price)))
+          : Number(options[0].price);
 
       total_in_stock = options.reduce(
         (acc, variation) => acc + Number(variation.stock),
         0
-      )
+      );
     }
 
-    console.log(req.body)
+    console.log(req.body);
 
     await product.update(
       {
@@ -464,7 +489,7 @@ exports.updateProduct = async (req, res, next) => {
         product_id: product.id,
       },
       transaction,
-    })
+    });
 
     for (let i = 0; i < product_images_ids.length; i++) {
       const image = await Upload.findByPk(product_images_ids[i], {
@@ -499,12 +524,14 @@ exports.updateProduct = async (req, res, next) => {
 
     for (let i = 0; i < options.length; i++) {
       if (options[i].id) {
-        const currentOption = currentOptions.find( option => option.id === options[i].id);
+        const currentOption = currentOptions.find(
+          (option) => option.id === options[i].id
+        );
         if (currentOption) {
           currentOption.color = options[i].color || currentOption.color;
           currentOption.price = options[i].price || currentOption.price;
           await currentOption.save({ transaction });
-        
+
           const optionImage = await Upload.findByPk(options[i].image_id, {
             transaction,
           });
@@ -566,13 +593,12 @@ exports.updateProduct = async (req, res, next) => {
             },
             { transaction }
           );
-
         }
       }
     }
 
     for (let i = 0; i < currentOptions.length; i++) {
-      if (!options.map(option => option.id).includes(currentOptions[i].id)) {
+      if (!options.map((option) => option.id).includes(currentOptions[i].id)) {
         await currentOptions[i].destroy({ transaction });
       }
     }
@@ -587,20 +613,27 @@ exports.updateProduct = async (req, res, next) => {
 
     if (currentSpecs) {
       currentSpecs.brand_id = specs.brand || currentSpecs.brand_id;
-      currentSpecs.storage_capacity = specs.storage_capacity || currentSpecs.storage_capacity;
-      currentSpecs.number_of_cameras = specs.number_of_cameras || currentSpecs.number_of_cameras;
-      currentSpecs.camera_resolution = specs.camera_resolution || currentSpecs.camera_resolution;
+      currentSpecs.storage_capacity =
+        specs.storage_capacity || currentSpecs.storage_capacity;
+      currentSpecs.number_of_cameras =
+        specs.number_of_cameras || currentSpecs.number_of_cameras;
+      currentSpecs.camera_resolution =
+        specs.camera_resolution || currentSpecs.camera_resolution;
       currentSpecs.ram = specs.ram || currentSpecs.ram;
       currentSpecs.rom = specs.rom || currentSpecs.rom;
-      currentSpecs.battery_capacity = specs.battery_capacity || currentSpecs.battery_capacity;
+      currentSpecs.battery_capacity =
+        specs.battery_capacity || currentSpecs.battery_capacity;
       currentSpecs.processor = specs.processor || currentSpecs.processor;
       currentSpecs.screen_size = specs.screen_size || currentSpecs.screen_size;
-      currentSpecs.operating_system = specs.operating_system || currentSpecs.operating_system;
+      currentSpecs.operating_system =
+        specs.operating_system || currentSpecs.operating_system;
       currentSpecs.dimensions = specs.dimensions || currentSpecs.dimensions;
       currentSpecs.cable_type = specs.cable_type || currentSpecs.cable_type;
       currentSpecs.sim_type = specs.sim_type || currentSpecs.sim_type;
-      currentSpecs.manufacture_date = specs.manufacture_date || currentSpecs.manufacture_date;
-      currentSpecs.warranty_duration = specs.warranty_duration || currentSpecs.warranty_duration;
+      currentSpecs.manufacture_date =
+        specs.manufacture_date || currentSpecs.manufacture_date;
+      currentSpecs.warranty_duration =
+        specs.warranty_duration || currentSpecs.warranty_duration;
       currentSpecs.condition = specs.condition || currentSpecs.condition;
       currentSpecs.phone_model = specs.phone_model || currentSpecs.phone_model;
 
@@ -639,16 +672,10 @@ exports.getSingleProduct = async (req, res, next) => {
           attributes: ["id", "file_path", "file_size"],
           required: false,
         },
-        // {
-        //   model: Review,
-        //   attributes: ["id", "rating", "comment", "createdAt"],
-        //   include: [
-        //     {
-        //       model: User,
-        //       attributes: ["id", "first_name", "last_name", "email"],
-        //     },
-        //   ],
-        // },
+        {
+          model: Review,
+          attributes: ["id", "rating", "comment", "createdAt"],
+        },
         {
           model: Option,
           as: "options",
@@ -821,5 +848,110 @@ exports.getProductsBySearch = async (req, res, next) => {
   } catch (err) {
     res.status(500);
     return next(err);
+  }
+};
+
+exports.getSingleProductBySlug = async (req, res, next) => {
+  const { slug } = req.params;
+
+  try {
+    const product = await Product.findOne({
+      where: {
+        slug: slug,
+      },
+      attributes: {
+        exclude: ["updatedAt"],
+      },
+      include: [
+        {
+          model: Category,
+          attributes: ["id", "name"],
+          required: false,
+        },
+        {
+          model: ProductImage,
+          as: "images",
+          attributes: ["id", "file_path", "file_size"],
+          required: false,
+        },
+        {
+          model: Option,
+          as: "options",
+          include: [
+            {
+              model: OptionImage,
+              as: "images",
+              attributes: ["id", "file_path"],
+              required: false,
+            },
+          ],
+          attributes: {
+            include: [
+              "id",
+              "color",
+              "price",
+              [
+                sequelize.literal(
+                  "(SELECT stock FROM stocks WHERE stocks.option_id = options.id LIMIT 1)"
+                ),
+                "stock",
+              ],
+            ],
+          },
+          required: false,
+        },
+        {
+          model: Specification,
+          as: "specification",
+          attributes: {
+            exclude: ["createdAt", "updatedAt"],
+          },
+          required: false,
+        },
+        {
+          model: Review,
+          attributes: [
+            "id",
+            "rating",
+            "review",
+            "createdAt",
+          ],
+          required: false,
+        },
+      ],
+    });
+
+    const reviews = await Review.findAll({
+      where: {
+        product_id: product.id,
+      },
+      attributes: [
+        [sequelize.fn("AVG", sequelize.col("rating")), "average_rating"],
+        [sequelize.fn("COUNT", sequelize.col("id")), "total_reviews"],
+      ],
+      group: ["product_id"],
+    });
+
+    if (reviews.length > 0) {
+      product.dataValues.average_rating = reviews[0].get("average_rating");
+      product.dataValues.total_reviews = reviews[0].get("total_reviews");
+    } else {
+      product.dataValues.average_rating = 0;
+      product.dataValues.total_reviews = 0;
+    }
+
+    if (!product) {
+      res.status(404);
+      return next(new Error("Product not found"));
+    }
+
+    return res.status(200).json({
+      data: product,
+      message: "Product found",
+      success: true,
+    });
+  } catch (error) {
+    res.status(500);
+    return next(error);
   }
 };

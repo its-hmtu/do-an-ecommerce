@@ -13,6 +13,7 @@ const {
   deleteProducts,
   updateProduct,
   getSingleProduct,
+  getSingleProductBySlug,
   getProductsByCategory,
   getProductsBySearch
 } = require('../controllers/product.controller');
@@ -28,4 +29,5 @@ router.put('/:id', updateProduct);
 router.get('/:id', getSingleProduct);
 router.get('/category/:id', getProductsByCategory);
 router.get('/search', getProductsBySearch);
+router.get('/product/:slug', getSingleProductBySlug);
 module.exports = router;

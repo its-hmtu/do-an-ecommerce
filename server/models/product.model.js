@@ -91,16 +91,20 @@ module.exports = (sequelize, DataTypes) => {
     //       attributes: ['id', 'file_path'],
     //       where: {
     //         product_id: {
-    //           [Op.ne]: null
+    //           [Op.ne]: null 
     //         }
     //       }
     //     }
     //   ]
     // }, { override: true });
 
-    Product.hasMany(models.Review);
+    Product.hasMany(models.Review, {foreignKey: 'product_id', onDelete: 'RESTRICT', onUpdate: 'RESTRICT'});
     Product.hasMany(models.ProductImage, {as: 'images', foreignKey: 'product_id'});
-    Product.belongsTo(models.Category, {foreignKey: 'category_id', onDelete: 'CASCADE'});
+    Product.belongsToMany(models.Category, {
+      through: models.ProductCategory,
+      foreignKey: 'product_id',
+      otherKey: 'category_id'
+    });
 
     Product.hasMany(models.Option, {foreignKey: 'product_id', onDelete: 'cascade', onUpdate: 'cascade'});
     Product.hasMany(models.Stock, {foreignKey: 'product_id', onDelete: 'cascade', onUpdate: 'cascade'});

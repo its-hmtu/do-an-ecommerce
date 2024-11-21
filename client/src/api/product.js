@@ -7,13 +7,19 @@ const getProductsApi = async () => {
     params: {
       limit: 10,
       page: 1,
-      featured: true
     }
   })
 
   return response.data.data;
 }
 
+const getProductApi = async (slug) => {
+  const response = await axiosInstance.get(`${API_PATHS.PRODUCT}/${slug}`);
+
+  return response.data.data;
+}
+
 export {
-  getProductsApi
+  getProductsApi,
+  getProductApi,
 }

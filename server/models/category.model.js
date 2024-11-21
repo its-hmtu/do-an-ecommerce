@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
 
   Category.associate = (models) => {
     Category.hasMany(models.CategoryImage, {as: 'images', foreignKey: 'category_id'});
-    Category.hasMany(models.Product, {foreignKey: 'category_id', onDelete: "CASCADE"});
+    Category.belongsToMany(models.Product, {through: models.ProductCategory, foreignKey: 'category_id'});
   }
   return Category;
 }

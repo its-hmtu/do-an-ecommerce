@@ -6,4 +6,10 @@
   // .slick-slide {
   //   width: 892px!important;
   // }
+
+  .slick-dots.slick-thumb {
+    li {
+      width: 60px;
+    }
+  }
 }

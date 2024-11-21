@@ -37,7 +37,9 @@ function ProductCard({ data }) {
     }
   };
   // useCallback(handleAddToFavorite, [user, isFavorite]);
-
+  const mainImage = data?.images.find(
+    (image) => image.id === data?.main_image_id
+  ).file_path;
   return (
     <Card
       sx={{
@@ -45,7 +47,7 @@ function ProductCard({ data }) {
         padding: "16px",
         backgroundColor: "#fff",
         width: "300px",
-        borderRadius: "10px"
+        borderRadius: "10px",
       }}
     >
       <Box
@@ -56,9 +58,11 @@ function ProductCard({ data }) {
           alignItems: "center",
           alignSelf: "center",
         }}
+        component={Link}
+        to={PATHS.PRODUCT.replace(":path", data?.slug)}
       >
         <img
-          src={productImg}
+          src={`${process.env.REACT_APP_API_URL}${mainImage}`}
           alt="product"
           style={{
             marginTop: "6px",
@@ -69,14 +73,14 @@ function ProductCard({ data }) {
 
       <CardContent>
         <Typography
-          level="body-sm"
+          level="title-lg"
           sx={{
             fontWeight: "bold",
           }}
           component={Link}
-          to={PATHS.PRODUCT.replace(":id", data?.id)}
+          to={PATHS.PRODUCT.replace(":path", data?.slug)}
         >
-          Apple iPhone 16 Pro Max
+          {data?.product_name}
         </Typography>
 
         <Stack
@@ -84,34 +88,36 @@ function ProductCard({ data }) {
           gap={2}
           sx={{ justifyContent: "flex-start", alignItems: "center" }}
           component={Link}
-          to={PATHS.PRODUCT.replace(":id", data?.id)}
+          to={PATHS.PRODUCT.replace(":path", data?.slug)}
         >
           <Typography
             level="body-lg"
             sx={{
               marginTop: "10px",
               fontWeight: "bold",
-              color: "#DB4444"
+              color: "#DB4444",
             }}
           >
             {new Intl.NumberFormat("vi-VN", {
               style: "currency",
               currency: "VND",
-            }).format(30000000)}
+            }).format(Number(data?.base_price))}
           </Typography>
-          <Typography
-            level="body-md"
-            sx={{
-              color: "text.secondary",
-              marginTop: "10px",
-              textDecoration: "line-through",
-            }}
-          >
-            {new Intl.NumberFormat("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            }).format(30000000)}
-          </Typography>
+          {data?.special_base_price && (
+            <Typography
+              level="body-md"
+              sx={{
+                color: "text.secondary",
+                marginTop: "10px",
+                textDecoration: "line-through",
+              }}
+            >
+              {new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(Number(data?.special_base_price))}
+            </Typography>
+          )}
         </Stack>
 
         <Stack
@@ -121,12 +127,17 @@ function ProductCard({ data }) {
           sx={{ marginTop: 1, justifyContent: "space-between" }}
         >
           <Stack direction="row" gap={1}>
-            <Rate defaultValue={4.8} allowHalf disabled />
+            <Rate
+              defaultValue={0}
+              allowHalf
+              disabled
+              value={data?.average_rating}
+            />
             <Typography level="body-sm" sx={{ color: "text.secondary" }}>
-              (50)
+              ({data?.total_reviews})
             </Typography>
           </Stack>
-        
+
           <Stack direction="row" gap={1}>
             <Tooltip title="Add to wishlist" arrow variant="outlined">
               <IconButton onClick={handleAddToFavorite}>
@@ -144,7 +155,6 @@ function ProductCard({ data }) {
               </IconButton>
             </Tooltip>
           </Stack>
-
         </Stack>
       </CardContent>
 

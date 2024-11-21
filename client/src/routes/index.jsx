@@ -2,6 +2,7 @@ import MainLayout from "layouts/MainLayout";
 import HomePage from "pages/HomePage";
 import LoginPage from "pages/LoginPage";
 import NotFoundPage from "pages/NotFoundPage";
+import ProductPage from "pages/ProductPage";
 import RegisterPage from "pages/RegisterPage";
 import { createBrowserRouter } from "react-router-dom";
 
@@ -22,7 +23,10 @@ export default createBrowserRouter([
         path: "/tablet",
         element: <div>Tablet</div>,
       },
-
+      {
+        path: '/products/:path',
+        element: <ProductPage />
+      },
       {
         path: "*",
         element: <NotFoundPage />,

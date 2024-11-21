@@ -15,6 +15,8 @@ import {
   MenuItem,
   ListDivider,
   ListItemDecorator,
+  Badge,
+  Tooltip,
 } from "@mui/joy";
 import { Link as RLink } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
@@ -28,6 +30,7 @@ import {
   ArrowDropDownRounded,
   Inventory2Rounded,
   LogoutRounded,
+  ProductionQuantityLimitsRounded,
 } from "@mui/icons-material";
 import { useLogout } from "hooks";
 import ConfirmModal from "./Modal/ConfirmModal";
@@ -173,7 +176,32 @@ function Header() {
                 <FavoriteBorderIcon />
               </IconButton>
               <IconButton>
-                <ShoppingCartOutlinedIcon />
+                <Tooltip
+                  arrow
+                  variant="outlined"
+                  title={
+                    <Box
+                      sx={{
+                        width: "200px",
+                        height: "100px",
+                        padding: "10px",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <ProductionQuantityLimitsRounded />
+                      <Typography level="body-sm">
+                        Your cart is empty
+                      </Typography>
+                    </Box>
+                  }
+                >
+                  <Badge badgeContent={0} color="primary" showZero size="sm">
+                    <ShoppingCartOutlinedIcon />
+                  </Badge>
+                </Tooltip>
               </IconButton>
 
               {user ? (
@@ -188,7 +216,7 @@ function Header() {
                       sx={{ marginRight: "10px" }}
                       size="sm"
                     />
-                    {user?.username || "Guest"}
+                    {user?.username}
                   </MenuButton>
                   <Menu
                     placement="bottom-end"

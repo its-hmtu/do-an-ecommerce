@@ -46,7 +46,19 @@ const settings = {
 };
 
 function HomePage() {
-  const {data, isLoading} = useProducts();
+  const { data, isLoading } = useProducts();
+  const [featuredMobile, setFeaturedMobile] = React.useState([]);
+  const [featuredTablet, setFeaturedTablet] = React.useState([]);
+
+  React.useEffect(() => {
+    if (data) {
+      const categoryMobile = data?.featured.find((product) => product.category === "Mobile phone");
+      setFeaturedMobile(categoryMobile?.products);
+
+      const categoryTablet = data?.featured.find(product => product.category === "Tablet")
+      setFeaturedTablet(categoryTablet?.products);
+    }
+  }, [data]);
 
   return (
     <Box
@@ -57,21 +69,19 @@ function HomePage() {
         paddingBottom: 3,
       }}
     >
-      
-        <div className="slider-container">
-          <Slider {...settings}>
-            <div>
-              <img src={slickImg} alt="slider" />
-            </div>
-            <div>
-              <img src={slickImg} alt="slider" />
-            </div>
-            <div>
-              <img src={slickImg} alt="slider" />
-            </div>
-          </Slider>
-        </div>
-        
+      <div className="slider-container">
+        <Slider {...settings}>
+          <div>
+            <img src={slickImg} alt="slider" />
+          </div>
+          <div>
+            <img src={slickImg} alt="slider" />
+          </div>
+          <div>
+            <img src={slickImg} alt="slider" />
+          </div>
+        </Slider>
+      </div>
 
       <Stack
         direction="row"
@@ -115,9 +125,12 @@ function HomePage() {
           gap={3}
           sx={{ mt: 4, justifyContent: "flex-start", flexWrap: "wrap" }}
         >
-          {Array.from({ length: 10 }).map((_, index) => (
-            <ProductCard key={index} />
-          ))}
+          {featuredMobile.map((product) => {
+            return (
+              <ProductCard key={product.id} data={product} />
+            )
+          }
+          )}
         </Stack>
       </Box>
 
@@ -131,13 +144,29 @@ function HomePage() {
           gap={3}
           sx={{ mt: 4, justifyContent: "flex-start", flexWrap: "wrap" }}
         >
-          {Array.from({ length: 10 }).map((_, index) => (
-            <ProductCard key={index} />
+          {featuredTablet.map((product) => (
+            <ProductCard key={product.id} data={product} />
           ))}
         </Stack>
       </Box>
 
-      {/*  */}
+      <Box>
+        <Typography level="h3" sx={{ mt: 4 }}>
+          All Products
+        </Typography>
+        <Stack
+          direction="row"
+          gap={3}
+          sx={{ mt: 4, justifyContent: "flex-start", flexWrap: "wrap" }}
+        >
+          {data?.products.map((product) => {
+            return (
+              <ProductCard key={product.id} data={product} />
+            )
+          }
+          )}
+        </Stack>
+      </Box>
     </Box>
   );
 }

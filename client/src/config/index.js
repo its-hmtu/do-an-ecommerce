@@ -7,7 +7,7 @@ const PATHS = {
   REGISTER: `${BASE_PATH}account/register`,
   MOBILE: `${BASE_PATH}mobile`,
   TABLET: `${BASE_PATH}tablet`,
-  PRODUCT: `${BASE_PATH}products/:id`,
+  PRODUCT: `${BASE_PATH}products/:path`,
 }
 
 const API_PATHS = {
@@ -17,6 +17,7 @@ const API_PATHS = {
   USER: `${BASE_API_PATH}/account/me`,
   REFRESH: `${BASE_API_PATH}/refresh`,
   PRODUCTS: `${BASE_API_PATH}/products`,
+  PRODUCT: `${BASE_API_PATH}/products/product`,
 }
 
 const queryKeys = {
