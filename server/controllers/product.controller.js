@@ -9,6 +9,7 @@ const {
   Option,
   Stock,
   sequelize,
+  Series,
 } = require("../models");
 const fs = require("fs");
 const { Op } = require("sequelize");
@@ -918,6 +919,12 @@ exports.getSingleProductBySlug = async (req, res, next) => {
           ],
           required: false,
         },
+        {
+          model: Series,
+          attributes: ["id", "series_name"],
+          as: "product_series",
+          required: false,
+        }
       ],
     });
 
@@ -939,6 +946,41 @@ exports.getSingleProductBySlug = async (req, res, next) => {
       product.dataValues.average_rating = 0;
       product.dataValues.total_reviews = 0;
     }
+
+    const options = await Option.findAll({
+      where: {
+        product_id: product.id,
+      },
+      attributes: ["id", "color", "price"],
+      include: [
+        {
+          model: OptionImage,
+          as: "images",
+          attributes: ["id", "file_path"],
+        },
+      ],
+    })
+
+    options.forEach(option => {
+      product.dataValues.images.push(option.images[0]);
+    })
+
+    const seriesProducts = await Product.findAll({
+      where: {
+        series_id: product.series_id,
+      },
+      attributes: ["id", "product_name", "slug", "base_price", "special_base_price"],
+      include: [
+        {
+          model: Specification,
+          as: "specification",
+          attributes: ["id", "storage_capacity"],
+        }
+      ]
+    });
+
+    product.dataValues.series_products = seriesProducts;
+
 
     if (!product) {
       res.status(404);
