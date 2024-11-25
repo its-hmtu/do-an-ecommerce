@@ -9,6 +9,7 @@ const PATHS = {
   TABLET: `${BASE_PATH}tablet`,
   PRODUCT: `${BASE_PATH}products/:path`,
   NOT_FOUND: '/not-found',
+  CONTACT: `${BASE_PATH}contact`,
 }
 
 const API_PATHS = {
