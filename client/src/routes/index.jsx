@@ -4,6 +4,7 @@ import LoginPage from "pages/LoginPage";
 import NotFoundPage from "pages/NotFoundPage";
 import ProductPage from "pages/ProductPage";
 import RegisterPage from "pages/RegisterPage";
+import ContactPage from "pages/ContactPage";
 import { createBrowserRouter } from "react-router-dom";
 import { PATHS } from "config";
 
@@ -31,6 +32,10 @@ export default createBrowserRouter([
       {
         path: PATHS.NOT_FOUND,
         element: <NotFoundPage />,
+      },
+      {
+        path: `${PATHS.CONTACT}`,
+        element: <ContactPage />,
       },
     ],
   },

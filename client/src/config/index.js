@@ -11,6 +11,7 @@ const PATHS = {
   ABOUT_US: `${BASE_PATH}about-us`,
   PRODUCT: `${BASE_PATH}products/:path`,
   NOT_FOUND: '*',
+  CONTACT: `${BASE_PATH}contact`,
 }
 
 const API_PATHS = {
