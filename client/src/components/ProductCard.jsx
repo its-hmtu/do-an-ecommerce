@@ -22,7 +22,7 @@ import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { PATHS } from "config";
 
-function ProductCard({ data }) {
+function ProductCard({ data, showTotalReviews = true }) {
   const { user } = useContext(UserContext);
   const [isFavorite, setIsFavorite] = useState(false);
   const handleAddToFavorite = () => {
@@ -133,9 +133,11 @@ function ProductCard({ data }) {
               disabled
               value={data?.average_rating || 0}
             />
-            <Typography level="body-sm" sx={{ color: "text.secondary" }}>
-              ({data?.total_reviews})
-            </Typography>
+            {showTotalReviews && (
+              <Typography level="body-sm" sx={{ color: "text.secondary" }}>
+                ({data?.total_reviews})
+              </Typography>
+            )}
           </Stack>
 
           <Stack direction="row" gap={1}>

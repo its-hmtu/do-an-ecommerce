@@ -1,11 +1,20 @@
-import { Box, Stack, Typography, Card, Button, Divider, Table } from "@mui/joy";
+import {
+  Box,
+  Stack,
+  Typography,
+  Card,
+  Button,
+  Divider,
+  Table,
+  LinearProgress,
+} from "@mui/joy";
 import React from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { useProduct } from "hooks/product";
-import { Rate } from "antd";
+import { Progress, Rate } from "antd";
 import {
   AddShoppingCartRounded,
   ChevronLeftRounded,
@@ -80,7 +89,7 @@ function ProductPage() {
           alignItems: "center",
         }}
       >
-        <Typography level="title-lg" sx={{ marginRight: "8px" }}>
+        <Typography level="h3" sx={{ marginRight: "8px" }}>
           {data?.product_name}
         </Typography>
         <Rate
@@ -97,6 +106,7 @@ function ProductPage() {
           justifyContent: "flex-start",
           alignItems: "flex-start",
           marginTop: "16px",
+          marginBottom: "32px",
           gap: "16px",
         }}
       >
@@ -115,7 +125,7 @@ function ProductPage() {
           </div>
         </div>
 
-        <Stack gap={2}>
+        <Stack gap={2} sx={{ width: "558px" }}>
           <Stack direction="row" gap={2}>
             {data?.series_products.map((product) => (
               <Link
@@ -204,19 +214,21 @@ function ProductPage() {
                       }}
                     />
                   </div>
-                  <Stack
-                    sx={{
-                      alignItems: "flex-start",
-                    }}
-                  >
-                    <Typography level="title-sm">{option?.color}</Typography>
-                    <Typography level="body-xs">
-                      {new Intl.NumberFormat("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                      }).format(option?.price)}
-                    </Typography>
-                  </Stack>
+                  {data && (
+                    <Stack
+                      sx={{
+                        alignItems: "flex-start",
+                      }}
+                    >
+                      <Typography level="title-sm">{option?.color}</Typography>
+                      <Typography level="body-xs">
+                        {new Intl.NumberFormat("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        }).format(option?.price)}
+                      </Typography>
+                    </Stack>
+                  )}
                 </Stack>
               </Button>
             ))}
@@ -335,7 +347,7 @@ function ProductPage() {
           </Card>
         </Stack>
       </Box>
-
+      <Divider />
       <Stack gap={2} sx={{ marginTop: "32px" }}>
         <Typography level="title-lg">Related products</Typography>
         <Stack
@@ -344,49 +356,170 @@ function ProductPage() {
           sx={{ mt: 1, justifyContent: "flex-start", flexWrap: "wrap" }}
         >
           {data?.related_products.map((product) => {
-            return <ProductCard key={product.id} data={product} />;
+            return (
+              <ProductCard
+                key={product.id}
+                data={product}
+                showTotalReviews={false}
+              />
+            );
           })}
         </Stack>
 
         <Stack direction="row" gap={2}>
           <Box
             sx={{
-              border: "1px solid #cdd7e1",
-              padding: "16px",
-              borderRadius: "6px",
-              backgroundColor: "#fff",
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
               width: "calc(100% - 338px)",
-              height: openDescription ? "auto" : "750px",
-              overflowY: openDescription ? "visible" : "hidden",
-              position: "relative",
             }}
           >
-            <Typography level="title-md">Description</Typography>
-            <div
-              style={{
-                textAlign: "justify",
+            <Box
+              sx={{
+                border: "1px solid #cdd7e1",
+                padding: "16px",
+                borderRadius: "6px",
+                backgroundColor: "#fff",
+                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                height: openDescription ? "auto" : "400px",
+                overflowY: openDescription ? "visible" : "hidden",
+                position: "relative",
               }}
-              dangerouslySetInnerHTML={{ __html: data?.product_description }}
-            ></div>
-            <Box sx={{
-              position: "absolute",
-              bottom: 0,
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: "100%",
-              display: openDescription ? "none" : "flex",
-              justifyContent: "center",
-              paddingTop: "64px",
-              paddingBottom: "16px",
-              background: "linear-gradient(180deg,hsla(0,0%,100%,0),hsla(0,0%,100%,.91) 50%,#fff 55%)"
-            }}>
-              <Button
-                onClick={() => setOpenDescription(true)}
+            >
+              <Typography level="title-md">Description</Typography>
+              <div
+                style={{
+                  textAlign: "justify",
+                }}
+                dangerouslySetInnerHTML={{ __html: data?.product_description }}
+              ></div>
+              <Box
+                sx={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: "100%",
+                  display: openDescription ? "none" : "flex",
+                  justifyContent: "center",
+                  paddingTop: "64px",
+                  paddingBottom: "16px",
+                  background:
+                    "linear-gradient(180deg,hsla(0,0%,100%,0),hsla(0,0%,100%,.91) 50%,#fff 55%)",
+                }}
               >
-                View more
-              </Button>
+                <Button onClick={() => setOpenDescription(true)}>
+                  View more
+                </Button>
+              </Box>
             </Box>
+            <Stack
+              gap={2}
+              sx={{
+                marginTop: "16px",
+                padding: "16px",
+                borderRadius: "6px",
+                backgroundColor: "#fff",
+                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <Typography level="title-lg">
+                Reviews & rating {data?.product_name}
+              </Typography>
+              <Stack
+                gap={2}
+                direction="row"
+                sx={{
+                  padding: "16px",
+                }}
+              >
+                <Stack
+                  gap={1}
+                  sx={{
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: "250px",
+                  }}
+                >
+                  <Typography level="h4">
+                    {`${data?.average_rating.toFixed(1)} / 5`}
+                  </Typography>
+                  <Rate
+                    disabled
+                    defaultValue={0}
+                    value={data?.average_rating}
+                  />
+                  <Typography level="body-sm">{`${data?.total_reviews} reviews`}</Typography>
+                </Stack>
+                <Divider orientation="vertical" />
+                <Stack
+                  gap={2}
+                  sx={{
+                    width: "100%",
+                  }}
+                >
+                  {Array.from({ length: 5 }).reverse().map((_, index) => (
+                    <Stack direction="row" key={index} gap={1}>
+                      <Typography level="body-sm">{index + 1}</Typography>
+                      <Rate disabled defaultValue={0} value={1} count={1} />
+                      <Progress
+                        showInfo={false}
+                        style={{
+                          maxWidth: "500px",
+                        }}
+                        percent={
+                          (data?.reviews.filter(
+                            (review) => review.rating === index + 1
+                          ).length /
+                            data?.total_reviews) *
+                          100
+                        }
+                      />
+                      <Typography level="body-sm">{`${
+                        data?.reviews.filter(
+                          (review) => review.rating === index + 1
+                        ).length
+                      } reviews`}</Typography>
+                    </Stack>
+                  ))}
+                </Stack>
+              </Stack>
+              <Divider />
+              <Stack gap={2} sx={{
+                justifyContent: "center",
+                alignItems: "center",
+                padding: "16px",
+              }}>
+                <Typography level="body-lg">
+                  What do you think about this product?
+                </Typography>
+                <Button
+                  sx={{
+                    width: "200px",
+                    padding: "16px",
+                    fontSize: "16px",
+                  }}
+                >
+                  Review this product
+                </Button>
+              </Stack>
+              {
+                data?.reviews.length >0 && <Divider />
+              }
+              {
+                data?.reviews.map((review) => (
+                  <Stack key={review.id} gap={2} sx={{
+                    padding: "16px",
+                  }}>
+                    <Stack gap={2} direction="row">
+                      <Rate disabled defaultValue={0} value={review.rating} />
+                      <Typography level="body-sm">{review.rating} / 5</Typography>
+                    </Stack>
+                    <Typography level="body-md">{review.title}</Typography>
+                    <Typography level="body-sm">{review.content}</Typography>
+                    <Typography level="body-sm">{review.created_at}</Typography>
+                  </Stack>
+                ))
+              }
+            </Stack>
           </Box>
           <Stack
             sx={{
@@ -435,10 +568,6 @@ function ProductPage() {
             </Stack>
           </Stack>
         </Stack>
-      </Stack>
-      <Stack gap={2}>
-        <Typography level="title-lg">Reviews</Typography>
-        <Stack gap={2}></Stack>
       </Stack>
     </Box>
   );

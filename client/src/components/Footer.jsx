@@ -22,7 +22,13 @@ import LinkedInIcon from "@mui/icons-material/LinkedIn";
 
 function Footer() {
   return (
-    <Box sx={{ backgroundColor: "#000", color: "#fff", py: 6 }}>    
+    <Box
+      sx={{
+        backgroundColor: "#000",
+        color: "#fff",
+        py: 6,
+      }}
+    >
       <Container>
         <Box
           sx={{
@@ -35,20 +41,33 @@ function Footer() {
         >
           {/* Subscription Section */}
           <Box>
-            <Typography level="h4" sx={{ mb: 2, fontWeight: "bold", letterSpacing: '2px' }}>
+            <Typography
+              level="h4"
+              sx={{ mb: 2, fontWeight: "bold", letterSpacing: "2px" }}
+            >
               Exclusive
             </Typography>
-            <Typography sx={{ mb: 2, fontWeight: "600", letterSpacing: '1px' }}>Subscribe</Typography>
+            <Typography sx={{ mb: 2, fontWeight: "600", letterSpacing: "1px" }}>
+              Subscribe
+            </Typography>
             <Typography sx={{ mb: 2 }}>Get 10% off your first order</Typography>
-            <Box sx={{ display: "flex", alignItems: "center", border: "1px solid #fff", borderRadius: "8px", overflow: "hidden" }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                border: "1px solid #fff",
+                borderRadius: "8px",
+                overflow: "hidden",
+              }}
+            >
               <Input
                 placeholder="Enter your email"
                 sx={{
-                    backgroundColor: "transparent",
-                    color: "#fff",
-                    border: "none",
-                    flexGrow: 1,
-                    px: 2,
+                  backgroundColor: "transparent",
+                  color: "#fff",
+                  border: "none",
+                  flexGrow: 1,
+                  px: 2,
                 }}
               />
               <IconButton
@@ -64,7 +83,10 @@ function Footer() {
 
           {/* Support Section */}
           <Box>
-            <Typography level="h5" sx={{ mb: 2, fontWeight: "600", letterSpacing: '1px' }}>
+            <Typography
+              level="h5"
+              sx={{ mb: 2, fontWeight: "600", letterSpacing: "1px" }}
+            >
               Support
             </Typography>
             <Typography>111 Bijoy Sarani, Dhaka,</Typography>
@@ -75,7 +97,10 @@ function Footer() {
 
           {/* Account Section */}
           <Box>
-            <Typography level="h5" sx={{ mb: 2, fontWeight: "600", letterSpacing: '1px'}}>
+            <Typography
+              level="h5"
+              sx={{ mb: 2, fontWeight: "600", letterSpacing: "1px" }}
+            >
               Account
             </Typography>
             <Link href="#" sx={{ color: "#fff", display: "block", mb: 1 }}>
@@ -97,7 +122,10 @@ function Footer() {
 
           {/* Quick Link Section */}
           <Box>
-            <Typography level="h5" sx={{ mb: 2, fontWeight: "600", letterSpacing: '1px'}}>
+            <Typography
+              level="h5"
+              sx={{ mb: 2, fontWeight: "600", letterSpacing: "1px" }}
+            >
               Quick Link
             </Typography>
             <Link href="#" sx={{ color: "#fff", display: "block", mb: 1 }}>
@@ -116,27 +144,47 @@ function Footer() {
 
           {/* Download App Section */}
           <Box>
-            <Typography level="h5" sx={{ mb: 2, fontWeight: "600", letterSpacing: '1px'}}>
+            <Typography
+              level="h5"
+              sx={{ mb: 2, fontWeight: "600", letterSpacing: "1px" }}
+            >
               Download App
             </Typography>
-            <Typography sx={{ mb: 2, fontSize: "12px" }}>Save $3 with App New User Only</Typography>
+            <Typography sx={{ mb: 2, fontSize: "12px" }}>
+              Save $3 with App New User Only
+            </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-                <img src={qrCode} style={{ width: '100px', height: '100px' }} />
-                <Stack direction="column" spacing={1} sx={{ mb: 2 }}>
-                    <img src={appleIcon} sx={{ width: '120px', cursor: 'pointer' }} />
-                    <img src={googlePlay}  sx={{ width: '120px', cursor: 'pointer' }} />
-                </Stack>
+              <img src={qrCode} style={{ width: "100px", height: "100px" }} />
+              <Stack direction="column" spacing={1} sx={{ mb: 2 }}>
+                <img
+                  src={appleIcon}
+                  sx={{ width: "120px", cursor: "pointer" }}
+                />
+                <img
+                  src={googlePlay}
+                  sx={{ width: "120px", cursor: "pointer" }}
+                />
+              </Stack>
             </Box>
             <Stack direction="row" spacing={2}>
-              <FacebookIcon sx={{ fontSize: 32, color: '#fff' }} />
-              <TwitterIcon sx={{ fontSize: 32, color: '#fff' }} />
-              <InstagramIcon sx={{ fontSize: 32, color: '#fff' }}/>
-              <LinkedInIcon sx={{ fontSize: 32, color: '#fff' }}/>
+              <FacebookIcon sx={{ fontSize: 32, color: "#fff" }} />
+              <TwitterIcon sx={{ fontSize: 32, color: "#fff" }} />
+              <InstagramIcon sx={{ fontSize: 32, color: "#fff" }} />
+              <LinkedInIcon sx={{ fontSize: 32, color: "#fff" }} />
             </Stack>
           </Box>
         </Box>
         <Divider sx={{ my: 4, borderColor: "#444" }} />
-        <Typography level="body3" textAlign="center" sx={{ color: "grey", fontSize: "16px", lineHeight: "24px", weight: "400"}}>
+        <Typography
+          level="body3"
+          textAlign="center"
+          sx={{
+            color: "grey",
+            fontSize: "16px",
+            lineHeight: "24px",
+            weight: "400",
+          }}
+        >
           © Copyright Rimel 2022. All rights reserved
         </Typography>
       </Container>

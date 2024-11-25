@@ -29,17 +29,17 @@ export default createBrowserRouter([
         element: <ProductPage />
       },
       {
-        path: `${PATHS.NOT_FOUND}`,
+        path: PATHS.NOT_FOUND,
         element: <NotFoundPage />,
       },
     ],
   },
   {
-    path: "/account/login",
+    path: PATHS.LOGIN,
     element: <LoginPage />,
   },
   {
-    path: "/account/register",
+    path: PATHS.REGISTER,
     element: <RegisterPage />,
   },
 ]);

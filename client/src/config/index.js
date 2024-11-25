@@ -7,8 +7,10 @@ const PATHS = {
   REGISTER: `${BASE_PATH}account/register`,
   MOBILE: `${BASE_PATH}mobile`,
   TABLET: `${BASE_PATH}tablet`,
+  ACCESSORIES: `${BASE_PATH}accessories`,
+  ABOUT_US: `${BASE_PATH}about-us`,
   PRODUCT: `${BASE_PATH}products/:path`,
-  NOT_FOUND: '/not-found',
+  NOT_FOUND: '*',
 }
 
 const API_PATHS = {

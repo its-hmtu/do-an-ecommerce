@@ -1,5 +1,5 @@
 import { CssBaseline, CssVarsProvider, GlobalStyles } from '@mui/joy'
-import { RouterProvider } from 'react-router-dom'
+import { RouterProvider, ScrollRestoration } from 'react-router-dom'
 import router from 'routes'
 
 function App() {

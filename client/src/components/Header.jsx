@@ -121,6 +121,8 @@ function Header() {
                 color: "Black",
                 fontSize: "1.5rem",
               }}
+              component={RLink}
+              to="/"
             >
               Exclusive
             </Link>
@@ -128,18 +130,28 @@ function Header() {
             {/* Navigation Links */}
             <Box sx={{ display: "flex", gap: 3 }}>
               <Link
-                href="#"
+                component={RLink}
+                to={PATHS.MOBILE}
                 sx={{ color: "Black", position: "relative", ml: 10 }}
               >
                 Mobile Phones
               </Link>
-              <Link href="#" sx={{ color: "Black", ml: 3 }}>
+              <Link
+                component={RLink}
+                to={PATHS.TABLET}
+                sx={{ color: "Black", ml: 3 }}>
                 Tablets
               </Link>
-              <Link href="#" sx={{ color: "Black", ml: 3 }}>
+              <Link 
+                component={RLink}
+                to={PATHS.ACCESSORIES}
+                sx={{ color: "Black", ml: 3 }}>
                 Accessories
               </Link>
-              <Link href="#" sx={{ color: "Black", ml: 3 }}>
+              <Link 
+                component={RLink}
+                to={PATHS.ABOUT_US}
+              sx={{ color: "Black", ml: 3 }}>
                 About Us
               </Link>
             </Box>
