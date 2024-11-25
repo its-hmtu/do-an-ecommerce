@@ -127,16 +127,16 @@ function Footer() {
                     <img src="googlePlay"  style={{ width: '120px', cursor: 'pointer' }} />
                 </Stack>
             </Box>
-            <Stack direction="row" spacing={1}>
-              <FacebookIcon />
-              <TwitterIcon />
-              <InstagramIcon />
-              <LinkedInIcon />
+            <Stack direction="row" spacing={2}>
+              <FacebookIcon sx={{ fontSize: 32, color: '#fff' }} />
+              <TwitterIcon sx={{ fontSize: 32, color: '#fff' }} />
+              <InstagramIcon sx={{ fontSize: 32, color: '#fff' }}/>
+              <LinkedInIcon sx={{ fontSize: 32, color: '#fff' }}/>
             </Stack>
           </Box>
         </Box>
         <Divider sx={{ my: 4, borderColor: "#444" }} />
-        <Typography level="body3" textAlign="center" sx={{ color: "#ffffff", fontSize: "16px"}}>
+        <Typography level="body3" textAlign="center" sx={{ color: "grey", fontSize: "16px", lineHeight: "24px", weight: "400"}}>
           © Copyright Rimel 2022. All rights reserved
         </Typography>
       </Container>
