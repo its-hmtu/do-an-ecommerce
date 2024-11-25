@@ -10,7 +10,7 @@ dist/
 dev.env
 desktop.ini
 /logs
-uploads
+# uploads
 
 # production
 /src/client/public/maps

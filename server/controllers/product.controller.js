@@ -905,7 +905,7 @@ exports.getSingleProductBySlug = async (req, res, next) => {
           model: Specification,
           as: "specification",
           attributes: {
-            exclude: ["createdAt", "updatedAt"],
+            exclude: ["createdAt", "updatedAt", "id", "product_id", "brand_id"],
           },
           required: false,
         },
@@ -1025,7 +1025,7 @@ exports.getSingleProductBySlug = async (req, res, next) => {
           model: Specification,
           as: "specification",
           attributes: {
-            exclude: ["createdAt", "updatedAt"],
+            exclude: ["createdAt", "updatedAt", "id", "product_id", "brand_id"],
           },
           required: false,
         },

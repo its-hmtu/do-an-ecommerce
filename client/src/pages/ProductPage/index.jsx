@@ -1,4 +1,4 @@
-import { Box, Stack, Typography, Card, Button, Divider } from "@mui/joy";
+import { Box, Stack, Typography, Card, Button, Divider, Table } from "@mui/joy";
 import React from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import Slider from "react-slick";
@@ -23,6 +23,7 @@ function ProductPage() {
   const { data, isLoading } = useProduct(path);
   const [currentOption, setCurrentOption] = React.useState(data?.options[0]);
   const [currentImage, setCurrentImage] = React.useState(null);
+  const [openDescription, setOpenDescription] = React.useState(false);
   const sliderRef = React.useRef(null);
   const navigate = useNavigate();
   React.useEffect(() => {
@@ -238,7 +239,9 @@ function ProductPage() {
               {new Intl.NumberFormat("vi-VN", {
                 style: "currency",
                 currency: "VND",
-              }).format(currentOption ? currentOption?.price : data?.base_price)}
+              }).format(
+                currentOption ? currentOption?.price : data?.base_price
+              )}
             </Typography>
             <Typography
               level="body-sm"
@@ -249,7 +252,9 @@ function ProductPage() {
               {new Intl.NumberFormat("vi-VN", {
                 style: "currency",
                 currency: "VND",
-              }).format(currentOption ? currentOption?.price : data?.base_price)}
+              }).format(
+                currentOption ? currentOption?.price : data?.base_price
+              )}
             </Typography>
           </Stack>
 
@@ -339,47 +344,102 @@ function ProductPage() {
           sx={{ mt: 1, justifyContent: "flex-start", flexWrap: "wrap" }}
         >
           {data?.related_products.map((product) => {
-            return (
-              <ProductCard key={product.id} data={product} />
-            )
-          }
-          )}
+            return <ProductCard key={product.id} data={product} />;
+          })}
         </Stack>
 
         <Stack direction="row" gap={2}>
-          <Box sx={{
-            border: "1px solid #cdd7e1",
-            padding: "16px",
-            borderRadius: "6px",
-            backgroundColor: "#fff",
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-            width: "calc(100% - 338px)"
-          }}>
+          <Box
+            sx={{
+              border: "1px solid #cdd7e1",
+              padding: "16px",
+              borderRadius: "6px",
+              backgroundColor: "#fff",
+              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+              width: "calc(100% - 338px)",
+              height: openDescription ? "auto" : "750px",
+              overflowY: openDescription ? "visible" : "hidden",
+              position: "relative",
+            }}
+          >
             <Typography level="title-md">Description</Typography>
-            <div style={{
-              textAlign: "justify"
-            }} dangerouslySetInnerHTML={{__html: data?.product_description}}></div>
+            <div
+              style={{
+                textAlign: "justify",
+              }}
+              dangerouslySetInnerHTML={{ __html: data?.product_description }}
+            ></div>
+            <Box sx={{
+              position: "absolute",
+              bottom: 0,
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "100%",
+              display: openDescription ? "none" : "flex",
+              justifyContent: "center",
+              paddingTop: "64px",
+              paddingBottom: "16px",
+              background: "linear-gradient(180deg,hsla(0,0%,100%,0),hsla(0,0%,100%,.91) 50%,#fff 55%)"
+            }}>
+              <Button
+                onClick={() => setOpenDescription(true)}
+              >
+                View more
+              </Button>
+            </Box>
           </Box>
-          <Stack sx={{
-            border: "1px solid #cdd7e1",
-            padding: "16px",
-            borderRadius: "6px",
-            backgroundColor: "#fff",
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-            width: "338px"
-          }}>
+          <Stack
+            sx={{
+              border: "1px solid #cdd7e1",
+              padding: "16px",
+              borderRadius: "6px",
+              backgroundColor: "#fff",
+              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+              width: "338px",
+              maxHeight: "750px",
+            }}
+          >
             <Typography level="title-md">Specifications</Typography>
-            
+            <Stack
+              gap={2}
+              sx={{
+                marginTop: "16px",
+              }}
+            >
+              <Table>
+                <tbody>
+                  {data?.specification &&
+                    Object.keys(data?.specification)
+                      .slice(0, 15)
+                      .map((key) => (
+                        <tr key={key}>
+                          <td>
+                            <Typography level="body-sm">
+                              {key
+                                .replace(/_/g, " ")
+                                .replace(/\b\w/g, (l) => l.toUpperCase())}
+                            </Typography>
+                          </td>
+                          <td>
+                            <Typography level="body-sm">
+                              {key === "manufacture_date"
+                                ? data?.specification[key].split("T")[0]
+                                : data?.specification[key] || "N/A"}
+                            </Typography>
+                          </td>
+                        </tr>
+                      ))}
+                </tbody>
+              </Table>
+              <Button>View more</Button>
+            </Stack>
           </Stack>
         </Stack>
       </Stack>
       <Stack gap={2}>
         <Typography level="title-lg">Reviews</Typography>
-        <Stack gap={2}>
-        
-        </Stack>
+        <Stack gap={2}></Stack>
       </Stack>
-
     </Box>
   );
 }
