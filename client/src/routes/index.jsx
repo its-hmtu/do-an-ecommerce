@@ -1,12 +1,16 @@
+import React from "react";
 import MainLayout from "layouts/MainLayout";
-import HomePage from "pages/HomePage";
+
 import LoginPage from "pages/LoginPage";
-import NotFoundPage from "pages/NotFoundPage";
-import ProductPage from "pages/ProductPage";
+
 import RegisterPage from "pages/RegisterPage";
 import ContactPage from "pages/ContactPage";
 import { createBrowserRouter } from "react-router-dom";
 import { PATHS } from "config";
+
+const HomePage = React.lazy(() => import("pages/HomePage"));
+const ProductPage = React.lazy(() => import("pages/ProductPage"));
+const NotFoundPage = React.lazy(() => import("pages/NotFoundPage"));
 
 export default createBrowserRouter([
   {

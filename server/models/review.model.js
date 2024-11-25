@@ -29,7 +29,7 @@ module.exports = (sequelize , DataTypes) => {
 
   Review.associate = (models) => {
     Review.belongsTo(models.Product, {onDelete: 'RESTRICT', onUpdate: 'RESTRICT',foreignKey: 'product_id'})
-    Review.belongsTo(models.User)
+    Review.belongsTo(models.User, {onDelete: 'RESTRICT', onUpdate: 'RESTRICT', foreignKey: 'user_id'})
   }
 
   return Review;

@@ -19,7 +19,14 @@ const getProductApi = async (slug) => {
   return response.data.data;
 }
 
+const submitReviewApi = async (data) => {
+  const response = await axiosInstance.post(`${API_PATHS.SUBMIT_REVIEW}`, data);
+
+  return response.data;
+}
+
 export {
   getProductsApi,
   getProductApi,
+  submitReviewApi,
 }

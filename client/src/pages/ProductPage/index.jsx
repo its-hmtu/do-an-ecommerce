@@ -7,8 +7,9 @@ import {
   Divider,
   Table,
   LinearProgress,
+  Avatar,
 } from "@mui/joy";
-import React from "react";
+import React, { useContext } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
@@ -20,12 +21,12 @@ import {
   ChevronLeftRounded,
   ChevronRightRounded,
   LocalShippingOutlined,
-  LocalShippingRounded,
   RefreshRounded,
-  ShoppingCartRounded,
 } from "@mui/icons-material";
 import { PATHS } from "config";
 import ProductCard from "components/ProductCard";
+import PostReviewModal from "components/Modal/PostReviewModal";
+import { UserContext } from "contexts/UserContext";
 
 function ProductPage() {
   const { path } = useParams();
@@ -33,6 +34,8 @@ function ProductPage() {
   const [currentOption, setCurrentOption] = React.useState(data?.options[0]);
   const [currentImage, setCurrentImage] = React.useState(null);
   const [openDescription, setOpenDescription] = React.useState(false);
+  const [openPostReview, setOpenPostReview] = React.useState(false);
+  const {user} = useContext(UserContext);
   const sliderRef = React.useRef(null);
   const navigate = useNavigate();
   React.useEffect(() => {
@@ -73,503 +76,552 @@ function ProductPage() {
   };
 
   return (
-    <Box
-      sx={{
-        maxWidth: 1280,
-        width: "100%",
-        margin: "0 auto",
-        paddingTop: 3,
-        paddingBottom: 3,
-      }}
-    >
-      <Stack
-        direction="row"
-        gap={1}
-        sx={{
-          alignItems: "center",
-        }}
-      >
-        <Typography level="h3" sx={{ marginRight: "8px" }}>
-          {data?.product_name}
-        </Typography>
-        <Rate
-          disabled
-          defaultValue={data?.average_rating}
-          value={data?.average_rating}
-        />
-        <Typography level="body-sm">{`(${data?.total_reviews})`}</Typography>
-      </Stack>
+    <>
       <Box
         sx={{
+          maxWidth: 1280,
           width: "100%",
-          display: "flex",
-          justifyContent: "flex-start",
-          alignItems: "flex-start",
-          marginTop: "16px",
-          marginBottom: "32px",
-          gap: "16px",
+          margin: "0 auto",
+          paddingTop: 3,
+          paddingBottom: 3,
         }}
       >
-        <div className="slider-wrapper">
-          <div className="slider-container custom-slider">
-            <Slider ref={sliderRef} {...settings}>
-              {data?.images.map((image) => (
-                <div key={image.id}>
-                  <img
-                    src={`${process.env.REACT_APP_API_URL}${image.file_path}`}
-                    alt="slider"
-                  />
-                </div>
-              ))}
-            </Slider>
+        <Stack
+          direction="row"
+          gap={1}
+          sx={{
+            alignItems: "center",
+          }}
+        >
+          <Typography level="h3" sx={{ marginRight: "8px" }}>
+            {data?.product_name}
+          </Typography>
+          <Rate
+            disabled
+            defaultValue={data?.average_rating}
+            value={data?.average_rating}
+          />
+          <Typography level="body-sm">{`(${data?.total_reviews})`}</Typography>
+        </Stack>
+        <Box
+          sx={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "flex-start",
+            alignItems: "flex-start",
+            marginTop: "16px",
+            marginBottom: "32px",
+            gap: "16px",
+          }}
+        >
+          <div className="slider-wrapper">
+            <div className="slider-container custom-slider">
+              <Slider ref={sliderRef} {...settings}>
+                {data?.images.map((image) => (
+                  <div key={image.id}>
+                    <img
+                      src={`${process.env.REACT_APP_API_URL}${image.file_path}`}
+                      alt="slider"
+                    />
+                  </div>
+                ))}
+              </Slider>
+            </div>
           </div>
-        </div>
 
-        <Stack gap={2} sx={{ width: "558px" }}>
-          <Stack direction="row" gap={2}>
-            {data?.series_products.map((product) => (
-              <Link
-                key={product.id}
-                to={PATHS.PRODUCT.replace(":path", product.slug)}
-              >
+          <Stack gap={2} sx={{ width: "558px" }}>
+            <Stack direction="row" gap={2}>
+              {data?.series_products.map((product) => (
+                <Link
+                  key={product.id}
+                  to={PATHS.PRODUCT.replace(":path", product.slug)}
+                >
+                  <Button
+                    sx={{
+                      justifyContent: "center",
+                      alignItems: "center",
+                      gap: "4px",
+                      width: "150px",
+                      height: "60px",
+                      border: "2px solid",
+                      borderColor:
+                        product.id === data.id ? "#0b6bcb" : "#cdd7e1",
+                      backgroundColor: "#fff",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                    variant="outlined"
+                    color="neutral"
+                  >
+                    <Typography level="title-sm">
+                      {product.specification.storage_capacity}
+                    </Typography>
+                    <Typography level="body-xs">
+                      {new Intl.NumberFormat("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      }).format(data?.base_price)}
+                    </Typography>
+                  </Button>
+                </Link>
+              ))}
+            </Stack>
+
+            <Typography level="title-sm">Color</Typography>
+            <Stack
+              direction="row"
+              gap={2}
+              sx={{
+                flexWrap: "wrap",
+                maxWidth: "558px",
+              }}
+            >
+              {data?.options.map((option) => (
                 <Button
                   sx={{
                     justifyContent: "center",
                     alignItems: "center",
-                    gap: "4px",
-                    width: "150px",
+                    gap: "8px",
+                    width: "175px",
                     height: "60px",
-                    border: "2px solid",
-                    borderColor: product.id === data.id ? "#0b6bcb" : "#cdd7e1",
+                    border: "2px solid #cdd7e1",
+                    padding: "8px",
+                    cursor: "pointer",
+                    borderColor:
+                      currentOption?.id === option.id ? "#0b6bcb" : "#cdd7e1",
                     backgroundColor: "#fff",
-                    display: "flex",
-                    flexDirection: "column",
                   }}
+                  key={option.id}
+                  onClick={() => handleChangeOption(option)}
                   variant="outlined"
-                  color="neutral"
+                  disabled={option.stock === 0}
                 >
-                  <Typography level="title-sm">
-                    {product.specification.storage_capacity}
-                  </Typography>
-                  <Typography level="body-xs">
-                    {new Intl.NumberFormat("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    }).format(data?.base_price)}
-                  </Typography>
-                </Button>
-              </Link>
-            ))}
-          </Stack>
-
-          <Typography level="title-sm">Color</Typography>
-          <Stack
-            direction="row"
-            gap={2}
-            sx={{
-              flexWrap: "wrap",
-              maxWidth: "558px",
-            }}
-          >
-            {data?.options.map((option) => (
-              <Button
-                sx={{
-                  justifyContent: "center",
-                  alignItems: "center",
-                  gap: "8px",
-                  width: "175px",
-                  height: "60px",
-                  border: "2px solid #cdd7e1",
-                  padding: "8px",
-                  cursor: "pointer",
-                  borderColor:
-                    currentOption?.id === option.id ? "#0b6bcb" : "#cdd7e1",
-                  backgroundColor: "#fff",
-                }}
-                key={option.id}
-                onClick={() => handleChangeOption(option)}
-                variant="outlined"
-                disabled={option.stock === 0}
-              >
-                <Stack
-                  direction="row"
-                  gap={1}
-                  sx={{
-                    alignItems: "center",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "30px",
-                      height: "30px",
+                  <Stack
+                    direction="row"
+                    gap={1}
+                    sx={{
+                      alignItems: "center",
                     }}
                   >
-                    <img
-                      src={`${process.env.REACT_APP_API_URL}${option.images[0].file_path}`}
-                      alt="color"
+                    <div
                       style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  </div>
-                  {data && (
-                    <Stack
-                      sx={{
-                        alignItems: "flex-start",
+                        width: "30px",
+                        height: "30px",
                       }}
                     >
-                      <Typography level="title-sm">{option?.color}</Typography>
-                      <Typography level="body-xs">
-                        {new Intl.NumberFormat("vi-VN", {
-                          style: "currency",
-                          currency: "VND",
-                        }).format(option?.price)}
-                      </Typography>
-                    </Stack>
-                  )}
+                      <img
+                        src={`${process.env.REACT_APP_API_URL}${option.images[0].file_path}`}
+                        alt="color"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    </div>
+                    {data && (
+                      <Stack
+                        sx={{
+                          alignItems: "flex-start",
+                        }}
+                      >
+                        <Typography level="title-sm">
+                          {option?.color}
+                        </Typography>
+                        <Typography level="body-xs">
+                          {new Intl.NumberFormat("vi-VN", {
+                            style: "currency",
+                            currency: "VND",
+                          }).format(option?.price)}
+                        </Typography>
+                      </Stack>
+                    )}
+                  </Stack>
+                </Button>
+              ))}
+            </Stack>
+
+            <Stack
+              direction="row"
+              gap={2}
+              sx={{
+                alignItems: "center",
+                marginTop: "26px",
+              }}
+            >
+              <Typography
+                level="h3"
+                sx={{
+                  color: "rgb(219, 68, 68)",
+                }}
+              >
+                {new Intl.NumberFormat("vi-VN", {
+                  style: "currency",
+                  currency: "VND",
+                }).format(
+                  currentOption ? currentOption?.price : data?.base_price
+                )}
+              </Typography>
+              <Typography
+                level="body-sm"
+                sx={{
+                  textDecoration: "line-through",
+                }}
+              >
+                {new Intl.NumberFormat("vi-VN", {
+                  style: "currency",
+                  currency: "VND",
+                }).format(
+                  currentOption ? currentOption?.price : data?.base_price
+                )}
+              </Typography>
+            </Stack>
+
+            <Stack direction="row" gap={2}>
+              <Button
+                sx={{
+                  textTransform: "uppercase",
+                  width: "100%",
+                  padding: "24px",
+                }}
+              >
+                Buy now
+              </Button>
+              <Button
+                variant="outlined"
+                color="neutral"
+                sx={{
+                  width: "150px",
+                  backgroundColor: "#fff",
+                }}
+              >
+                <Stack
+                  sx={{
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <AddShoppingCartRounded />
+                  Add to cart
                 </Stack>
               </Button>
-            ))}
-          </Stack>
+            </Stack>
 
-          <Stack
-            direction="row"
-            gap={2}
-            sx={{
-              alignItems: "center",
-              marginTop: "26px",
-            }}
-          >
-            <Typography
-              level="h3"
+            <Card
               sx={{
-                color: "rgb(219, 68, 68)",
-              }}
-            >
-              {new Intl.NumberFormat("vi-VN", {
-                style: "currency",
-                currency: "VND",
-              }).format(
-                currentOption ? currentOption?.price : data?.base_price
-              )}
-            </Typography>
-            <Typography
-              level="body-sm"
-              sx={{
-                textDecoration: "line-through",
-              }}
-            >
-              {new Intl.NumberFormat("vi-VN", {
-                style: "currency",
-                currency: "VND",
-              }).format(
-                currentOption ? currentOption?.price : data?.base_price
-              )}
-            </Typography>
-          </Stack>
-
-          <Stack direction="row" gap={2}>
-            <Button
-              sx={{
-                textTransform: "uppercase",
-                width: "100%",
-                padding: "24px",
-              }}
-            >
-              Buy now
-            </Button>
-            <Button
-              variant="outlined"
-              color="neutral"
-              sx={{
-                width: "150px",
                 backgroundColor: "#fff",
               }}
             >
               <Stack
+                gap={2}
+                direction="row"
                 sx={{
                   alignItems: "center",
-                  gap: 1,
                 }}
               >
-                <AddShoppingCartRounded />
-                Add to cart
+                <LocalShippingOutlined
+                  sx={{
+                    fontSize: "40px",
+                  }}
+                />
+                <Stack gap={1}>
+                  <Typography level="title-lg">Free Delivery</Typography>
+                  <Typography level="body-sm">
+                    Enter your postal code for Delivery Availability
+                  </Typography>
+                </Stack>
               </Stack>
-            </Button>
+              <Divider />
+              <Stack
+                gap={2}
+                direction="row"
+                sx={{
+                  alignItems: "center",
+                }}
+              >
+                <RefreshRounded
+                  sx={{
+                    fontSize: "40px",
+                  }}
+                />
+                <Stack gap={1}>
+                  <Typography level="title-lg">Return Delivery</Typography>
+                  <Typography level="body-sm">
+                    Free 30 Days Delivery Returns. <Link to="#">Details.</Link>
+                  </Typography>
+                </Stack>
+              </Stack>
+            </Card>
           </Stack>
-
-          <Card
-            sx={{
-              backgroundColor: "#fff",
-            }}
-          >
-            <Stack
-              gap={2}
-              direction="row"
-              sx={{
-                alignItems: "center",
-              }}
-            >
-              <LocalShippingOutlined
-                sx={{
-                  fontSize: "40px",
-                }}
-              />
-              <Stack gap={1}>
-                <Typography level="title-lg">Free Delivery</Typography>
-                <Typography level="body-sm">
-                  Enter your postal code for Delivery Availability
-                </Typography>
+        </Box>
+        <Divider />
+        <Stack gap={2} sx={{ marginTop: "32px" }}>
+          {data?.related_products.length > 0 && (
+            <>
+              <Typography level="title-lg">Related products</Typography>
+              <Stack
+                direction="row"
+                gap={3}
+                sx={{ mt: 1, justifyContent: "flex-start", flexWrap: "wrap" }}
+              >
+                {data?.related_products.map((product) => {
+                  return (
+                    <ProductCard
+                      key={product.id}
+                      data={product}
+                      showTotalReviews={false}
+                    />
+                  );
+                })}
               </Stack>
-            </Stack>
-            <Divider />
-            <Stack
-              gap={2}
-              direction="row"
-              sx={{
-                alignItems: "center",
-              }}
-            >
-              <RefreshRounded
-                sx={{
-                  fontSize: "40px",
-                }}
-              />
-              <Stack gap={1}>
-                <Typography level="title-lg">Return Delivery</Typography>
-                <Typography level="body-sm">
-                  Free 30 Days Delivery Returns. <Link to="#">Details.</Link>
-                </Typography>
-              </Stack>
-            </Stack>
-          </Card>
-        </Stack>
-      </Box>
-      <Divider />
-      <Stack gap={2} sx={{ marginTop: "32px" }}>
-        <Typography level="title-lg">Related products</Typography>
-        <Stack
-          direction="row"
-          gap={3}
-          sx={{ mt: 1, justifyContent: "flex-start", flexWrap: "wrap" }}
-        >
-          {data?.related_products.map((product) => {
-            return (
-              <ProductCard
-                key={product.id}
-                data={product}
-                showTotalReviews={false}
-              />
-            );
-          })}
-        </Stack>
+            </>
+          )}
 
-        <Stack direction="row" gap={2}>
-          <Box
-            sx={{
-              width: "calc(100% - 338px)",
-            }}
-          >
+          <Stack direction="row" gap={2}>
             <Box
+              sx={{
+                width: "calc(100% - 338px)",
+              }}
+            >
+              <Box
+                sx={{
+                  border: "1px solid #cdd7e1",
+                  padding: "16px",
+                  borderRadius: "6px",
+                  backgroundColor: "#fff",
+                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                  height: openDescription ? "auto" : "400px",
+                  overflowY: openDescription ? "visible" : "hidden",
+                  position: "relative",
+                }}
+              >
+                <Typography level="title-md">Description</Typography>
+                <div
+                  style={{
+                    textAlign: "justify",
+                  }}
+                  dangerouslySetInnerHTML={{
+                    __html: data?.product_description,
+                  }}
+                ></div>
+                <Box
+                  sx={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: "100%",
+                    display: openDescription ? "none" : "flex",
+                    justifyContent: "center",
+                    paddingTop: "64px",
+                    paddingBottom: "16px",
+                    background:
+                      "linear-gradient(180deg,hsla(0,0%,100%,0),hsla(0,0%,100%,.91) 50%,#fff 55%)",
+                  }}
+                >
+                  <Button onClick={() => setOpenDescription(true)}>
+                    View more
+                  </Button>
+                </Box>
+              </Box>
+              <Stack
+                gap={2}
+                sx={{
+                  marginTop: "16px",
+                  padding: "16px",
+                  borderRadius: "6px",
+                  backgroundColor: "#fff",
+                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                <Typography level="title-lg">
+                  Reviews & rating {data?.product_name}
+                </Typography>
+                <Stack
+                  gap={2}
+                  direction="row"
+                  sx={{
+                    padding: "16px",
+                  }}
+                >
+                  <Stack
+                    gap={1}
+                    sx={{
+                      justifyContent: "center",
+                      alignItems: "center",
+                      width: "250px",
+                    }}
+                  >
+                    <Typography level="h4">
+                      {`${data?.average_rating} / 5`}
+                    </Typography>
+                    <Rate
+                      disabled
+                      defaultValue={0}
+                      value={data?.average_rating}
+                    />
+                    <Typography level="body-sm">{`${data?.total_reviews} reviews`}</Typography>
+                  </Stack>
+                  <Divider orientation="vertical" />
+                  <Stack
+                    gap={2}
+                    sx={{
+                      width: "100%",
+                    }}
+                  >
+                    {Array.from({ length: 5 })
+                      .reverse()
+                      .map((_, index) => (
+                        <Stack direction="row" key={index} gap={1}>
+                          <Typography level="body-sm">{index + 1}</Typography>
+                          <Rate disabled defaultValue={0} value={1} count={1} />
+                          <Progress
+                            showInfo={false}
+                            style={{
+                              maxWidth: "500px",
+                            }}
+                            percent={
+                              (data?.reviews.filter(
+                                (review) => review.rating === index + 1
+                              ).length /
+                                data?.total_reviews) *
+                              100
+                            }
+                          />
+                          <Typography level="body-sm">{`${
+                            data?.reviews.filter(
+                              (review) => review.rating === index + 1
+                            ).length
+                          } reviews`}</Typography>
+                        </Stack>
+                      ))}
+                  </Stack>
+                </Stack>
+                <Divider />
+                <Stack
+                  gap={2}
+                  sx={{
+                    justifyContent: "center",
+                    alignItems: "center",
+                    padding: "16px",
+                  }}
+                >
+                  <Typography level="body-lg">
+                    What do you think about this product?
+                  </Typography>
+                  <Button
+                    sx={{
+                      width: "200px",
+                      padding: "16px",
+                      fontSize: "16px",
+                    }}
+                    onClick={() => setOpenPostReview(true)}
+                  >
+                    Review this product
+                  </Button>
+                </Stack>
+                {data?.reviews.length > 0 && <Divider />}
+                {data?.reviews.map((review) => (
+                  <Stack
+                    key={review.id}
+                    gap={1}
+                    sx={{
+                      padding: "16px",
+                      "& + &" : {
+                        borderTop: "1px solid #cdd7e1",
+                      }
+                    }}
+                  >
+                    <Stack
+                      gap={1}
+                      direction="row"
+                      sx={{
+                        alignItems: "center",
+                      }}
+                    >
+                      <Avatar size="sm" />
+                      <Typography level="title-sm">{
+                        review.user.id === user?.id ? "You" : `${review.user.first_name} ${review.user.last_name}`
+                        }</Typography>
+                      <Typography level="body-xs">
+                        {new Date(review.createdAt).toLocaleDateString({
+                          year: "numeric",
+                          month: "numeric",
+                          day: "numeric",
+                        })}
+                      </Typography>
+                    </Stack>
+                    <Box sx={{
+                      borderLeft: "2px solid #cdd7e1",
+                      paddingLeft: "16px",
+                      marginLeft: "14px",
+                    }}>
+                      <Rate disabled defaultValue={0} value={review.rating} />
+                      <Typography level="body-sm">{review.review}</Typography>
+                    </Box>
+                  </Stack>
+                ))}
+              </Stack>
+            </Box>
+            <Stack
               sx={{
                 border: "1px solid #cdd7e1",
                 padding: "16px",
                 borderRadius: "6px",
                 backgroundColor: "#fff",
                 boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                height: openDescription ? "auto" : "400px",
-                overflowY: openDescription ? "visible" : "hidden",
-                position: "relative",
+                width: "338px",
+                maxHeight: "750px",
               }}
             >
-              <Typography level="title-md">Description</Typography>
-              <div
-                style={{
-                  textAlign: "justify",
-                }}
-                dangerouslySetInnerHTML={{ __html: data?.product_description }}
-              ></div>
-              <Box
-                sx={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  width: "100%",
-                  display: openDescription ? "none" : "flex",
-                  justifyContent: "center",
-                  paddingTop: "64px",
-                  paddingBottom: "16px",
-                  background:
-                    "linear-gradient(180deg,hsla(0,0%,100%,0),hsla(0,0%,100%,.91) 50%,#fff 55%)",
-                }}
-              >
-                <Button onClick={() => setOpenDescription(true)}>
-                  View more
-                </Button>
-              </Box>
-            </Box>
-            <Stack
-              gap={2}
-              sx={{
-                marginTop: "16px",
-                padding: "16px",
-                borderRadius: "6px",
-                backgroundColor: "#fff",
-                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              <Typography level="title-lg">
-                Reviews & rating {data?.product_name}
-              </Typography>
+              <Typography level="title-md">Specifications</Typography>
               <Stack
                 gap={2}
-                direction="row"
                 sx={{
-                  padding: "16px",
+                  marginTop: "16px",
                 }}
               >
-                <Stack
-                  gap={1}
-                  sx={{
-                    justifyContent: "center",
-                    alignItems: "center",
-                    width: "250px",
-                  }}
-                >
-                  <Typography level="h4">
-                    {`${data?.average_rating.toFixed(1)} / 5`}
-                  </Typography>
-                  <Rate
-                    disabled
-                    defaultValue={0}
-                    value={data?.average_rating}
-                  />
-                  <Typography level="body-sm">{`${data?.total_reviews} reviews`}</Typography>
-                </Stack>
-                <Divider orientation="vertical" />
-                <Stack
-                  gap={2}
-                  sx={{
-                    width: "100%",
-                  }}
-                >
-                  {Array.from({ length: 5 }).reverse().map((_, index) => (
-                    <Stack direction="row" key={index} gap={1}>
-                      <Typography level="body-sm">{index + 1}</Typography>
-                      <Rate disabled defaultValue={0} value={1} count={1} />
-                      <Progress
-                        showInfo={false}
-                        style={{
-                          maxWidth: "500px",
-                        }}
-                        percent={
-                          (data?.reviews.filter(
-                            (review) => review.rating === index + 1
-                          ).length /
-                            data?.total_reviews) *
-                          100
-                        }
-                      />
-                      <Typography level="body-sm">{`${
-                        data?.reviews.filter(
-                          (review) => review.rating === index + 1
-                        ).length
-                      } reviews`}</Typography>
-                    </Stack>
-                  ))}
-                </Stack>
+                <Table>
+                  <tbody>
+                    {data?.specification &&
+                      Object.keys(data?.specification)
+                        .slice(0, 15)
+                        .map((key) => (
+                          <tr key={key}>
+                            <td>
+                              <Typography level="body-sm">
+                                {key
+                                  .replace(/_/g, " ")
+                                  .replace(/\b\w/g, (l) => l.toUpperCase())}
+                              </Typography>
+                            </td>
+                            <td>
+                              <Typography level="body-sm">
+                                {key === "manufacture_date"
+                                  ? data?.specification[key].split("T")[0]
+                                  : data?.specification[key] || "N/A"}
+                              </Typography>
+                            </td>
+                          </tr>
+                        ))}
+                  </tbody>
+                </Table>
+                <Button>View more</Button>
               </Stack>
-              <Divider />
-              <Stack gap={2} sx={{
-                justifyContent: "center",
-                alignItems: "center",
-                padding: "16px",
-              }}>
-                <Typography level="body-lg">
-                  What do you think about this product?
-                </Typography>
-                <Button
-                  sx={{
-                    width: "200px",
-                    padding: "16px",
-                    fontSize: "16px",
-                  }}
-                >
-                  Review this product
-                </Button>
-              </Stack>
-              {
-                data?.reviews.length >0 && <Divider />
-              }
-              {
-                data?.reviews.map((review) => (
-                  <Stack key={review.id} gap={2} sx={{
-                    padding: "16px",
-                  }}>
-                    <Stack gap={2} direction="row">
-                      <Rate disabled defaultValue={0} value={review.rating} />
-                      <Typography level="body-sm">{review.rating} / 5</Typography>
-                    </Stack>
-                    <Typography level="body-md">{review.title}</Typography>
-                    <Typography level="body-sm">{review.content}</Typography>
-                    <Typography level="body-sm">{review.created_at}</Typography>
-                  </Stack>
-                ))
-              }
-            </Stack>
-          </Box>
-          <Stack
-            sx={{
-              border: "1px solid #cdd7e1",
-              padding: "16px",
-              borderRadius: "6px",
-              backgroundColor: "#fff",
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-              width: "338px",
-              maxHeight: "750px",
-            }}
-          >
-            <Typography level="title-md">Specifications</Typography>
-            <Stack
-              gap={2}
-              sx={{
-                marginTop: "16px",
-              }}
-            >
-              <Table>
-                <tbody>
-                  {data?.specification &&
-                    Object.keys(data?.specification)
-                      .slice(0, 15)
-                      .map((key) => (
-                        <tr key={key}>
-                          <td>
-                            <Typography level="body-sm">
-                              {key
-                                .replace(/_/g, " ")
-                                .replace(/\b\w/g, (l) => l.toUpperCase())}
-                            </Typography>
-                          </td>
-                          <td>
-                            <Typography level="body-sm">
-                              {key === "manufacture_date"
-                                ? data?.specification[key].split("T")[0]
-                                : data?.specification[key] || "N/A"}
-                            </Typography>
-                          </td>
-                        </tr>
-                      ))}
-                </tbody>
-              </Table>
-              <Button>View more</Button>
             </Stack>
           </Stack>
         </Stack>
-      </Stack>
-    </Box>
+      </Box>
+      {openPostReview && (
+        <PostReviewModal
+          open={openPostReview}
+          onCancel={() => setOpenPostReview(false)}
+          title={data?.product_name}
+          confirmText={"Submit review"}
+          productId={data?.id}
+        />
+      )}
+    </>
   );
 }
 

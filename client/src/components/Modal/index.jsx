@@ -6,16 +6,19 @@ import {
   DialogTitle,
   Divider,
   Modal,
+  ModalClose,
   ModalDialog,
 } from "@mui/joy";
 import React from "react";
 
-function BaseModal({ children, onClose, open }) {
+function BaseModal({ children, onClose, open, width }) {
   return (
-    <Modal onClose={onClose} open={open}>
+    <Modal onClose={onClose} open={open} sx={{
+    }}>
       <ModalDialog variant="outlined" role="alertdialog">
         {children}
       </ModalDialog>
+
     </Modal>
   );
 }

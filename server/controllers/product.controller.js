@@ -10,6 +10,7 @@ const {
   Stock,
   sequelize,
   Series,
+  User,
 } = require("../models");
 const fs = require("fs");
 const { Op, where } = require("sequelize");
@@ -917,6 +918,13 @@ exports.getSingleProductBySlug = async (req, res, next) => {
             "review",
             "createdAt",
           ],
+          include: [
+            {
+              model: User,
+              attributes: ["id", "first_name", "last_name"],
+
+            }
+          ],
           required: false,
         },
         {
@@ -940,7 +948,7 @@ exports.getSingleProductBySlug = async (req, res, next) => {
     });
 
     if (reviews.length > 0) {
-      product.dataValues.average_rating = reviews[0].get("average_rating");
+      product.dataValues.average_rating = Math.round(reviews[0].get("average_rating"));
       product.dataValues.total_reviews = reviews[0].get("total_reviews");
     } else {
       product.dataValues.average_rating = 0;
@@ -1068,3 +1076,33 @@ exports.getSingleProductBySlug = async (req, res, next) => {
     return next(error);
   }
 };
+
+exports.createReview = async (req, res, next) => {
+  const { rating, review, product_id  } = req.body;
+  const user_id = req.user.id;
+  console.log(user_id);
+  try {
+    const product = await Product.findByPk(product_id);
+
+    if (!product) {
+      res.status(404);
+      return next(new Error("Product not found"));
+    }
+
+    const newReview = await Review.create({
+      product_id: product_id,
+      user_id: user_id,
+      rating,
+      review,
+    });
+
+    return res.status(201).json({
+      data: newReview,
+      message: "Review created",
+      success: true,
+    });
+  } catch (error) {
+    res.status(500);
+    return next(error);
+  };
+}

@@ -56,7 +56,7 @@ module.exports = function(sequelize, DataTypes) {
     User.hasMany(models.Order, {foreignKey: 'user_id'});
     User.hasMany(models.OrderItem, {foreignKey: 'user_id'});
     User.belongsToMany(models.Role, {through: 'users_roles', foreignKey: 'user_id', otherKey: 'role_id'});
-    User.hasMany(models.Review);
+    User.hasMany(models.Review, {foreignKey: 'user_id'});
     User.hasMany(models.Address, {foreignKey: 'user_id'});
   };
 

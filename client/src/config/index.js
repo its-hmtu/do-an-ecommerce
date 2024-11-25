@@ -21,7 +21,8 @@ const API_PATHS = {
   USER: `${BASE_API_PATH}/account/me`,
   REFRESH: `${BASE_API_PATH}/refresh`,
   PRODUCTS: `${BASE_API_PATH}/products`,
-  PRODUCT: `${BASE_API_PATH}/products/product`,
+  PRODUCT: `${BASE_API_PATH}/products/slug`,
+  SUBMIT_REVIEW: `${BASE_API_PATH}/products/review`,
 }
 
 const queryKeys = {

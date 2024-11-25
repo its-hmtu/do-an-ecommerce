@@ -1,7 +1,7 @@
 import Header from "components/Header";
 import Footer from "components/Footer";
 import { UserProvider } from "contexts/UserContext";
-import React, { useContext, useEffect, useState } from "react";
+import React, { Suspense, useContext, useEffect, useState } from "react";
 import { Outlet, ScrollRestoration } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -32,8 +32,10 @@ const MainLayout = () => {
       <ScrollRestoration />
       <UserProvider>
         <Header />
-        <div style={{ flex: 1 }}> {/* This pushes the Footer to the bottom */}
+        <div style={{ flex: 1, paddingTop: "120px" }}>
+        <Suspense fallback={<div>Loading...</div>}>
           <Outlet />
+        </Suspense>
         </div>
         <ToastContainer stacked />
         <Footer />

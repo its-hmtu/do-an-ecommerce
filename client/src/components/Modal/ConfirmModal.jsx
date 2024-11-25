@@ -6,8 +6,6 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  Modal,
-  ModalDialog,
 } from "@mui/joy";
 import { WarningRounded } from "@mui/icons-material";
 

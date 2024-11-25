@@ -15,7 +15,8 @@ const {
   getSingleProduct,
   getSingleProductBySlug,
   getProductsByCategory,
-  getProductsBySearch
+  getProductsBySearch,
+  createReview
 } = require('../controllers/product.controller');
 // const checkCache = require('../middlewares/cache.middleware');
 
@@ -29,5 +30,9 @@ router.put('/:id', updateProduct);
 router.get('/:id', getSingleProduct);
 router.get('/category/:id', getProductsByCategory);
 router.get('/search', getProductsBySearch);
-router.get('/product/:slug', getSingleProductBySlug);
+
+router.get('/slug/:slug', getSingleProductBySlug);
+
+router.post('/review', mustBeAuthenticated, createReview);
+
 module.exports = router;
