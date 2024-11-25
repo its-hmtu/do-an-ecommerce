@@ -131,7 +131,7 @@ function ProductCard({ data }) {
               defaultValue={0}
               allowHalf
               disabled
-              value={data?.average_rating}
+              value={data?.average_rating || 0}
             />
             <Typography level="body-sm" sx={{ color: "text.secondary" }}>
               ({data?.total_reviews})

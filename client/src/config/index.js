@@ -8,6 +8,7 @@ const PATHS = {
   MOBILE: `${BASE_PATH}mobile`,
   TABLET: `${BASE_PATH}tablet`,
   PRODUCT: `${BASE_PATH}products/:path`,
+  NOT_FOUND: '/not-found',
 }
 
 const API_PATHS = {

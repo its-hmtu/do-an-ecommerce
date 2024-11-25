@@ -1,24 +1,35 @@
-import { Box, Stack, Typography, Card } from "@mui/joy";
+import { Box, Stack, Typography, Card, Button, Divider } from "@mui/joy";
 import React from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { useProduct } from "hooks/product";
 import { Rate } from "antd";
-import { ChevronLeftRounded, ChevronRightRounded } from "@mui/icons-material";
+import {
+  AddShoppingCartRounded,
+  ChevronLeftRounded,
+  ChevronRightRounded,
+  LocalShippingOutlined,
+  LocalShippingRounded,
+  RefreshRounded,
+  ShoppingCartRounded,
+} from "@mui/icons-material";
 import { PATHS } from "config";
+import ProductCard from "components/ProductCard";
 
 function ProductPage() {
   const { path } = useParams();
   const { data, isLoading } = useProduct(path);
-  const [currentOption, setCurrentOption] = React.useState(null);
+  const [currentOption, setCurrentOption] = React.useState(data?.options[0]);
   const [currentImage, setCurrentImage] = React.useState(null);
   const sliderRef = React.useRef(null);
-
+  const navigate = useNavigate();
   React.useEffect(() => {
     if (currentImage !== null && sliderRef.current) {
-      sliderRef.current.slickGoTo(data?.images.findIndex((image) => image.file_path === currentImage));
+      sliderRef.current.slickGoTo(
+        data?.images.findIndex((image) => image.file_path === currentImage)
+      );
     }
   }, [currentImage, data]);
 
@@ -110,16 +121,21 @@ function ProductPage() {
                 key={product.id}
                 to={PATHS.PRODUCT.replace(":path", product.slug)}
               >
-                <Card
+                <Button
                   sx={{
                     justifyContent: "center",
                     alignItems: "center",
-                    gap: "8px",
+                    gap: "4px",
                     width: "150px",
                     height: "60px",
                     border: "2px solid",
                     borderColor: product.id === data.id ? "#0b6bcb" : "#cdd7e1",
+                    backgroundColor: "#fff",
+                    display: "flex",
+                    flexDirection: "column",
                   }}
+                  variant="outlined"
+                  color="neutral"
                 >
                   <Typography level="title-sm">
                     {product.specification.storage_capacity}
@@ -130,7 +146,7 @@ function ProductPage() {
                       currency: "VND",
                     }).format(data?.base_price)}
                   </Typography>
-                </Card>
+                </Button>
               </Link>
             ))}
           </Stack>
@@ -145,7 +161,7 @@ function ProductPage() {
             }}
           >
             {data?.options.map((option) => (
-              <Card
+              <Button
                 sx={{
                   justifyContent: "center",
                   alignItems: "center",
@@ -157,9 +173,12 @@ function ProductPage() {
                   cursor: "pointer",
                   borderColor:
                     currentOption?.id === option.id ? "#0b6bcb" : "#cdd7e1",
+                  backgroundColor: "#fff",
                 }}
                 key={option.id}
                 onClick={() => handleChangeOption(option)}
+                variant="outlined"
+                disabled={option.stock === 0}
               >
                 <Stack
                   direction="row"
@@ -184,7 +203,11 @@ function ProductPage() {
                       }}
                     />
                   </div>
-                  <Stack>
+                  <Stack
+                    sx={{
+                      alignItems: "flex-start",
+                    }}
+                  >
                     <Typography level="title-sm">{option?.color}</Typography>
                     <Typography level="body-xs">
                       {new Intl.NumberFormat("vi-VN", {
@@ -194,11 +217,169 @@ function ProductPage() {
                     </Typography>
                   </Stack>
                 </Stack>
-              </Card>
+              </Button>
             ))}
           </Stack>
+
+          <Stack
+            direction="row"
+            gap={2}
+            sx={{
+              alignItems: "center",
+              marginTop: "26px",
+            }}
+          >
+            <Typography
+              level="h3"
+              sx={{
+                color: "rgb(219, 68, 68)",
+              }}
+            >
+              {new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(currentOption ? currentOption?.price : data?.base_price)}
+            </Typography>
+            <Typography
+              level="body-sm"
+              sx={{
+                textDecoration: "line-through",
+              }}
+            >
+              {new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(currentOption ? currentOption?.price : data?.base_price)}
+            </Typography>
+          </Stack>
+
+          <Stack direction="row" gap={2}>
+            <Button
+              sx={{
+                textTransform: "uppercase",
+                width: "100%",
+                padding: "24px",
+              }}
+            >
+              Buy now
+            </Button>
+            <Button
+              variant="outlined"
+              color="neutral"
+              sx={{
+                width: "150px",
+                backgroundColor: "#fff",
+              }}
+            >
+              <Stack
+                sx={{
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <AddShoppingCartRounded />
+                Add to cart
+              </Stack>
+            </Button>
+          </Stack>
+
+          <Card
+            sx={{
+              backgroundColor: "#fff",
+            }}
+          >
+            <Stack
+              gap={2}
+              direction="row"
+              sx={{
+                alignItems: "center",
+              }}
+            >
+              <LocalShippingOutlined
+                sx={{
+                  fontSize: "40px",
+                }}
+              />
+              <Stack gap={1}>
+                <Typography level="title-lg">Free Delivery</Typography>
+                <Typography level="body-sm">
+                  Enter your postal code for Delivery Availability
+                </Typography>
+              </Stack>
+            </Stack>
+            <Divider />
+            <Stack
+              gap={2}
+              direction="row"
+              sx={{
+                alignItems: "center",
+              }}
+            >
+              <RefreshRounded
+                sx={{
+                  fontSize: "40px",
+                }}
+              />
+              <Stack gap={1}>
+                <Typography level="title-lg">Return Delivery</Typography>
+                <Typography level="body-sm">
+                  Free 30 Days Delivery Returns. <Link to="#">Details.</Link>
+                </Typography>
+              </Stack>
+            </Stack>
+          </Card>
         </Stack>
       </Box>
+
+      <Stack gap={2} sx={{ marginTop: "32px" }}>
+        <Typography level="title-lg">Related products</Typography>
+        <Stack
+          direction="row"
+          gap={3}
+          sx={{ mt: 1, justifyContent: "flex-start", flexWrap: "wrap" }}
+        >
+          {data?.related_products.map((product) => {
+            return (
+              <ProductCard key={product.id} data={product} />
+            )
+          }
+          )}
+        </Stack>
+
+        <Stack direction="row" gap={2}>
+          <Box sx={{
+            border: "1px solid #cdd7e1",
+            padding: "16px",
+            borderRadius: "6px",
+            backgroundColor: "#fff",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+            width: "calc(100% - 338px)"
+          }}>
+            <Typography level="title-md">Description</Typography>
+            <div style={{
+              textAlign: "justify"
+            }} dangerouslySetInnerHTML={{__html: data?.product_description}}></div>
+          </Box>
+          <Stack sx={{
+            border: "1px solid #cdd7e1",
+            padding: "16px",
+            borderRadius: "6px",
+            backgroundColor: "#fff",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+            width: "338px"
+          }}>
+            <Typography level="title-md">Specifications</Typography>
+            
+          </Stack>
+        </Stack>
+      </Stack>
+      <Stack gap={2}>
+        <Typography level="title-lg">Reviews</Typography>
+        <Stack gap={2}>
+        
+        </Stack>
+      </Stack>
+
     </Box>
   );
 }

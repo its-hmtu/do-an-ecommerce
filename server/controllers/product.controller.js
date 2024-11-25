@@ -12,7 +12,7 @@ const {
   Series,
 } = require("../models");
 const fs = require("fs");
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 const {
   client: redisClient,
   REDIS_CACHE_5_MINUTES,
@@ -979,8 +979,79 @@ exports.getSingleProductBySlug = async (req, res, next) => {
       ]
     });
 
-    product.dataValues.series_products = seriesProducts;
+    const relatedProudcts = await Product.findAll({
+      where: {
+        brand_id: product.brand_id,
+      },
+      include: [
+        {
+          model: Category,
+          attributes: ["id", "name"],
+          required: false,
+        },
+        {
+          model: ProductImage,
+          as: "images",
+          attributes: ["id", "file_path", "file_size"],
+          required: false,
+        },
+        {
+          model: Option,
+          as: "options",
+          include: [
+            {
+              model: OptionImage,
+              as: "images",
+              attributes: ["id", "file_path"],
+              required: false,
+            },
+          ],
+          attributes: {
+            include: [
+              "id",
+              "color",
+              "price",
+              [
+                sequelize.literal(
+                  "(SELECT stock FROM stocks WHERE stocks.option_id = options.id LIMIT 1)"
+                ),
+                "stock",
+              ],
+            ],
+          },
+          required: false,
+        },
+        {
+          model: Specification,
+          as: "specification",
+          attributes: {
+            exclude: ["createdAt", "updatedAt"],
+          },
+          required: false,
+        },
+        {
+          model: Review,
+          attributes: [
+            "id",
+            "rating",
+            "review",
+            "createdAt",
+          ],
+          required: false,
+        },
+        {
+          model: Series,
+          attributes: ["id", "series_name"],
+          as: "product_series",
+          required: false,
+        },
+      ]
+    })
 
+    product.dataValues.series_products = seriesProducts;
+    product.dataValues.related_products = relatedProudcts.filter(item => {
+      return item.categories[0].id === product.categories[0].id && item.id !== product.id;
+    }); 
 
     if (!product) {
       res.status(404);

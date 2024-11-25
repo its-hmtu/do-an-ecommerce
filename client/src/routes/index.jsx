@@ -5,6 +5,7 @@ import NotFoundPage from "pages/NotFoundPage";
 import ProductPage from "pages/ProductPage";
 import RegisterPage from "pages/RegisterPage";
 import { createBrowserRouter } from "react-router-dom";
+import { PATHS } from "config";
 
 export default createBrowserRouter([
   {
@@ -28,7 +29,7 @@ export default createBrowserRouter([
         element: <ProductPage />
       },
       {
-        path: "*",
+        path: `${PATHS.NOT_FOUND}`,
         element: <NotFoundPage />,
       },
     ],
