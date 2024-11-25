@@ -11,6 +11,7 @@ function NotFoundPage() {
         width: "100%",
         margin: "0 auto",
         padding: "48px",
+        // height: "100vh"
       }}
     >
       <Stack

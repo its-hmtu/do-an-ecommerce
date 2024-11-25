@@ -28,6 +28,7 @@ function Footer() {
         color: "#fff",
         py: 6,
       }}
+       as="footer"
     >
       <Container>
         <Box

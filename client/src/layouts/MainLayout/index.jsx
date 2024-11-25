@@ -25,11 +25,16 @@ const MainLayout = () => {
   }, []);
 
   return (
-    <>
+    <div style={{
+      minHeight: "100vh",
+      display: "flex", flexDirection: "column",
+    }}>
       <ScrollRestoration />
       <UserProvider>
         <Header />
-        <Outlet />
+        <div style={{ flex: 1 }}> {/* This pushes the Footer to the bottom */}
+          <Outlet />
+        </div>
         <ToastContainer stacked />
         <Footer />
 
@@ -55,7 +60,7 @@ const MainLayout = () => {
           )
         }
       </UserProvider>
-    </>
+    </div>
   );
 };
 
