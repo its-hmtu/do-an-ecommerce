@@ -12,7 +12,7 @@ import {
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import qrCode from "assets/images/qrcode.png";
 import appleIcon from "assets/images/appstore.png";
-import googlePlayIcon from "assets/images/googleplay.png";
+import googlePlay from "assets/images/googleplay.png";
 // import GoogleIcon from "@mui/icons-material/Google";
 // import AppleIcon from "@mui/icons-material/Apple";
 import FacebookIcon from "@mui/icons-material/Facebook";
@@ -121,10 +121,10 @@ function Footer() {
             </Typography>
             <Typography sx={{ mb: 2, fontSize: "12px" }}>Save $3 with App New User Only</Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-                <img src="qrCode" style={{ width: '100px', height: '100px' }} />
+                <img src={qrCode} style={{ width: '100px', height: '100px' }} />
                 <Stack direction="column" spacing={1} sx={{ mb: 2 }}>
-                    <img src="appleIcon" style={{ width: '120px', cursor: 'pointer' }} />
-                    <img src="googlePlay"  style={{ width: '120px', cursor: 'pointer' }} />
+                    <img src={appleIcon} sx={{ width: '120px', cursor: 'pointer' }} />
+                    <img src={googlePlay}  sx={{ width: '120px', cursor: 'pointer' }} />
                 </Stack>
             </Box>
             <Stack direction="row" spacing={2}>
