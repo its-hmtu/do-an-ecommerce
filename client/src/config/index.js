@@ -12,6 +12,7 @@ const PATHS = {
   PRODUCT: `${BASE_PATH}products/:path`,
   NOT_FOUND: '*',
   CONTACT: `${BASE_PATH}contact`,
+  CART: `${BASE_PATH}cart`,
 }
 
 const API_PATHS = {
@@ -23,11 +24,14 @@ const API_PATHS = {
   PRODUCTS: `${BASE_API_PATH}/products`,
   PRODUCT: `${BASE_API_PATH}/products/slug`,
   SUBMIT_REVIEW: `${BASE_API_PATH}/products/review`,
+  SEARCH_PRODUCTS: `${BASE_API_PATH}/products/search`,
+  USER_CART: `${BASE_API_PATH}/account/cart`,
 }
 
 const queryKeys = {
   user: "user",
-  products: "products"
+  products: "products",
+  userCart: "userCart",
 }
 
 export {

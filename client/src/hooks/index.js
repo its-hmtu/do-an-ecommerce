@@ -1,5 +1,5 @@
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
-import { getUserApi, loginApi, registerApi, logoutApi } from "api/user";
+import { getUserApi, loginApi, registerApi, logoutApi, getUserCartApi } from "api/user";
 import { queryKeys } from "config";
 import Cookies from "js-cookie";
 
@@ -9,13 +9,12 @@ const useLogin = ({email, password}) => {
   })
 }
 
-const useGetUser = (enabled) => {
+const useGetUser = () => {
   return useQuery({
-    queryKey: queryKeys.user,
+    queryKey: [queryKeys.user],
     queryFn: getUserApi,
-    retry: 3,
-    retryCooldown: 5000,
-    enabled: enabled
+    enabled: localStorage.getItem('access_token') ? true : false,
+    refetchOnWindowFocus: localStorage.getItem('access_token') ? true : false,
   })
 }
 
@@ -30,8 +29,17 @@ const useLogout = () => {
   return useMutation({
     mutationFn: () => logoutApi(),
     onSuccess: () => {
-      queryClient.invalidateQueries(queryKeys.user);
+      queryClient.removeQueries(queryKeys.user);
     }
+  })
+}
+
+const useGetUserCart = () => {
+  return useQuery({
+    queryKey: [queryKeys.userCart],
+    queryFn: getUserCartApi,
+    enabled: localStorage.getItem('access_token') ? true : false,
+    refetchOnWindowFocus: localStorage.getItem('access_token') ? true : false,
   })
 }
 
@@ -40,4 +48,5 @@ export {
   useRegister,
   useGetUser,
   useLogout,
+  useGetUserCart
 }

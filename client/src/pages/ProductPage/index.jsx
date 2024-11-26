@@ -27,6 +27,9 @@ import { PATHS } from "config";
 import ProductCard from "components/ProductCard";
 import PostReviewModal from "components/Modal/PostReviewModal";
 import { UserContext } from "contexts/UserContext";
+import ReviewCard from "./components/ReviewCard";
+import SpecificationCard from "./components/SpecificationCard";
+import DescriptionCard from "./components/DescriptionCard";
 
 function ProductPage() {
   const { path } = useParams();
@@ -49,7 +52,7 @@ function ProductPage() {
   const settings = {
     dots: true,
     dotsClass: "slick-dots slick-thumb",
-    infinite: false,
+    infinite: true,
     arrows: true,
     speed: 500,
     slidesToShow: 1,
@@ -59,6 +62,11 @@ function ProductPage() {
     nextArrow: <ChevronRightRounded />,
     prevArrow: <ChevronLeftRounded />,
     customPaging: function (i) {
+      if (!data?.images || !data.images[i]) {
+        return (
+          <a> </a>
+        ); // Render nothing if data is incomplete
+      }
       return (
         <a>
           <img
@@ -74,6 +82,24 @@ function ProductPage() {
     setCurrentOption(option);
     setCurrentImage(option.images[0].file_path);
   };
+
+  if (isLoading 
+    || !data
+  ) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-start",
+          alignItems: "flex-start",
+          height: "100vh",
+          // maxWidth: 1280,
+        }}
+      >
+        <LinearProgress />
+      </Box>
+    )
+  }
 
   return (
     <>
@@ -383,47 +409,7 @@ function ProductPage() {
                 width: "calc(100% - 338px)",
               }}
             >
-              <Box
-                sx={{
-                  border: "1px solid #cdd7e1",
-                  padding: "16px",
-                  borderRadius: "6px",
-                  backgroundColor: "#fff",
-                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                  height: openDescription ? "auto" : "400px",
-                  overflowY: openDescription ? "visible" : "hidden",
-                  position: "relative",
-                }}
-              >
-                <Typography level="title-md">Description</Typography>
-                <div
-                  style={{
-                    textAlign: "justify",
-                  }}
-                  dangerouslySetInnerHTML={{
-                    __html: data?.product_description,
-                  }}
-                ></div>
-                <Box
-                  sx={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    width: "100%",
-                    display: openDescription ? "none" : "flex",
-                    justifyContent: "center",
-                    paddingTop: "64px",
-                    paddingBottom: "16px",
-                    background:
-                      "linear-gradient(180deg,hsla(0,0%,100%,0),hsla(0,0%,100%,.91) 50%,#fff 55%)",
-                  }}
-                >
-                  <Button onClick={() => setOpenDescription(true)}>
-                    View more
-                  </Button>
-                </Box>
-              </Box>
+              <DescriptionCard data={data} openDescription={openDescription} setOpenDescription={setOpenDescription} />
               <Stack
                 gap={2}
                 sx={{
@@ -522,93 +508,11 @@ function ProductPage() {
                 </Stack>
                 {data?.reviews.length > 0 && <Divider />}
                 {data?.reviews.map((review) => (
-                  <Stack
-                    key={review.id}
-                    gap={1}
-                    sx={{
-                      padding: "16px",
-                      "& + &" : {
-                        borderTop: "1px solid #cdd7e1",
-                      }
-                    }}
-                  >
-                    <Stack
-                      gap={1}
-                      direction="row"
-                      sx={{
-                        alignItems: "center",
-                      }}
-                    >
-                      <Avatar size="sm" />
-                      <Typography level="title-sm">{
-                        review.user.id === user?.id ? "You" : `${review.user.first_name} ${review.user.last_name}`
-                        }</Typography>
-                      <Typography level="body-xs">
-                        {new Date(review.createdAt).toLocaleDateString({
-                          year: "numeric",
-                          month: "numeric",
-                          day: "numeric",
-                        })}
-                      </Typography>
-                    </Stack>
-                    <Box sx={{
-                      borderLeft: "2px solid #cdd7e1",
-                      paddingLeft: "16px",
-                      marginLeft: "14px",
-                    }}>
-                      <Rate disabled defaultValue={0} value={review.rating} />
-                      <Typography level="body-sm">{review.review}</Typography>
-                    </Box>
-                  </Stack>
+                  <ReviewCard key={review.id} review={review} user={user} />
                 ))}
               </Stack>
             </Box>
-            <Stack
-              sx={{
-                border: "1px solid #cdd7e1",
-                padding: "16px",
-                borderRadius: "6px",
-                backgroundColor: "#fff",
-                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                width: "338px",
-                maxHeight: "750px",
-              }}
-            >
-              <Typography level="title-md">Specifications</Typography>
-              <Stack
-                gap={2}
-                sx={{
-                  marginTop: "16px",
-                }}
-              >
-                <Table>
-                  <tbody>
-                    {data?.specification &&
-                      Object.keys(data?.specification)
-                        .slice(0, 15)
-                        .map((key) => (
-                          <tr key={key}>
-                            <td>
-                              <Typography level="body-sm">
-                                {key
-                                  .replace(/_/g, " ")
-                                  .replace(/\b\w/g, (l) => l.toUpperCase())}
-                              </Typography>
-                            </td>
-                            <td>
-                              <Typography level="body-sm">
-                                {key === "manufacture_date"
-                                  ? data?.specification[key].split("T")[0]
-                                  : data?.specification[key] || "N/A"}
-                              </Typography>
-                            </td>
-                          </tr>
-                        ))}
-                  </tbody>
-                </Table>
-                <Button>View more</Button>
-              </Stack>
-            </Stack>
+            <SpecificationCard data={data} />
           </Stack>
         </Stack>
       </Box>

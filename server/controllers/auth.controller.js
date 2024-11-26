@@ -7,7 +7,7 @@ exports.refresh = async (req, res, next) => {
 
   if (!refresh_token) {
     res.status(401);
-    return next(new Error("Token not provided"));
+    return next(new Error("Refresh token not provided"));
   }
 
   try {

@@ -132,7 +132,7 @@ exports.getProducts = async (req, res, next) => {
       if (review != null) {
         product.dataValues.total_reviews = review.get("total_reviews");
         product.dataValues.average_rating = review.get("average_rating");
-        console.log(product);
+        // console.log(product);
       } else {
         product.dataValues.total_reviews = 0;
         product.dataValues.average_rating = 0;
@@ -802,7 +802,7 @@ exports.getProductsBySearch = async (req, res, next) => {
       offset: offset,
       order: [["createdAt", "DESC"]],
       attributes: {
-        exclude: ["updatedAt"],
+        exclude: ["updatedAt", "product_description", "brand_id"],
       },
       where: {
         product_name: {
@@ -813,13 +813,16 @@ exports.getProductsBySearch = async (req, res, next) => {
         {
           model: Category,
           attributes: ["id", "name"],
+          required: false,
         },
         {
           model: ProductImage,
           as: "images",
           attributes: ["id", "file_path"],
+          required: false,
         },
       ],
+      distinct: true,
     });
 
     if (!products) {

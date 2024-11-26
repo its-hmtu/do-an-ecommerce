@@ -7,6 +7,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Button } from "@mui/joy";
 import { ArrowUpwardRounded } from "@mui/icons-material";
+import SuspenseFallBack from "components/SuspenseFallBack";
 
 const MainLayout = () => {
   const [isShowScrollToTop, setIsShowScrollToTop] = useState(false);
@@ -33,7 +34,7 @@ const MainLayout = () => {
       <UserProvider>
         <Header />
         <div style={{ flex: 1, paddingTop: "120px" }}>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<SuspenseFallBack />}>
           <Outlet />
         </Suspense>
         </div>

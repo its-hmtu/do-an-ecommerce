@@ -19,11 +19,12 @@ const loginApi = async ({
     return response.data
   }
 
-  Cookies.set('access_token', response.data.token, {
-    expires: 10 / (24 * 60), // 10 minutes
-    secure: true,
-    sameSite: 'Strict',
-  });
+  // Cookies.set('access_token', response.data.token, {
+  //   expires: 10 / (24 * 60), // 10 minutes
+  //   secure: true,
+  //   sameSite: 'Strict',
+  // });
+  localStorage.setItem('access_token', JSON.stringify(response.data.token));
   return response.data;
 }
 
@@ -34,7 +35,7 @@ const logoutApi = async () => {
     return response.data
   }
 
-  Cookies.remove('access_token');
+  localStorage.removeItem('access_token');
   return response.data;
 }
 
@@ -62,9 +63,15 @@ const getUserApi = async () => {
   return response.data.user;
 }
 
+const getUserCartApi = async () => {
+  const response = await axiosInstance.get(API_PATHS.USER_CART);
+  return response.data;
+}
+
 export {
   loginApi,
   getUserApi,
   registerApi,
-  logoutApi
+  logoutApi,
+  getUserCartApi
 }

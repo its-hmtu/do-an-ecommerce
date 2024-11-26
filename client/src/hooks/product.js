@@ -1,5 +1,5 @@
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
-import { getProductsApi, submitReviewApi } from "api/product";
+import { getProductsApi, searchProductsApi, submitReviewApi } from "api/product";
 import { queryKeys } from "config";
 import { getProductApi } from "../api/product";
 
@@ -39,4 +39,11 @@ const useSubmitReview = () => {
   return mutation;
 };
 
-export { useProducts, useProduct, useSubmitReview };
+const useSearchProducts = (query) => {
+  return useQuery({
+    queryKey: [queryKeys.products, "search", query],
+    queryFn: () => searchProductsApi(query),
+  })
+}
+
+export { useProducts, useProduct, useSubmitReview, useSearchProducts };

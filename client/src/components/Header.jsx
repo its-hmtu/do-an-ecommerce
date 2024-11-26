@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Container,
   Box,
@@ -34,11 +34,29 @@ import {
 } from "@mui/icons-material";
 import { useLogout } from "hooks";
 import ConfirmModal from "./Modal/ConfirmModal";
+import SearchBox from "./SearchBox";
+import { useSearchProducts } from "hooks/product";
 
 function Header() {
   const { user, setUser } = useContext(UserContext);
   const [openModal, setOpenModal] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
   const { mutate: logout, isPending } = useLogout();
+  const {
+    data: searchData,
+    isLoading,
+    refetch,
+  } = useSearchProducts(searchValue);
+
+  const handleSearchChange = (e) => {
+    setSearchValue(e.target.value);
+  };
+
+  useEffect(() => {
+    if (searchValue === "") return;
+    refetch();
+  }, [searchValue, refetch]);
+
   return (
     <>
       <Box
@@ -122,7 +140,7 @@ function Header() {
                 fontSize: "1.5rem",
               }}
               component={RLink}
-              to="/"
+              to={PATHS.HOME}
             >
               Exclusive
             </Link>
@@ -139,81 +157,42 @@ function Header() {
               <Link
                 component={RLink}
                 to={PATHS.TABLET}
-                sx={{ color: "Black", ml: 3 }}>
+                sx={{ color: "Black", ml: 3 }}
+              >
                 Tablets
               </Link>
-              <Link 
+              <Link
                 component={RLink}
                 to={PATHS.ACCESSORIES}
-                sx={{ color: "Black", ml: 3 }}>
+                sx={{ color: "Black", ml: 3 }}
+              >
                 Accessories
               </Link>
-              <Link 
+              <Link
                 component={RLink}
                 to={PATHS.ABOUT_US}
-              sx={{ color: "Black", ml: 3 }}>
+                sx={{ color: "Black", ml: 3 }}
+              >
                 About Us
               </Link>
             </Box>
 
             {/* Search Bar and Icons */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  backgroundColor: "#f0f0f0",
-                  borderRadius: "4px",
-                  padding: "0 8px",
-                  height: "36px",
-                }}
-              >
-                <input
-                  type="text"
-                  placeholder="What are you looking for?"
-                  style={{
-                    border: "none",
-                    outline: "none",
-                    backgroundColor: "transparent",
-                    padding: "0 5px",
-                    fontSize: "14px",
-                    flexGrow: 1,
-                    width: "180px",
-                  }}
-                />
-                <SearchIcon style={{ color: "#888" }} />
-              </Box>
+              <SearchBox
+                value={searchValue}
+                onChange={handleSearchChange}
+                searchData={searchData}
+                isLoading={isLoading}
+              />
 
               <IconButton>
                 <FavoriteBorderIcon />
               </IconButton>
-              <IconButton>
-                <Tooltip
-                  arrow
-                  variant="outlined"
-                  title={
-                    <Box
-                      sx={{
-                        width: "200px",
-                        height: "100px",
-                        padding: "10px",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <ProductionQuantityLimitsRounded />
-                      <Typography level="body-sm">
-                        Your cart is empty
-                      </Typography>
-                    </Box>
-                  }
-                >
-                  <Badge badgeContent={0} color="primary" showZero size="sm">
-                    <ShoppingCartOutlinedIcon />
-                  </Badge>
-                </Tooltip>
+              <IconButton component={RLink} to={PATHS.CART}>
+                <Badge badgeContent={0} color="primary" showZero size="sm">
+                  <ShoppingCartOutlinedIcon />
+                </Badge>
               </IconButton>
 
               {user ? (

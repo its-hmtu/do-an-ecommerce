@@ -33,6 +33,7 @@ module.exports = (sequelize, DataTypes) => {
     Option.hasMany(models.Stock, {as: 'stock', foreignKey: 'option_id', onDelete: 'cascade', onUpdate: 'cascade'});
     Option.hasMany(models.OptionImage, {as: 'images', foreignKey: 'option_id', onDelete: 'cascade', onUpdate: 'cascade'});
     Option.hasMany(models.OrderItem, {as: 'order_items', foreignKey: 'option_id', onDelete: 'cascade', onUpdate: 'cascade'});
+    Option.hasMany(models.CartItem, {foreignKey: 'option_id'});
   }
 
   return Option;

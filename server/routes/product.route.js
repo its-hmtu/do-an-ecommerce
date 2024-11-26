@@ -27,8 +27,9 @@ router.delete('/',  deleteProducts);
 router.delete('/:id',deleteProduct);
 // delete multiple products
 router.put('/:id', updateProduct);
-router.get('/:id', getSingleProduct);
+router.get('/id/:id', getSingleProduct);
 router.get('/category/:id', getProductsByCategory);
+
 router.get('/search', getProductsBySearch);
 
 router.get('/slug/:slug', getSingleProductBySlug);

@@ -105,81 +105,81 @@ exports.createOrder = async (req, res, next) => {
   }
 };
 
-// exports.createCheckoutSession = async (req, res, next) => {
-//   const { order_id, payment_method } = req.body;
-
-//   try {
-//     const order = await Order.findByPk(order_id, {
-//       include: [OrderItem],
-//     });
-
-//     if (!order) {
-//       res.status(404);
-//       return next(new Error("Order not found"));
-//     }
-
-//     const lineItems = order.order_items.map((item) => ({
-//       price_data: {
-//         currency: "vnd",
-//         product_data: {
-//           name: item.product.product_name,
-//         },
-//         unit_amount: item.unit_price * 100,
-//       },
-//       quantity: item.quantity,
-//     }));
-
-//     const session = await stripe.checkout.sessions.create({
-//       mode: "payment",
-//       line_itmes: lineItems,
-//       payment_method_types: ["card"],
-//       ui_mode: "embedded",
-//       success_url: `${process.env.CLIENT_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-//       cancel_url: `${process.env.CLIENT_URL}/checkout/cancel`,
-//     });
-
-//     await Order.update(
-//       {
-//         // payment_intent_id: session.payment_intent,
-//         payment_status: "pending",
-//         payment_method: "credit_card",
-//       },
-//       {
-//         where: {
-//           id: order.id,
-//         },
-//       }
-//     );
-
-//     res.status(201)
-//       .json({ id: session.id, client_secret: session.client_secret });
-//   } catch (e) {
-//     next(e);
-//   }
-// };
-
 exports.createCheckoutSession = async (req, res, next) => {
-  const lineItems = {
-    price_data: {
-      currency: "vnd",
-      product_data: {
-        name: 'T-shirt',
+  const { order_id, payment_method } = req.body;
+
+  try {
+    const order = await Order.findByPk(order_id, {
+      include: [OrderItem],
+    });
+
+    if (!order) {
+      res.status(404);
+      return next(new Error("Order not found"));
+    }
+
+    const lineItems = order.order_items.map((item) => ({
+      price_data: {
+        currency: "vnd",
+        product_data: {
+          name: item.product.product_name,
+        },
+        unit_amount: item.unit_price * 100,
       },
-      unit_amount: 10000 * 100,
-    },
-    quantity: 1,
-  };
-  const session = await stripe.checkout.sessions.create({
-    ui_mode: "embedded",
-    line_items: [lineItems],
-    mode: "payment",
-    return_url: `${process.env.CLIENT_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
-  });
+      quantity: item.quantity,
+    }));
 
-  console.log(session);
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      line_itmes: lineItems,
+      payment_method_types: ["card"],
+      ui_mode: "embedded",
+      success_url: `${process.env.CLIENT_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL}/checkout/cancel`,
+    });
 
-  res.send({ client_secret: session.client_secret });
+    await Order.update(
+      {
+        // payment_intent_id: session.payment_intent,
+        payment_status: "pending",
+        payment_method: "credit_card",
+      },
+      {
+        where: {
+          id: order.id,
+        },
+      }
+    );
+
+    res.status(201)
+      .json({ id: session.id, client_secret: session.client_secret });
+  } catch (e) {
+    next(e);
+  }
 };
+
+// exports.createCheckoutSession = async (req, res, next) => {
+//   const lineItems = {
+//     price_data: {
+//       currency: "vnd",
+//       product_data: {
+//         name: 'T-shirt',
+//       },
+//       unit_amount: 10000 * 100,
+//     },
+//     quantity: 1,
+//   };
+//   const session = await stripe.checkout.sessions.create({
+//     ui_mode: "embedded",
+//     line_items: [lineItems],
+//     mode: "payment",
+//     return_url: `${process.env.CLIENT_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
+//   });
+
+//   console.log(session);
+
+//   res.send({ client_secret: session.client_secret });
+// };
 
 exports.sessionStatus = async (req, res, next) => {
   const { session_id } = req.query;

@@ -153,7 +153,12 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: "SET NULL",
       onUpdate: "CASCADE",
       as: "product_series",
-    })
+    });
+    Product.hasMany(models.CartItem, {
+      foreignKey: "product_id",
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    });
   };
 
   return Product;

@@ -11,26 +11,27 @@ import { PATHS } from "config";
 const HomePage = React.lazy(() => import("pages/HomePage"));
 const ProductPage = React.lazy(() => import("pages/ProductPage"));
 const NotFoundPage = React.lazy(() => import("pages/NotFoundPage"));
+const CartPage = React.lazy(() => import("pages/CartPage"));
 
 export default createBrowserRouter([
   {
-    path: "/",
+    path: PATHS.HOME, 
     element: <MainLayout />,
     children: [
       {
-        path: "/",
+        path: PATHS.HOME,
         element: <HomePage />,
       },
       {
-        path: "/mobile",
+        path: PATHS.MOBILE,
         element: <div>Mobile</div>,
       },
       {
-        path: "/tablet",
+        path: PATHS.TABLET,
         element: <div>Tablet</div>,
       },
       {
-        path: '/products/:path',
+        path: PATHS.PRODUCT,
         element: <ProductPage />
       },
       {
@@ -38,9 +39,13 @@ export default createBrowserRouter([
         element: <NotFoundPage />,
       },
       {
-        path: `${PATHS.CONTACT}`,
+        path: PATHS.CONTACT,
         element: <ContactPage />,
       },
+      {
+        path: PATHS.CART,
+        element: <CartPage />
+      }
     ],
   },
   {

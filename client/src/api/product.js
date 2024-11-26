@@ -25,8 +25,19 @@ const submitReviewApi = async (data) => {
   return response.data;
 }
 
+const searchProductsApi = async (query) => {
+  const response = await axios.get(`${API_PATHS.SEARCH_PRODUCTS}`, {
+    params: {
+      q: query,
+    }
+  });
+
+  return response.data.data;
+}
+
 export {
   getProductsApi,
   getProductApi,
   submitReviewApi,
+  searchProductsApi,
 }

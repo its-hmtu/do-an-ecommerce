@@ -9,7 +9,7 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = Cookies.get('access_token');
+    const token = JSON.parse(localStorage.getItem('access_token'));
     // console.log('Token:', token);
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
@@ -25,28 +25,23 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response && error.response.status === 401 && !error.response.data.message === 'Invalid password') {
+    // console.log(error.response.data.message)
+    if (error.response && error.response.data.message === 'Token has expired' && error.response.status === 403) {
       try {
-        const response = await axiosInstance.get(API_PATHS.REFRESH, {
-          withCredentials: true,
-        })
+        const response = await axiosInstance.get(API_PATHS.REFRESH);
 
-        const newAccessToken = response.data.token;
+        if (response.status === 200) {
+          localStorage.setItem('access_token', JSON.stringify(response.data.token));
+          return axiosInstance.request(error.config);
+        }
 
-        Cookies.set('access_token', newAccessToken, {
-          expires: 10 / (24 * 60), // 10 minutes
-          secure: true,
-          sameSite: 'Strict',
-        });
-
-        error.config.headers['Authorization'] = `Bearer ${newAccessToken}`;
-        return axios(error.config);
       } catch (e) {
-        console.error('Unable to refresh token', e);
-        return Promise.reject(error);
+        console.log(e)
+        // Cookies.remove('access_token');
+        localStorage.removeItem('access_token');
+        window.location.href = '/account/login';
       }
     }
-    return Promise.reject(error);
   }
 )
 

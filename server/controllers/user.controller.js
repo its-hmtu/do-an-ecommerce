@@ -1,4 +1,5 @@
-const {User, Role, UserRole} = require('../models');
+const { col } = require('sequelize');
+const {User, Role, UserRole, Cart, CartItem, Product, Option, Sequelize, ProductImage} = require('../models');
 const Op = require('sequelize').Op;
 const sanitizeInput = require('../utils/sanitize').sanitizeInput;
 
@@ -149,4 +150,94 @@ exports.logout = async (req, res) => {
 
 exports.getUserData = async (req, res, next) => {
   return res.status(200).json({ user: req.user });
+}
+
+exports.getUserCart = async (req, res, next) => {
+  // const {id} = req.user;
+  const id = 1;
+  const cart = await Cart.findOne({
+    where: { user_id: id },
+    include: [
+      {
+        model: CartItem,
+        as: 'items',
+        attributes: ['id', 'quantity', 'product_id', 'option_id'],
+        include: [
+          {
+            model: Product,
+            attributes: {
+              exclude: ['product_description']
+            },
+           
+            include: [
+              {
+                model: ProductImage,
+                as: 'images',
+                attributes: ['id', 'file_path'],
+                required: false,
+                on: {
+                  id: { [Sequelize.Op.eq]: Sequelize.col("items->product.main_image_id") },
+                },
+              },
+              {
+                model: Option,
+                attributes: ['id', 'color', 'price'],
+                required: false,
+                on: {
+                  id: { [Sequelize.Op.eq]: Sequelize.col('items.option_id') },
+                },
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  });
+
+  return res.status(200).json({ cart });
+}
+
+exports.addToCart = async (req, res, next) => {
+  // const {id} = req.user;
+ const id = 1;
+  const {product_id, quantity, option_id} = req.body;
+
+  const product = await Product.findByPk(product_id);
+
+  if (!product) {
+    res.status(404);
+    return next(new Error('Product not found'));
+  }
+
+  if (!quantity || quantity < 1) {
+    res.status(400);
+    return next(new Error('Quantity is required'));
+  }
+
+  const cart = await Cart.findOrCreate({
+    where: { user_id: id },
+    defaults: { user_id: id }
+  });
+
+  const cartItem = await CartItem.findOne({
+    where: {
+      cart_id: cart[0].id,
+      product_id,
+      option_id
+    }
+  });
+
+  if (cartItem) {
+    cartItem.quantity += parseInt(quantity);
+    cartItem.save();
+  } else {
+    await CartItem.create({
+      cart_id: cart[0].id,
+      product_id,
+      option_id,
+      quantity
+    });
+  }
+
+  return res.status(200).json({ message: 'Product added to cart' });
 }
