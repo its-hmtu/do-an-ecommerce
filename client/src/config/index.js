@@ -13,6 +13,7 @@ const PATHS = {
   NOT_FOUND: '*',
   CONTACT: `${BASE_PATH}contact`,
   CART: `${BASE_PATH}cart`,
+  ACCOUNT_PAGE: `${BASE_PATH}account/page`,
 }
 
 const API_PATHS = {

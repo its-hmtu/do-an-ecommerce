@@ -47,7 +47,11 @@ export default createBrowserRouter([
       {
         path: PATHS.CART,
         element: <CartPage />
-      }
+      },
+      {
+        path: PATHS.ACCOUNT_PAGE,
+        element: <AccountPage />,
+      },
     ],
   },
   {
