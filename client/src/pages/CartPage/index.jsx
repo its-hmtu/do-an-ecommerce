@@ -97,13 +97,16 @@ function CartPage() {
             quantity: item.quantity,
             cart_id: data.cart.id,
             unit_price: item.product.options[0].price,
+            product_name: item.product.product_name,
+            color: item.product.options[0].color,
+            image: item.product.options[0].images[0].file_path,
           };
         }),
       },
       {
         onSuccess: (orderData) => {
           // Redirect to order page
-          navigate(PATHS.ORDER, { state: { orderData } });
+          navigate(PATHS.PAYMENT_INFO, { state: { orderData } });
           // console.log(orderData);
         },
       }

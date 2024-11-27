@@ -13,8 +13,9 @@ const ProductPage = React.lazy(() => import("pages/ProductPage"));
 const NotFoundPage = React.lazy(() => import("pages/NotFoundPage"));
 const CartPage = React.lazy(() => import("pages/CartPage"));
 const AccountPage = React.lazy(() => import("pages/AccountPage"));
-const OrderPage = React.lazy(() => import("pages/OrderPage"));
+const PaymentInfoPage = React.lazy(() => import("pages/PaymentInfoPage"));
 const ContactPage = React.lazy(() => import("pages/ContactPage"));
+const PaymentPage = React.lazy(() => import("pages/PaymentPage"));
 
 export default createBrowserRouter([
   {
@@ -50,8 +51,12 @@ export default createBrowserRouter([
         element: <CartPage />
       },
       {
-        path: PATHS.ORDER,
-        element: <OrderPage />
+        path: PATHS.PAYMENT_INFO,
+        element: <PaymentInfoPage />
+      },
+      {
+        path: PATHS.PAYMENT,
+        element: <PaymentPage />
       },
       {
         path: PATHS.ACCOUNT_PAGE,

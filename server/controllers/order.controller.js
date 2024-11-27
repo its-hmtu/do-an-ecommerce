@@ -58,16 +58,6 @@ exports.createOrder = async (req, res, next) => {
         return next(new Error("Invalid unit price"));
       }
 
-      // Log to check item data before creating OrderItem
-      console.log('Creating OrderItem:', {
-        user_id: id,
-        order_id: order.id,
-        product_id: item.product_id,
-        option_id: item.option_id,
-        quantity: item.quantity,
-        unit_price: unitPrice,
-      });
-
       // Create the order item
       await OrderItem.create({
         user_id: id,
@@ -86,7 +76,10 @@ exports.createOrder = async (req, res, next) => {
 
     res.status(201).json({
       message: "Order created successfully",
-      data: order,
+      data: {
+        order,
+        items,
+      },
       success: true,
     });
   } catch (e) {
@@ -96,7 +89,7 @@ exports.createOrder = async (req, res, next) => {
 
 exports.updateOrder = async (req, res, next) => {
   const { id } = req.params;
-  const { status } = req.body;
+  const { address } = req.body;
 
   try {
     const order = await Order.findByPk(id);
@@ -106,7 +99,6 @@ exports.updateOrder = async (req, res, next) => {
       return next(new Error("Order not found"));
     }
 
-    order.status = status;
     await order.save();
 
     res.status(200).json({
