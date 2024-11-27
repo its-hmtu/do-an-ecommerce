@@ -6,6 +6,7 @@ import {
   Input,
   Button,
   Divider,
+  Textarea,
 } from "@mui/joy";
 import CallIcon from "@mui/icons-material/Call";
 import EmailIcon from "@mui/icons-material/Email";
@@ -25,14 +26,14 @@ function ContactPage() {
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-            <CallIcon sx={{ fontSize: 40, color: "#e53935", mr: 2 }} />
+            <CallIcon sx={{ fontSize: 40, color: "rgb(11, 107, 203)", mr: 2 }} />
             <Typography level="h6">Call To Us</Typography>
           </Box>
           <Typography sx={{ mb: 2 }}>We are available 24/7, 7 days a week.</Typography>
           <Typography>Phone: +8801611122222</Typography>
           <Divider sx={{ my: 3 }} />
           <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-            <EmailIcon sx={{ fontSize: 40, color: "#e53935", mr: 2 }} />
+            <EmailIcon sx={{ fontSize: 40, color: "rgb(11, 107, 203)", mr: 2 }} />
             <Typography level="h6">Write To Us</Typography>
           </Box>
           <Typography sx={{ mb: 2 }}>Fill out our form and we will contact you within 24 hours.</Typography>
@@ -55,14 +56,25 @@ function ContactPage() {
             <Input placeholder="Your Email *" fullWidth sx={{ backgroundColor: "#f5f5f5" }} />
             <Input placeholder="Your Phone *" fullWidth sx={{ backgroundColor: "#f5f5f5" }} />
           </Box>
-          <Input
+          <Textarea
             placeholder="Your Message"
             multiline
-            minRows={4}
+            minRows={8} 
             fullWidth
-            sx={{ backgroundColor: "#f5f5f5", mb: 3 }}
+            sx={{
+              backgroundColor: "#f5f5f5",
+              mb: 3,
+              borderRadius: "8px",
+              padding: 2,
+              "& .MuiInputBase-input": {
+              paddingTop: 0,
+              },
+            }}
+            InputProps={{
+              style: { alignItems: "flex-start" }
+            }}
           />
-          <Button variant="solid" color="danger" sx={{ px: 4, alignSelf: "flex-start" }}>
+          <Button variant="solid" backgroundColor="rgb(11, 107, 203)" sx={{ px: 4, alignSelf: "flex-start"}}>
             Send Message
           </Button>
         </Box>

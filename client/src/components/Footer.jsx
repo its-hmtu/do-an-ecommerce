@@ -44,14 +44,14 @@ function Footer() {
           <Box>
             <Typography
               level="h4"
-              sx={{ mb: 2, fontWeight: "bold", letterSpacing: "2px" }}
+              sx={{ mb: 2, fontWeight: "bold", letterSpacing: "2px", color: "white" }}
             >
               Exclusive
             </Typography>
-            <Typography sx={{ mb: 2, fontWeight: "600", letterSpacing: "1px" }}>
+            <Typography sx={{ mb: 2, fontWeight: "600", letterSpacing: "1px",  color: "white"  }}>
               Subscribe
             </Typography>
-            <Typography sx={{ mb: 2 }}>Get 10% off your first order</Typography>
+            <Typography sx={{ mb: 2,  color: "white"  }}>Get 10% off your first order</Typography>
             <Box
               sx={{
                 display: "flex",
@@ -65,7 +65,7 @@ function Footer() {
                 placeholder="Enter your email"
                 sx={{
                   backgroundColor: "transparent",
-                  color: "#fff",
+                  color: "white" ,
                   border: "none",
                   flexGrow: 1,
                   px: 2,
@@ -85,15 +85,15 @@ function Footer() {
           {/* Support Section */}
           <Box>
             <Typography
-              level="h5"
+              level="h5"  
               sx={{ mb: 2, fontWeight: "600", letterSpacing: "1px" }}
             >
               Support
             </Typography>
-            <Typography>111 Bijoy Sarani, Dhaka,</Typography>
-            <Typography>DH 1515, Bangladesh.</Typography>
-            <Typography sx={{ my: 1 }}>exclusive@gmail.com</Typography>
-            <Typography>+88015-88888-9999</Typography>
+            <Typography sx = {{ color: "white" }}>111 Bijoy Sarani, Dhaka,</Typography>
+            <Typography sx = {{ color: "white" }}>DH 1515, Bangladesh.</Typography>
+            <Typography sx={{ my: 1,  color: "white"  }}>exclusive@gmail.com</Typography>
+            <Typography sx = {{ color: "white" }}>+88015-88888-9999</Typography>
           </Box>
 
           {/* Account Section */}
@@ -151,7 +151,7 @@ function Footer() {
             >
               Download App
             </Typography>
-            <Typography sx={{ mb: 2, fontSize: "12px" }}>
+            <Typography sx={{ mb: 2, fontSize: "12px",  color: "white"  }}>
               Save $3 with App New User Only
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
