@@ -7,6 +7,7 @@ import RegisterPage from "pages/RegisterPage";
 import ContactPage from "pages/ContactPage";
 import { createBrowserRouter } from "react-router-dom";
 import { PATHS } from "config";
+import OrderPage from "pages/OrderPage";
 
 const HomePage = React.lazy(() => import("pages/HomePage"));
 const ProductPage = React.lazy(() => import("pages/ProductPage"));
@@ -45,6 +46,10 @@ export default createBrowserRouter([
       {
         path: PATHS.CART,
         element: <CartPage />
+      },
+      {
+        path: PATHS.ORDER,
+        element: <OrderPage />,
       }
     ],
   },

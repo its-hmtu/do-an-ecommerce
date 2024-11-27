@@ -22,6 +22,7 @@ import {
   ChevronRightRounded,
   LocalShippingOutlined,
   RefreshRounded,
+  ShoppingCartRounded,
 } from "@mui/icons-material";
 import { PATHS } from "config";
 import ProductCard from "components/ProductCard";
@@ -30,17 +31,23 @@ import { UserContext } from "contexts/UserContext";
 import ReviewCard from "./components/ReviewCard";
 import SpecificationCard from "./components/SpecificationCard";
 import DescriptionCard from "./components/DescriptionCard";
+import { useAddItemToCart, useGetUserCart } from "hooks";
+import { toast } from "react-toastify";
 
 function ProductPage() {
   const { path } = useParams();
   const { data, isLoading } = useProduct(path);
-  const [currentOption, setCurrentOption] = React.useState(data?.options[0]);
+  const { mutate: addToCart, isPending: isAddingToCart } = useAddItemToCart();
+  const { data: cartData } = useGetUserCart();
+  const { user } = useContext(UserContext);
+
+  const [currentOption, setCurrentOption] = React.useState(null);
   const [currentImage, setCurrentImage] = React.useState(null);
   const [openDescription, setOpenDescription] = React.useState(false);
   const [openPostReview, setOpenPostReview] = React.useState(false);
-  const {user} = useContext(UserContext);
   const sliderRef = React.useRef(null);
   const navigate = useNavigate();
+
   React.useEffect(() => {
     if (currentImage !== null && sliderRef.current) {
       sliderRef.current.slickGoTo(
@@ -48,6 +55,13 @@ function ProductPage() {
       );
     }
   }, [currentImage, data]);
+
+  React.useEffect(() => {
+    if (data?.options.length > 0) {
+      setCurrentOption(data?.options[0]);
+    }
+  }, [data]);
+
 
   const settings = {
     dots: true,
@@ -63,9 +77,7 @@ function ProductPage() {
     prevArrow: <ChevronLeftRounded />,
     customPaging: function (i) {
       if (!data?.images || !data.images[i]) {
-        return (
-          <a> </a>
-        ); // Render nothing if data is incomplete
+        return <a> </a>; // Render nothing if data is incomplete
       }
       return (
         <a>
@@ -83,9 +95,44 @@ function ProductPage() {
     setCurrentImage(option.images[0].file_path);
   };
 
-  if (isLoading 
-    || !data
-  ) {
+  const handleAddToCart = () => {
+    if (user) {
+      let quantity = 1;
+      const isExist = cartData?.cart?.items.find(
+        (item) =>
+          item.product_id === data.id && item.option_id === currentOption.id
+      );
+
+      if (isExist) {
+        quantity = isExist.quantity + 1;
+      }
+      addToCart(
+        {
+          cart_id: cartData.cart.id,
+          product_id: data.id,
+          option_id: currentOption.id,
+          quantity: quantity,
+        },
+        {
+          onSuccess: () => {
+            toast.dismiss();
+            toast.success("Added to cart", {
+              hideProgressBar: true,
+            });
+          },
+          onError: () => {
+            toast.dismiss();
+            toast.error("Failed to add to cart", {
+              hideProgressBar: true,
+            });
+          },
+        }
+      );
+    } else {
+    }
+  };
+
+  if (isLoading || !data) {
     return (
       <Box
         sx={{
@@ -98,7 +145,7 @@ function ProductPage() {
       >
         <LinearProgress />
       </Box>
-    )
+    );
   }
 
   return (
@@ -320,6 +367,7 @@ function ProductPage() {
                   width: "150px",
                   backgroundColor: "#fff",
                 }}
+                onClick={handleAddToCart}
               >
                 <Stack
                   sx={{
@@ -409,7 +457,11 @@ function ProductPage() {
                 width: "calc(100% - 338px)",
               }}
             >
-              <DescriptionCard data={data} openDescription={openDescription} setOpenDescription={setOpenDescription} />
+              <DescriptionCard
+                data={data}
+                openDescription={openDescription}
+                setOpenDescription={setOpenDescription}
+              />
               <Stack
                 gap={2}
                 sx={{

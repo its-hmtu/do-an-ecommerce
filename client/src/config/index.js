@@ -13,6 +13,7 @@ const PATHS = {
   NOT_FOUND: '*',
   CONTACT: `${BASE_PATH}contact`,
   CART: `${BASE_PATH}cart`,
+  ORDER: `${BASE_PATH}order`,
 }
 
 const API_PATHS = {
@@ -26,6 +27,7 @@ const API_PATHS = {
   SUBMIT_REVIEW: `${BASE_API_PATH}/products/review`,
   SEARCH_PRODUCTS: `${BASE_API_PATH}/products/search`,
   USER_CART: `${BASE_API_PATH}/account/cart`,
+  ORDER: `${BASE_API_PATH}/orders`,
 }
 
 const queryKeys = {

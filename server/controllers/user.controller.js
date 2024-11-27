@@ -166,7 +166,7 @@ exports.getUserCart = async (req, res, next) => {
           {
             model: Product,
             attributes: {
-              exclude: ['product_description']
+              exclude: ['product_description', 'total_in_stock', 'availability', 'views', 'featured', 'sales'],
             },
            
             include: [
@@ -197,12 +197,12 @@ exports.getUserCart = async (req, res, next) => {
 }
 
 exports.addToCart = async (req, res, next) => {
-  // const {id} = req.user;
- const id = 1;
-  const {product_id, quantity, option_id} = req.body;
+  // const { id } = req.user;
+  const id = 1;
+  const { product_id, quantity, option_id } = req.body;
 
   const product = await Product.findByPk(product_id);
-
+  
   if (!product) {
     res.status(404);
     return next(new Error('Product not found'));
@@ -213,48 +213,67 @@ exports.addToCart = async (req, res, next) => {
     return next(new Error('Quantity is required'));
   }
 
-  const cart = await Cart.findOrCreate({
+  // Find or create the cart for the user
+  const [cart, created] = await Cart.findOrCreate({
     where: { user_id: id },
-    defaults: { user_id: id }
+    defaults: { user_id: id },
   });
 
+  // Find the cart item for the specific product and option
   const cartItem = await CartItem.findOne({
     where: {
-      cart_id: cart[0].id,
+      cart_id: cart.id,
       product_id,
-      option_id
-    }
+      option_id,
+    },
   });
 
   if (cartItem) {
-    cartItem.quantity += parseInt(quantity);
-    cartItem.save();
+    // If the item exists, set the new quantity (overwrite the old one)
+    cartItem.quantity = parseInt(quantity);  // Set new quantity
+    await cartItem.save();
   } else {
+    // If the item doesn't exist, create a new cart item
     await CartItem.create({
-      cart_id: cart[0].id,
+      cart_id: cart.id,
       product_id,
       option_id,
-      quantity
+      quantity,
     });
   }
 
-  return res.status(200).json({ message: 'Product added to cart' });
-}
+  // Re-fetch the updated cart items and calculate total_items
+  const updatedCartItems = await CartItem.findAll({
+    where: { cart_id: cart.id },
+  });
+
+  const totalItems = updatedCartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  // Update the total_items in the cart
+  cart.total_items = totalItems;
+  await cart.save();  // Ensure the cart is saved with the updated total_items
+
+  return res.status(200).json({ message: 'Product added to cart', totalItems: cart.total_items });
+};
 
 exports.updateCartItem = async (req, res, next) => {
   // const {id} = req.user;
   const id = 1;
-  const {item_id, quantity} = req.body;
+  const {item_id, quantity, cart_id} = req.body;
 
   if (!quantity || quantity < 1) {
     res.status(400);
     return next(new Error('Quantity is required'));
   }
 
+  const cart = await Cart.findOne({
+    where: { user_id: id }
+  })
+
   const cartItem = await CartItem.findOne({
     where: {
       id: item_id,
-      cart_id: id
+      cart_id: cart_id
     }
   });
 
@@ -264,29 +283,83 @@ exports.updateCartItem = async (req, res, next) => {
   }
 
   cartItem.quantity = quantity;
-  cartItem.save();
+  await cartItem.save();
 
-  return res.status(200).json({ message: 'Cart item updated' });
+  const updatedCartItems = await CartItem.findAll({
+    where: { cart_id: cart_id },
+  });
+
+  const totalItems = updatedCartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  // Update the total_items in the cart
+  cart.total_items = totalItems;
+  await cart.save();
+
+  return res.status(200).json({ message: 'Cart item updated', totalItems: cart.total_items });
+}
+
+exports.updateCartSubtotal = async (req, res, next) => {
+  // const {id} = req.user;
+  const id = 1;
+  const {subtotal} = req.body;
+
+  if (!subtotal || subtotal < 0) {
+    res.status(400);
+    return next(new Error('Subtotal is required'));
+  }
+
+  const cart = await Cart.findOne({
+    where: { user_id: id }
+  });
+
+  cart.subtotal = subtotal;
+  await cart.save();
+
+  return res.status(200).json({ message: 'Cart subtotal updated' });
 }
 
 exports.removeFromCart = async (req, res, next) => {
   // const {id} = req.user;
   const id = 1;
-  const {item_id} = req.body;
+  const {ids} = req.body;
 
-  const cartItem = await CartItem.findOne({
+  if (!ids || ids.length === 0) {
+    res.status(400);
+    return next(new Error('Item ids are required'));
+  }
+
+  const cart = await Cart.findOne({
+    where: { user_id: id }
+  });
+
+  const cartItems = await CartItem.findAll({
     where: {
-      id: item_id,
-      cart_id: id
+      id: { [Op.in]: ids },
+      cart_id: cart.id
     }
   });
 
-  if (!cartItem) {
+  if (!cartItems || cartItems.length === 0) {
     res.status(404);
-    return next(new Error('Item not found'));
+    return next(new Error('Items not found'));
   }
 
-  cartItem.destroy();
+  await CartItem.destroy({
+    where: {
+      id: { [Op.in]: ids },
+      cart_id: cart.id
+    }
+  });
 
+  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  if (cart.total_items - totalItems < 0) {
+    cart.total_items = 0;
+  } else {
+    cart.total_items -= totalItems;
+  }
+
+
+  await cart.save();
   return res.status(200).json({ message: 'Cart item removed' });
 }
