@@ -1,5 +1,5 @@
 const { col } = require('sequelize');
-const {User, Role, UserRole, Cart, CartItem, Product, Option, Sequelize, ProductImage} = require('../models');
+const {User, Role, UserRole, Cart, CartItem, Product, Option, Sequelize, ProductImage, OptionImage} = require('../models');
 const Op = require('sequelize').Op;
 const sanitizeInput = require('../utils/sanitize').sanitizeInput;
 
@@ -171,21 +171,20 @@ exports.getUserCart = async (req, res, next) => {
            
             include: [
               {
-                model: ProductImage,
-                as: 'images',
-                attributes: ['id', 'file_path'],
-                required: false,
-                on: {
-                  id: { [Sequelize.Op.eq]: Sequelize.col("items->product.main_image_id") },
-                },
-              },
-              {
                 model: Option,
                 attributes: ['id', 'color', 'price'],
                 required: false,
                 on: {
                   id: { [Sequelize.Op.eq]: Sequelize.col('items.option_id') },
                 },
+                include: [
+                  {
+                    model: OptionImage,
+                    as: 'images',
+                    attributes: ['id', 'file_path'],
+                    required: false,
+                  }
+                ]
               }
             ]
           }
@@ -240,4 +239,54 @@ exports.addToCart = async (req, res, next) => {
   }
 
   return res.status(200).json({ message: 'Product added to cart' });
+}
+
+exports.updateCartItem = async (req, res, next) => {
+  // const {id} = req.user;
+  const id = 1;
+  const {item_id, quantity} = req.body;
+
+  if (!quantity || quantity < 1) {
+    res.status(400);
+    return next(new Error('Quantity is required'));
+  }
+
+  const cartItem = await CartItem.findOne({
+    where: {
+      id: item_id,
+      cart_id: id
+    }
+  });
+
+  if (!cartItem) {
+    res.status(404);
+    return next(new Error('Item not found'));
+  }
+
+  cartItem.quantity = quantity;
+  cartItem.save();
+
+  return res.status(200).json({ message: 'Cart item updated' });
+}
+
+exports.removeFromCart = async (req, res, next) => {
+  // const {id} = req.user;
+  const id = 1;
+  const {item_id} = req.body;
+
+  const cartItem = await CartItem.findOne({
+    where: {
+      id: item_id,
+      cart_id: id
+    }
+  });
+
+  if (!cartItem) {
+    res.status(404);
+    return next(new Error('Item not found'));
+  }
+
+  cartItem.destroy();
+
+  return res.status(200).json({ message: 'Cart item removed' });
 }

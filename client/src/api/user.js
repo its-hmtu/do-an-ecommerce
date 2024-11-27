@@ -68,10 +68,22 @@ const getUserCartApi = async () => {
   return response.data;
 }
 
+const updateUserCartApi = async ({
+  item_id,
+  quantity
+}) => {
+  const response = await axiosInstance.put(API_PATHS.USER_CART, {
+    item_id,
+    quantity
+  });
+  return response.data;
+}
+
 export {
   loginApi,
   getUserApi,
   registerApi,
   logoutApi,
-  getUserCartApi
+  getUserCartApi,
+  updateUserCartApi
 }

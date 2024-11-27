@@ -5,7 +5,8 @@ const {
   logout,
   getUserData,
   getUserCart,
-  addToCart
+  addToCart,
+  updateCartItem,
 } = require('../controllers/user.controller');
 const { mustBeAuthenticated } = require('../middlewares/auth.middleware');
 
@@ -15,5 +16,6 @@ router.get('/logout', mustBeAuthenticated, logout);
 router.get('/me', mustBeAuthenticated, getUserData);
 router.get('/cart', getUserCart);
 router.post('/cart', addToCart);
+router.put('/cart', updateCartItem);
 
 module.exports = router;
