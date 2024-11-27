@@ -6,16 +6,133 @@ import {
   Stack,
   Typography,
 } from "@mui/joy";
-import React from "react";
+import React, { useMemo } from "react";
 import emptyCartIcon from "assets/images/empty-cart.png";
-import { Link as RLink } from "react-router-dom";
+import { Link as RLink, useNavigate } from "react-router-dom";
 import { PATHS } from "config";
-import { useGetUserCart } from "hooks";
+import {
+  useCreateOrder,
+  useGetUserCart,
+  useRemoveItemFromCart,
+  useUpdateCartSubtotal,
+  useUpdateUserCart,
+} from "hooks";
 
 function CartPage() {
   const { data, isLoading } = useGetUserCart();
   const [selected, setSelected] = React.useState([]);
-  const [quantity, setQuantity] = React.useState(1)
+  const [cartItems, setCartItems] = React.useState([]);
+  const { mutate: updateUserCart, isPending: isUpdatingUserCart } =
+    useUpdateUserCart();
+  const { mutate: removeFromCart, isPending: isRemovingFromCart } =
+    useRemoveItemFromCart();
+  const { mutate: updateCartSubtotal, isPending: isUpdatingCartSubtotal } =
+    useUpdateCartSubtotal();
+
+  const { mutate: createOrder, isPending: isCreatingOrder, data: orderData } = useCreateOrder();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (data?.cart) {
+      setCartItems(data?.cart.items);
+
+      const storedSelectedItems = JSON.parse(
+        localStorage.getItem("cart_selected")
+      );
+      if (storedSelectedItems) {
+        setSelected(storedSelectedItems);
+      }
+    }
+  }, [data]);
+
+  React.useEffect(() => {
+    if (selected.length > 0) {
+      localStorage.setItem("cart_selected", JSON.stringify(selected));
+    }
+  }, [selected]);
+
+  const handleUpdateQuantity = (itemId, quantity) => {
+    setCartItems((prevItems) => {
+      return prevItems.map((item) => {
+        if (item.id === itemId) {
+          return {
+            ...item,
+            quantity: quantity,
+          };
+        }
+        return item;
+      });
+    });
+
+    updateUserCart({
+      cart_id: data?.cart.id,
+      item_id: itemId,
+      quantity: quantity,
+    });
+  };
+
+  const handleRemoveFromCart = (ids) => {
+    removeFromCart(ids);
+
+    setSelected((prevSelected) =>
+      prevSelected.filter((id) => !ids.includes(id))
+    );
+
+    // Optionally, you can also update the cartItems state to reflect the changes in the cart
+    setCartItems((prevItems) =>
+      prevItems.filter((item) => !ids.includes(item.id))
+    );
+  };
+
+  const handleToOrder = (subtotal) => {
+    // updateCartSubtotal(subtotal, {
+    //   onSuccess: () => {
+    //     // Redirect to order page
+    //     navigate(PATHS.ORDER)
+    //   }
+    // });
+
+    createOrder(
+      {
+        subtotal,
+        items: selected.map((itemId) => {
+          const item = cartItems.find((item) => item.id === itemId);
+          console.log(item)
+          return {
+            product_id: item.product.id,
+            option_id: item.product.options[0].id,
+            quantity: item.quantity,
+            cart_id: data.cart.id,
+            unit_price: item.product.options[0].price,
+          };
+        }),
+      },
+      {
+        onSuccess: () => {
+          // Redirect to order page
+          // navigate(PATHS.ORDER, { state: { orderData } });
+          console.log(orderData);
+        },
+      }
+    );
+  };
+
+  const subTotal = useMemo(() => {
+    return selected.reduce((total, itemId) => {
+      const item = cartItems?.find((item) => item.id === itemId);
+      if (item) {
+        return total + item.quantity * item.product.options[0].price;
+      }
+      return total;
+    }, 0);
+  }, [selected, cartItems]);
+
+  const itemsCountToOrder = useMemo(() => {
+    return selected.reduce((total, itemId) => {
+      const item = cartItems?.find((item) => item.id === itemId);
+      return total + item.quantity;
+    }, 0);
+  }, [selected, cartItems]);
 
   if (isLoading) {
     return (
@@ -32,7 +149,7 @@ function CartPage() {
     );
   }
 
-  if (!data?.cart) {
+  if (!data?.cart || data?.cart.items.length === 0) {
     return (
       <Box
         sx={{
@@ -130,7 +247,12 @@ function CartPage() {
           <Typography level="body-md">{selected.length} selected</Typography>
         </Stack>
 
-        <Button variant="plain" color="danger" disabled={selected.length === 0}>
+        <Button
+          variant="plain"
+          color="danger"
+          disabled={selected.length === 0}
+          onClick={() => handleRemoveFromCart(selected)}
+        >
           Remove selected from cart
         </Button>
       </Stack>
@@ -143,92 +265,104 @@ function CartPage() {
           borderRadius: "sm",
         }}
       >
-        {data?.cart.items.map((item) => (
-          <Box
-            key={item.id}
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              gap: 2,
-              padding: 2,
-            }}
-          >
-            <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-              {/* Item Checkbox */}
-              <Checkbox
-                size="sm"
-                checked={selected.includes(item.id)}
-                color={selected.includes(item.id) ? "primary" : undefined}
-                onChange={(event) => {
-                  setSelected((ids) =>
-                    event.target.checked
-                      ? ids.concat(item.id)
-                      : ids.filter((itemId) => itemId !== item.id)
-                  );
-                }}
-                slotProps={{
-                  checkbox: { sx: { textAlign: "left" } },
-                }}
-                sx={{ verticalAlign: "text-bottom" }}
-              />
+        {cartItems &&
+          cartItems.map((item) => (
+            <Box
+              key={item.id}
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                gap: 2,
+                padding: 2,
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+                {/* Item Checkbox */}
+                <Checkbox
+                  size="sm"
+                  checked={selected.includes(item.id)}
+                  color={selected.includes(item.id) ? "primary" : undefined}
+                  onChange={(event) => {
+                    setSelected((ids) =>
+                      event.target.checked
+                        ? ids.concat(item.id)
+                        : ids.filter((itemId) => itemId !== item.id)
+                    );
+                  }}
+                  slotProps={{
+                    checkbox: { sx: { textAlign: "left" } },
+                  }}
+                  sx={{ verticalAlign: "text-bottom" }}
+                />
 
-              <img
-                src={`${process.env.REACT_APP_API_URL}${item.product.options[0].images[0].file_path}`}
-                alt={item.product.product_name}
-                style={{
-                  width: "100px",
-                  height: "100px",
-                  objectFit: "cover",
-                  marginRight: 2,
-                }}
-              />
-              <Stack gap={1}>
-                <Typography level="title-md">
-                  {item.product.product_name}
-                </Typography>
-                <Typography level="body-sm" color="text.secondary">
-                  {item.product.options[0].color}
-                </Typography>
-                <Typography level="title-sm" color="danger">
-                  {new Intl.NumberFormat("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  }).format(item.product.options[0].price)}
-                </Typography>
-              </Stack>
-            </Box>
-            <Box>
-              <Stack gap={1} sx={{
-                alignItems: 'center',
-                justifyContent: 'flex-end',
-              }}>
-                <Typography level="body-sm">Quantity</Typography>
-                <Stack direction="row" gap={1} sx={{
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                }}>
-                  <Button
-                    variant="soft"
-                    color="primary"
-                    onClick={() => setQuantity(quantity - 1)}
-                    disabled={item.quantity === 1}
-                  >
-                    -
-                  </Button>
-                  <Typography level="body-md">{quantity}</Typography>
-                  <Button
-                    variant="soft"
-                    color="primary"
-                    onClick={() => setQuantity(quantity + 1)}
-                  >
-                    +
-                  </Button>
+                <img
+                  src={`${process.env.REACT_APP_API_URL}${item.product.options[0].images[0].file_path}`}
+                  alt={item.product.product_name}
+                  style={{
+                    width: "100px",
+                    height: "100px",
+                    objectFit: "cover",
+                    marginRight: 2,
+                  }}
+                />
+                <Stack gap={1}>
+                  <Typography level="title-md">
+                    {item.product.product_name}
+                  </Typography>
+                  <Typography level="body-sm" color="text.secondary">
+                    {item.product.options[0].color}
+                  </Typography>
+                  <Typography level="title-sm" color="danger">
+                    {new Intl.NumberFormat("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                    }).format(item.product.options[0].price)}
+                  </Typography>
                 </Stack>
-              </Stack>
+              </Box>
+              <Box>
+                <Stack
+                  gap={1}
+                  sx={{
+                    alignItems: "center",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <Typography level="body-sm">Quantity</Typography>
+                  <Stack
+                    direction="row"
+                    gap={1}
+                    sx={{
+                      alignItems: "center",
+                      justifyContent: "flex-start",
+                    }}
+                  >
+                    <Button
+                      variant="soft"
+                      color="primary"
+                      onClick={() =>
+                        handleUpdateQuantity(item.id, item.quantity - 1)
+                      }
+                      disabled={item.quantity === 1}
+                    >
+                      -
+                    </Button>
+                    <Typography level="body-md">{item.quantity}</Typography>
+                    <Button
+                      variant="soft"
+                      color="primary"
+                      onClick={() =>
+                        handleUpdateQuantity(item.id, item.quantity + 1)
+                      }
+                    >
+                      +
+                    </Button>
+                  </Stack>
+                </Stack>
+              </Box>
             </Box>
-          </Box>
-        ))}
+          ))}
       </Stack>
 
       <Stack
@@ -244,23 +378,18 @@ function CartPage() {
             {new Intl.NumberFormat("vi-VN", {
               style: "currency",
               currency: "VND",
-            }).format(
-              selected.reduce((total, itemId) => {
-                const item = data?.cart.items.find(
-                  (item) => item.id === itemId
-                );
-                return total + item.product.options[0].price * quantity;
-              }, 0)
-            )}
+            }).format(subTotal)}
           </Typography>
         </Typography>
 
         <Button
           variant="solid"
           color="primary"
-          disabled={selected.length === 0}
+          disabled={selected.length === 0 || isCreatingOrder}
+          onClick={() => handleToOrder(subTotal)}
+          loading={isCreatingOrder}
         >
-          Order now {` ${selected.length > 0 ? `(${selected.length * quantity})` : ""}`}
+          Order now {` ${selected.length > 0 ? `(${itemsCountToOrder})` : ""}`}
         </Button>
       </Stack>
     </Stack>

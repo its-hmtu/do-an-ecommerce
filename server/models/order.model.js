@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       primaryKey: true,
       // autoIncrement: true,
-      unique: true,
+      // unique: true,
       defaultValue: generateOrderId(),
       allowNull: false
     },
@@ -19,24 +19,24 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     total: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(20, 2),
       allowNull: false
     },
     subtotal: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(20, 2),
       allowNull: false
     },
     tax: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false
+      allowNull: true
     },
     shipping: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false
+      allowNull: true
     },
     discount: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false
+      allowNull: true
     },
     status: {
       type: DataTypes.ENUM(
@@ -120,9 +120,9 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'orders'
   })
 
-  Order.beforeCreate(async (order) => {
-    order.id = generateOrderId();
-  })
+  // Order.beforeCreate(async (order) => {
+  //   order.id = generateOrderId();
+  // })
 
   Order.associate = (models) => {
     Order.belongsTo(models.User, {onDelete: 'CASCADE', foreignKey: 'user_id'})

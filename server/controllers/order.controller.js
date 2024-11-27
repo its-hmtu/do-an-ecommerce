@@ -19,80 +19,69 @@ const nodemailer = require("nodemailer");
 const { generateTrackingOrder } = require("../utils/helper");
 const exceljs = require("exceljs");
 const moment = require("moment");
+const { generateOrderId } = require("../utils/helper");
+
 
 exports.createOrder = async (req, res, next) => {
-  const { user_id, address_id, items, guest } = req.body;
+  // const { id } = req.user;
+  const id = 1;
+  const { items, subtotal } = req.body;
+
+  console.log(items);  // Add a log to check incoming data
 
   try {
-    if (!guest && user_id !== req.user.id) {
-      res.status(403);
-      return next(new Error("Unauthorized"));
-    }
+    const order = await Order.create({
+      id: generateOrderId(),
+      user_id: id,
+      subtotal,
+      status: "pending",
+      total: 0,  // Make sure to calculate total later based on shipping, tax, and discount
+    });
 
-    let order;
+    console.log(order);  // Add a log to check the created order
 
-    if (guest) {
-      const user = await User.findOne({
-        where: {
-          email: guest.email,
-        },
-      });
-
-      if (user) {
-        res.status(400);
-        return next(new Error("Email already exists"));
-      }
-
-      order = await Order.create({
-        // payment_method: guest.payment_method,
-        status: "pending",
-        guest_email: guest.email,
-        guest_first_name: guest.first_name,
-        guest_last_name: guest.last_name,
-        guest_phone: guest.phone,
-        guest_address: guest.address,
-        total: 0,
-      });
-    } else {
-      order = await Order.create({
-        user_id,
-        address_id,
-        status: "pending",
-        total: 0,
-      });
-    }
-
-    let subtotal = 0;
-
-    for (const item of items) {
+    for (let item of items) {
       const product = await Product.findByPk(item.product_id);
       if (!product) {
         res.status(404);
         return next(new Error("Product not found"));
       }
+
       const option = await Option.findByPk(item.option_id);
       if (item.option_id && !option) {
         res.status(404);
         return next(new Error("Option not found"));
       }
-      const variationPrice = item.option_id ? option.price : product.base_price;
 
-      const orderItemPrice = variationPrice * item.quantity;
+      const unitPrice = parseFloat(item.unit_price);
+      if (isNaN(unitPrice)) {
+        return next(new Error("Invalid unit price"));
+      }
 
-      const orderItem = await OrderItem.create({
-        user_id,
+      // Log to check item data before creating OrderItem
+      console.log('Creating OrderItem:', {
+        user_id: id,
         order_id: order.id,
         product_id: item.product_id,
         option_id: item.option_id,
         quantity: item.quantity,
-        unit_price: orderItemPrice,
+        unit_price: unitPrice,
       });
 
-      subtotal += orderItemPrice;
+      // Create the order item
+      await OrderItem.create({
+        user_id: id,
+        order_id: order.id,
+        product_id: item.product_id,
+        option_id: item.option_id,
+        quantity: item.quantity,
+        unit_price: unitPrice,  // Ensure unit_price is a number
+      });
     }
 
+    // Update order with calculated total
     order.subtotal = subtotal;
-    order.total = subtotal + order.shipping + order.tax + order.discount;
+    order.total = subtotal + (order.shipping || 0) + (order.tax || 0) + (order.discount || 0);
     await order.save();
 
     res.status(201).json({
@@ -101,9 +90,10 @@ exports.createOrder = async (req, res, next) => {
       success: true,
     });
   } catch (e) {
-    next(e);
+    next(e);  // Log the error for further debugging
   }
 };
+
 
 exports.createCheckoutSession = async (req, res, next) => {
   const { order_id, payment_method } = req.body;
@@ -151,7 +141,8 @@ exports.createCheckoutSession = async (req, res, next) => {
       }
     );
 
-    res.status(201)
+    res
+      .status(201)
       .json({ id: session.id, client_secret: session.client_secret });
   } catch (e) {
     next(e);
@@ -222,11 +213,11 @@ exports.updateOrderPaid = async (req, res, next) => {
       return next(new Error("Order not found"));
     }
 
-    if (order.status === "pending" && session.status === 'complete') {
+    if (order.status === "pending" && session.status === "complete") {
       order.is_paid = true;
       order.payment_date = new Date(session.created * 1000);
     }
-    
+
     await order.save({ transaction });
     res.status(200).json({
       message: "Order updated successfully",
@@ -267,20 +258,18 @@ exports.getOrders = async (req, res, next) => {
   const isPaid = req.query.is_paid || null;
 
   try {
-    const whereCondition = {
-     
-    }
+    const whereCondition = {};
 
     if (q) {
       whereCondition.status = {
         [Op.like]: `%${q}%`,
-      }
+      };
     }
 
     if (isPaid) {
       whereCondition.is_paid = isPaid;
     }
-    
+
     const orders = await Order.findAndCountAll({
       where: whereCondition,
       // exclude: ['tracking_number'],
@@ -391,7 +380,7 @@ exports.getOrdersByStatus = async (req, res, next) => {
   } catch (e) {
     next(e);
   }
-}
+};
 
 exports.getSingleOrder = async (req, res, next) => {
   const { id } = req.params;
@@ -433,10 +422,10 @@ exports.getSingleOrder = async (req, res, next) => {
           // as: "shipping_address",
           // attributes: { exclude: ["user_id"] },
           required: false,
-        }
+        },
       ],
-    })
-  
+    });
+
     if (!order) {
       res.status(404);
       return next(new Error("Order not found"));
@@ -455,14 +444,13 @@ exports.getSingleOrder = async (req, res, next) => {
       success: true,
       data: order,
     });
-
   } catch (e) {
     next(e);
   }
-}
+};
 
 exports.shipOrder = async (req, res, next) => {
-  const {order_id} = req.query;
+  const { order_id } = req.query;
   const transaction = await sequelize.transaction({ autocommit: false });
 
   try {
@@ -475,21 +463,29 @@ exports.shipOrder = async (req, res, next) => {
           model: User,
           attributes: ["email", "first_name", "last_name"],
         },
-      ]
-    })
+      ],
+    });
 
     if (!order) {
       res.status(404);
       return next(new Error("Order not found"));
     }
 
-    if (order.status.includes(["shipped", "delivered", "cancelled", "completed", "refunded"])) {
+    if (
+      order.status.includes([
+        "shipped",
+        "delivered",
+        "cancelled",
+        "completed",
+        "refunded",
+      ])
+    ) {
       res.status(400);
       return next(new Error("Order already shipped"));
     }
 
-    if (order.status === 'pending') {
-      order.status = 'shipped';
+    if (order.status === "pending") {
+      order.status = "shipped";
       order.tracking_number = generateTrackingOrder();
       order.ship_date = new Date();
       await order.save({ transaction });
@@ -510,37 +506,36 @@ exports.shipOrder = async (req, res, next) => {
         Your Company Name`,
       };
 
-      const info = await transporter.sendMail(mailOptions)
-      console.log('Preview URL:', nodemailer.getTestMessageUrl(info))
+      const info = await transporter.sendMail(mailOptions);
+      console.log("Preview URL:", nodemailer.getTestMessageUrl(info));
     }
 
     res.status(200).json({
       message: "Order shipped successfully",
       data: order,
     });
-
   } catch (e) {
     next(e);
   }
-}
+};
 
 exports.massShipOrder = async (req, res, next) => {
-  const {order_ids} = req.body;
+  const { order_ids } = req.body;
   const transaction = await sequelize.transaction({ autocommit: false });
 
   try {
     const orders = await Order.findAll({
       where: {
         id: order_ids,
-        status: 'pending'
-      }, 
+        status: "pending",
+      },
       include: [
         {
           model: User,
           attributes: ["email", "first_name", "last_name"],
         },
-      ]
-    })
+      ],
+    });
 
     if (orders.length === 0) {
       res.status(404);
@@ -548,7 +543,7 @@ exports.massShipOrder = async (req, res, next) => {
     }
 
     for (const order of orders) {
-      order.status = 'shipped';
+      order.status = "shipped";
       order.tracking_number = generateTrackingOrder();
       order.ship_date = new Date();
       await order.save({ transaction });
@@ -567,7 +562,7 @@ exports.massShipOrder = async (req, res, next) => {
         Your Company Name`,
       };
 
-      const info = await transporter.sendMail(mailOptions)
+      const info = await transporter.sendMail(mailOptions);
     }
 
     await transaction.commit();
@@ -576,12 +571,11 @@ exports.massShipOrder = async (req, res, next) => {
       message: "Orders shipped successfully",
       data: orders,
     });
-
   } catch (e) {
     await transaction.rollback();
     next(e);
   }
-}
+};
 
 exports.completeOrder = async (req, res, next) => {
   const { order_id } = req.query;
@@ -624,7 +618,7 @@ exports.completeOrder = async (req, res, next) => {
   } catch (e) {
     next(e);
   }
-}
+};
 
 exports.cancelOrder = async (req, res, next) => {
   const { order_id } = req.query;
@@ -667,7 +661,7 @@ exports.cancelOrder = async (req, res, next) => {
   } catch (e) {
     next(e);
   }
-}
+};
 
 exports.refundOrder = async (req, res, next) => {
   const { order_id } = req.query;
@@ -710,7 +704,7 @@ exports.refundOrder = async (req, res, next) => {
   } catch (e) {
     next(e);
   }
-}
+};
 
 exports.completeOrder = async (req, res, next) => {
   const { order_id } = req.query;
@@ -753,7 +747,7 @@ exports.completeOrder = async (req, res, next) => {
   } catch (e) {
     next(e);
   }
-}
+};
 
 exports.exportOrdersToExcel = async (req, res, next) => {
   const { status, paid } = req.query;
@@ -766,8 +760,8 @@ exports.exportOrdersToExcel = async (req, res, next) => {
     const where = {
       status: {
         [Op.like]: `%${status}%`,
-      }      
-    }
+      },
+    };
 
     if (start_date && end_date) {
       where.createdAt = {
@@ -811,7 +805,7 @@ exports.exportOrdersToExcel = async (req, res, next) => {
     });
 
     if (orders.length > 0) {
-      console.log('Found ')
+      console.log("Found ");
     }
 
     const workbook = new exceljs.Workbook();
@@ -875,10 +869,7 @@ exports.exportOrdersToExcel = async (req, res, next) => {
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     );
-    res.setHeader(
-      "Content-Disposition",
-      "attachment; filename=orders.xlsx"
-    );
+    res.setHeader("Content-Disposition", "attachment; filename=orders.xlsx");
 
     const buffer = await workbook.xlsx.writeBuffer();
     res.send(buffer);

@@ -32,13 +32,14 @@ import {
   LogoutRounded,
   ProductionQuantityLimitsRounded,
 } from "@mui/icons-material";
-import { useLogout } from "hooks";
+import { useGetUserCart, useLogout } from "hooks";
 import ConfirmModal from "./Modal/ConfirmModal";
 import SearchBox from "./SearchBox";
 import { useSearchProducts } from "hooks/product";
 
 function Header() {
   const { user, setUser } = useContext(UserContext);
+  const {data: cartData} = useGetUserCart();
   const [openModal, setOpenModal] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const { mutate: logout, isPending } = useLogout();
@@ -190,7 +191,9 @@ function Header() {
                 <FavoriteBorderIcon />
               </IconButton>
               <IconButton component={RLink} to={PATHS.CART}>
-                <Badge badgeContent={0} color="primary" showZero size="sm">
+                <Badge badgeContent={
+                  cartData?.cart.total_items
+                } color="primary" showZero size="sm">
                   <ShoppingCartOutlinedIcon />
                 </Badge>
               </IconButton>
