@@ -115,9 +115,9 @@ const createOrderApi = async ({
     items,
   });
 
-  console.log(response.data.data);
+  // console.log(response.data.data);
 
-  return response.data;
+  return response.data.data;
 }
 
 export {

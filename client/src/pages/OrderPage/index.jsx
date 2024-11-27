@@ -5,8 +5,6 @@ import { useLocation } from 'react-router-dom'
 function OrderPage() {
   // get state from react-router-dom navigate
   const { state } = useLocation()
-  console.log(state)
-
   return (
     <Stack
       sx={{

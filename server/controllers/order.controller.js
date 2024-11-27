@@ -94,6 +94,30 @@ exports.createOrder = async (req, res, next) => {
   }
 };
 
+exports.updateOrder = async (req, res, next) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+    const order = await Order.findByPk(id);
+
+    if (!order) {
+      res.status(404);
+      return next(new Error("Order not found"));
+    }
+
+    order.status = status;
+    await order.save();
+
+    res.status(200).json({
+      message: "Order updated successfully",
+      data: order,
+    });
+  } catch (e) {
+    next(e);
+  }
+}
+
 
 exports.createCheckoutSession = async (req, res, next) => {
   const { order_id, payment_method } = req.body;

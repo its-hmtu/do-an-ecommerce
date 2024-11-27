@@ -14,6 +14,7 @@ const PATHS = {
   CONTACT: `${BASE_PATH}contact`,
   CART: `${BASE_PATH}cart`,
   ACCOUNT_PAGE: `${BASE_PATH}account/page`,
+  ORDER: `${BASE_PATH}order`,
 }
 
 const API_PATHS = {

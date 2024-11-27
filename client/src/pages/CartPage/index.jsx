@@ -85,13 +85,6 @@ function CartPage() {
   };
 
   const handleToOrder = (subtotal) => {
-    // updateCartSubtotal(subtotal, {
-    //   onSuccess: () => {
-    //     // Redirect to order page
-    //     navigate(PATHS.ORDER)
-    //   }
-    // });
-
     createOrder(
       {
         subtotal,
@@ -108,10 +101,10 @@ function CartPage() {
         }),
       },
       {
-        onSuccess: () => {
+        onSuccess: (orderData) => {
           // Redirect to order page
-          // navigate(PATHS.ORDER, { state: { orderData } });
-          console.log(orderData);
+          navigate(PATHS.ORDER, { state: { orderData } });
+          // console.log(orderData);
         },
       }
     );
