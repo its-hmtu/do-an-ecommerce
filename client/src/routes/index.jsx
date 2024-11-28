@@ -8,6 +8,8 @@ import RegisterPage from "pages/RegisterPage";
 import { createBrowserRouter } from "react-router-dom";
 import { PATHS } from "config";
 import CheckoutPage from "pages/CheckoutPage";
+import ReturnPage from "pages/ReturnPage";
+import { brands } from "config/constants";
 
 const HomePage = React.lazy(() => import("pages/HomePage"));
 const ProductPage = React.lazy(() => import("pages/ProductPage"));
@@ -17,8 +19,12 @@ const AccountPage = React.lazy(() => import("pages/AccountPage"));
 const PaymentInfoPage = React.lazy(() => import("pages/PaymentInfoPage"));
 const ContactPage = React.lazy(() => import("pages/ContactPage"));
 const PaymentPage = React.lazy(() => import("pages/PaymentPage"));
+const BrowseBrandPage = React.lazy(() => import("pages/BrowseBrandPage"));
+const BrowseSeriesPage = React.lazy(() => import("pages/BrowseSeriesPage"));
+const BrowseCategoryPage = React.lazy(() => import("pages/BrowseCategoryPage"));
+const OrderPage = React.lazy(() => import("pages/OrderPage"));
 
-export default createBrowserRouter([
+const routes = [
   {
     path: PATHS.HOME, 
     element: <MainLayout />,
@@ -29,11 +35,11 @@ export default createBrowserRouter([
       },
       {
         path: PATHS.MOBILE,
-        element: <div>Mobile</div>,
+        element: <BrowseCategoryPage />,
       },
       {
         path: PATHS.TABLET,
-        element: <div>Tablet</div>,
+        element: <BrowseCategoryPage />,
       },
       {
         path: PATHS.PRODUCT,
@@ -63,6 +69,22 @@ export default createBrowserRouter([
         path: PATHS.ACCOUNT_PAGE,
         element: <AccountPage />,
       },
+      {
+        path: PATHS.BROWSE_SERIES,
+        element: <BrowseSeriesPage />
+      },
+      {
+        path: PATHS.BROWSE_BRAND,
+        element: <BrowseBrandPage />
+      },
+      {
+        path: PATHS.BROWSE_CATEGORY,
+        element: <BrowseCategoryPage />
+      },
+      {
+        path: PATHS.MY_ORDERS,
+        element: <OrderPage />
+      }
     ],
   },
   {
@@ -76,5 +98,11 @@ export default createBrowserRouter([
   {
     path: '/checkout',
     element: <CheckoutPage />
+  },
+  {
+    path: '/return',
+    element: <ReturnPage />
   }
-]);
+]
+
+export default createBrowserRouter(routes);

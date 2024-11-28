@@ -16,7 +16,9 @@ const {
   getSingleProductBySlug,
   getProductsByCategory,
   getProductsBySearch,
-  createReview
+  getProductsByBrand,
+  createReview,
+  getProductsBySeries
 } = require('../controllers/product.controller');
 // const checkCache = require('../middlewares/cache.middleware');
 
@@ -28,11 +30,16 @@ router.delete('/:id',deleteProduct);
 // delete multiple products
 router.put('/:id', updateProduct);
 router.get('/id/:id', getSingleProduct);
-router.get('/category/:id', getProductsByCategory);
+
+router.get('/category/:category_name', getProductsByCategory);
 
 router.get('/search', getProductsBySearch);
 
 router.get('/slug/:slug', getSingleProductBySlug);
+
+router.get('/brand/:brand_name', getProductsByBrand);
+
+router.get('/series/:series_name', getProductsBySeries);
 
 router.post('/review', mustBeAuthenticated, createReview);
 

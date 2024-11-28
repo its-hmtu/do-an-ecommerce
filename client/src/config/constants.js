@@ -15,55 +15,53 @@ import tcl from 'assets/images/tivi-logo-cate.webp'
 const brands = [
   {
     name: "Apple",
+    to: "apple",
     image: apple
   },
   {
     name: "Samsung",
+    to: "samsung",
     image: samsung
   },
   {
     name: "Xiaomi",
+    to: "xiaomi",
     image: xiaomi
   },
   {
     name: "Oppo",
+    to: "oppo",
     image: oppo
   },
   {
     name: "Vivo",
+    to: "vivo",
     image: vivo
   },
   {
     name: "Realme",
+    to: "realme",
     image: realme
   },
   {
-    name: "OnePlus",
-    image: oneplus
-  },
-  {
     name: "Nokia",
+    to: "nokia",
     image: nokia
   },
   {
     name: "Sony",
+    to: "sony",
     image: sony
   },
   {
-    name: "Tecno",
-    image: tecno
-  },
-  {
-    name: "Infinix",
-    image: infinix
-  },
-  {
     name: "Asus",
+    to: "asus",
     image: asus
   },
   {
-    name: "TCL",
-    image: tcl
+    name: "OnePlus",
+    to: "oneplus",
+    image: oneplus
   }
 ]
 

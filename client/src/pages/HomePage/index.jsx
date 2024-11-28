@@ -2,7 +2,7 @@ import { ChevronRightRounded } from "@mui/icons-material";
 import { Box, Stack, Link, Typography, Sheet, Button } from "@mui/joy";
 import { PATHS } from "config";
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link as RLink } from "react-router-dom";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -103,6 +103,10 @@ function HomePage() {
                 backgroundColor: "#fff",
               },
             }}
+            component={RLink}
+            to={
+              PATHS.BROWSE_BRAND.replace(":brand", brand.to)
+            }
           >
             <img
               src={brand.image}

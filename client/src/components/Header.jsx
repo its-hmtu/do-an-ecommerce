@@ -18,7 +18,7 @@ import {
   Badge,
   Tooltip,
 } from "@mui/joy";
-import { Link as RLink } from "react-router-dom";
+import { Link as RLink, useNavigate } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
@@ -52,6 +52,8 @@ function Header() {
   const handleSearchChange = (e) => {
     setSearchValue(e.target.value);
   };
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (searchValue === "") return;
@@ -217,31 +219,36 @@ function Header() {
                     sx={{
                       maxWidth: "200px",
                       width: "100%",
+                      
                     }}
                   >
-                    <MenuItem>
+                    <MenuItem
+                      onClick={() => navigate(PATHS.ACCOUNT_PAGE)}
+                    >
                       <ListItemDecorator>
                         <AccountCircleRounded />
                       </ListItemDecorator>
                       Profile
                     </MenuItem>
-                    <MenuItem>
+                    <MenuItem
+                      onClick={() => navigate(PATHS.MY_ORDERS)}
+                    >
                       <ListItemDecorator>
                         <Inventory2Rounded />
                       </ListItemDecorator>
                       My Orders
                     </MenuItem>
-                    <ListDivider />
+                    <ListDivider sx={{
+                      paddingBottom: 0,
+                    }} />
                     <MenuItem
-                      variant="soft"
-                      color="danger"
-                      padding="8px"
+                      // padding="8px"
                       onClick={() => setOpenModal(true)}
                     >
                       <ListItemDecorator color="danger">
-                        <LogoutRounded />
+                        <LogoutRounded color="danger" />
                       </ListItemDecorator>
-                      Logout
+                      <Typography color="danger">Sign out</Typography>
                     </MenuItem>
                   </Menu>
                 </Dropdown>

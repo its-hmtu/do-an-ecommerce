@@ -183,7 +183,7 @@ function DashboardPage() {
       title: "Cancelled Orders",
       helpTitle:
         "Total number of placed orders (paid and unpaid) over the selected time period, including cancelled and return/refund orders.",
-      total: data?.total_orders,
+      total: data?.cancelled_orders,
       percentage: data?.cancelled_orders_percentage_diff,
       type: "cancelled_orders",
     },

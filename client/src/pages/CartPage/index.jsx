@@ -34,21 +34,8 @@ function CartPage() {
   React.useEffect(() => {
     if (data?.cart) {
       setCartItems(data?.cart.items);
-
-      const storedSelectedItems = JSON.parse(
-        localStorage.getItem("cart_selected")
-      );
-      if (storedSelectedItems) {
-        setSelected(storedSelectedItems);
-      }
     }
   }, [data]);
-
-  React.useEffect(() => {
-    if (selected.length > 0) {
-      localStorage.setItem("cart_selected", JSON.stringify(selected));
-    }
-  }, [selected]);
 
   const handleUpdateQuantity = (itemId, quantity) => {
     setCartItems((prevItems) => {
@@ -84,37 +71,6 @@ function CartPage() {
   };
 
   const handleToOrder = (subtotal) => {
-    // createOrder(
-    //   {
-    //     subtotal,
-    //     items: selected.map((itemId) => {
-    //       const item = cartItems.find((item) => item.id === itemId);
-    //       console.log(item)
-    //       return {
-    //         product_id: item.product.id,
-    //         option_id: item.product.options[0].id,
-    //         quantity: item.quantity,
-    //         cart_id: data.cart.id,
-    //         unit_price: item.product.options[0].price,
-    //         product_name: item.product.product_name,
-    //         color: item.product.options[0].color,
-    //         image: item.product.options[0].images[0].file_path,
-    //       };
-    //     }),
-    //   },
-    //   {
-    //     onSuccess: (orderData) => {
-    //       navigate(PATHS.PAYMENT_INFO, { state: { orderData } });
-    //     },
-    //   }
-    // );
-
-    // updateCartSubtotal(subtotal, {
-    //   onSuccess: () => {
-    //     navigate(PATHS.PAYMENT_INFO);
-    //   }
-    // });
-
     navigate(PATHS.PAYMENT_INFO, {
       state: {
         cartId: data.cart.id,

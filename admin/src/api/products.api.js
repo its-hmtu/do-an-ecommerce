@@ -32,7 +32,7 @@ const getProducts = async ({
 
 const getSingleProduct = async ({id}) => {
   try {
-    const {data} = await api.get(`/products/${id}`);
+    const {data} = await api.get(`/products/id/${id}`);
 
     if (data.success === false) {
       return data;

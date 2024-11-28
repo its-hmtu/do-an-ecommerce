@@ -11,6 +11,8 @@ const {
   sequelize,
   Series,
   User,
+  Brand,
+  Sequelize,
 } = require("../models");
 const fs = require("fs");
 const { Op, where } = require("sequelize");
@@ -18,7 +20,6 @@ const {
   client: redisClient,
   REDIS_CACHE_5_MINUTES,
 } = require("../config/redis");
-const { group } = require("console");
 
 exports.getProducts = async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
@@ -28,6 +29,7 @@ exports.getProducts = async (req, res, next) => {
   const category = req.query.category || "";
   const sort = req.query.sort || "createdAt";
   const offset = (page - 1) * pageSize;
+  const brand = req.query.brand || "";
 
   try {
     const whereCondition = {
@@ -88,6 +90,23 @@ exports.getProducts = async (req, res, next) => {
         attributes: {
           exclude: ["createdAt", "updatedAt"],
         },
+        required: false,
+      },
+      {
+        model: Brand,
+        attributes: ["id", "name"],
+        where: {
+          name: {
+            [Op.like]: `%${brand}%`,
+          },
+        },
+        include: [
+          {
+            model: Series,
+            attributes: ["id", "series_name", "slug"],
+            required: false,
+          },
+        ],
         required: false,
       },
     ];
@@ -276,6 +295,10 @@ exports.createProduct = async (req, res, next) => {
           {
             product_id: newProduct.id,
             color: option.color,
+            special_price: option.special_price,
+            special_price_percentage:
+              Math.floor((option.special_price / option.price) * 100) -
+              Math.floor((option.price / option.price) * 100),
             price: option.price,
           },
           { transaction }
@@ -430,7 +453,7 @@ exports.updateProduct = async (req, res, next) => {
   const transaction = await sequelize.transaction({ autocommit: false });
 
   try {
-    const product = await Product.findByPk(id, { transaction });
+    const product = await Product.findByPk(id);
 
     if (!product) {
       res.status(404);
@@ -454,17 +477,15 @@ exports.updateProduct = async (req, res, next) => {
 
     console.log(req.body);
 
-    await product.update(
-      {
-        product_name: product_name || product.product_name,
-        product_description: product_description || product.product_description,
-        base_price: base_price || product.base_price,
-        total_in_stock: total_in_stock || product.total_in_stock,
-        brand_id: specs.brand || product.brand_id,
-        main_image_id: product_images_ids[0] || product.main_image_id,
-      },
-      { transaction }
-    );
+    await product.update({
+      product_name: product_name || product.product_name,
+      product_description: product_description || product.product_description,
+      base_price: base_price || product.base_price,
+      total_in_stock: total_in_stock || product.total_in_stock,
+      brand_id: specs.brand || product.brand_id,
+      main_image_id: product_images_ids[0] || product.main_image_id,
+      transaction,
+    });
 
     if (total_in_stock > 0) {
       product.availability = "in-stock";
@@ -532,6 +553,12 @@ exports.updateProduct = async (req, res, next) => {
         if (currentOption) {
           currentOption.color = options[i].color || currentOption.color;
           currentOption.price = options[i].price || currentOption.price;
+          currentOption.special_price =
+            options[i].special_price || currentOption.special_price;
+          currentOption.special_price_percentage =
+            Math.floor((options[i].special_price / options[i].price) * 100) -
+              Math.floor((options[i].price / options[i].price) * 100) ||
+            currentOption.special_price_percentage;
           await currentOption.save({ transaction });
 
           const optionImage = await Upload.findByPk(options[i].image_id, {
@@ -573,6 +600,10 @@ exports.updateProduct = async (req, res, next) => {
             product_id: product.id,
             color: options[i].color,
             price: options[i].price,
+            special_price: options[i].special_price,
+            special_price_percentage:
+              Math.floor((options[i].special_price / options[i].price) * 100) -
+              Math.floor((options[i].price / options[i].price) * 100),
           },
           { transaction }
         );
@@ -676,7 +707,7 @@ exports.getSingleProduct = async (req, res, next) => {
         },
         {
           model: Review,
-          attributes: ["id", "rating", "comment", "createdAt"],
+          // attributes: ["id", "rating", "createdAt"],
         },
         {
           model: Option,
@@ -732,7 +763,7 @@ exports.getSingleProduct = async (req, res, next) => {
 exports.getProductsByCategory = async (req, res, next) => {
   const { category_name } = req.params;
   const page = parseInt(req.query.page) || 1;
-  const pageSize = parseInt(req.query.page_size) || 10;
+  const pageSize = parseInt(req.query.limit) || 10;
   const offset = (page - 1) * pageSize;
 
   try {
@@ -747,7 +778,7 @@ exports.getProductsByCategory = async (req, res, next) => {
         {
           model: Category,
           where: {
-            name: category_name,
+            slug: category_name,
           },
           attributes: ["id", "name"],
         },
@@ -756,13 +787,70 @@ exports.getProductsByCategory = async (req, res, next) => {
           as: "images",
           attributes: ["id", "file_path"],
         },
+        {
+          model: Option,
+          as: "options",
+          include: [
+            {
+              model: OptionImage,
+              as: "images",
+              attributes: ["id", "file_path"],
+              required: false,
+            },
+          ],
+          attributes: {
+            include: [
+              "id",
+              "color",
+              "price",
+              [
+                sequelize.literal(
+                  "(SELECT stock FROM stocks WHERE stocks.option_id = options.id LIMIT 1)"
+                ),
+                "stock",
+              ],
+            ],
+          },
+          required: false,
+        },
+        {
+          model: Review,
+          attributes: ["id", "rating", "review", "createdAt"],
+          required: false,
+        },
       ],
+      distinct: true,
     });
 
     if (!products) {
       res.status(404);
       return next(new Error("Products not found"));
     }
+
+    const productIds = products.rows.map((product) => product.id);
+    const reviews = await Review.findAll({
+      where: {
+        product_id: productIds,
+      },
+      attributes: [
+        "product_id",
+        [sequelize.fn("AVG", sequelize.col("rating")), "average_rating"],
+        [sequelize.fn("COUNT", sequelize.col("id")), "total_reviews"],
+      ],
+      group: "product_id",
+    });
+
+    products.rows.forEach((product) => {
+      let review = reviews.find((item) => product.id === item.product_id);
+      if (review != null) {
+        product.dataValues.total_reviews = review.get("total_reviews");
+        product.dataValues.average_rating = review.get("average_rating");
+        // console.log(product);
+      } else {
+        product.dataValues.total_reviews = 0;
+        product.dataValues.average_rating = 0;
+      }
+    });
 
     const totalItemCount = products.count;
     const currentItemCount = products.rows.length;
@@ -915,18 +1003,12 @@ exports.getSingleProductBySlug = async (req, res, next) => {
         },
         {
           model: Review,
-          attributes: [
-            "id",
-            "rating",
-            "review",
-            "createdAt",
-          ],
+          attributes: ["id", "rating", "review", "createdAt"],
           include: [
             {
               model: User,
               attributes: ["id", "first_name", "last_name"],
-
-            }
+            },
           ],
           required: false,
         },
@@ -935,7 +1017,7 @@ exports.getSingleProductBySlug = async (req, res, next) => {
           attributes: ["id", "series_name"],
           as: "product_series",
           required: false,
-        }
+        },
       ],
     });
 
@@ -951,7 +1033,9 @@ exports.getSingleProductBySlug = async (req, res, next) => {
     });
 
     if (reviews.length > 0) {
-      product.dataValues.average_rating = Math.round(reviews[0].get("average_rating"));
+      product.dataValues.average_rating = Math.round(
+        reviews[0].get("average_rating")
+      );
       product.dataValues.total_reviews = reviews[0].get("total_reviews");
     } else {
       product.dataValues.average_rating = 0;
@@ -970,24 +1054,30 @@ exports.getSingleProductBySlug = async (req, res, next) => {
           attributes: ["id", "file_path"],
         },
       ],
-    })
+    });
 
-    options.forEach(option => {
+    options.forEach((option) => {
       product.dataValues.images.push(option.images[0]);
-    })
+    });
 
     const seriesProducts = await Product.findAll({
       where: {
         series_id: product.series_id,
       },
-      attributes: ["id", "product_name", "slug", "base_price", "special_base_price"],
+      attributes: [
+        "id",
+        "product_name",
+        "slug",
+        "base_price",
+        "special_base_price",
+      ],
       include: [
         {
           model: Specification,
           as: "specification",
           attributes: ["id", "storage_capacity"],
-        }
-      ]
+        },
+      ],
     });
 
     const relatedProudcts = await Product.findAll({
@@ -1042,12 +1132,7 @@ exports.getSingleProductBySlug = async (req, res, next) => {
         },
         {
           model: Review,
-          attributes: [
-            "id",
-            "rating",
-            "review",
-            "createdAt",
-          ],
+          attributes: ["id", "rating", "review", "createdAt"],
           required: false,
         },
         {
@@ -1056,13 +1141,16 @@ exports.getSingleProductBySlug = async (req, res, next) => {
           as: "product_series",
           required: false,
         },
-      ]
-    })
+      ],
+    });
 
     product.dataValues.series_products = seriesProducts;
-    product.dataValues.related_products = relatedProudcts.filter(item => {
-      return item.categories[0].id === product.categories[0].id && item.id !== product.id;
-    }); 
+    product.dataValues.related_products = relatedProudcts.filter((item) => {
+      return (
+        item.categories[0].id === product.categories[0].id &&
+        item.id !== product.id
+      );
+    });
 
     if (!product) {
       res.status(404);
@@ -1080,8 +1168,276 @@ exports.getSingleProductBySlug = async (req, res, next) => {
   }
 };
 
+exports.getProductsByBrand = async (req, res, next) => {
+  const { brand_name } = req.params;
+  const page = parseInt(req.query.page) || 1;
+  const pageSize = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * pageSize;
+
+  try {
+    const products = await Product.findAndCountAll({
+      limit: pageSize,
+      offset: offset,
+      order: [["createdAt", "DESC"]],
+      attributes: {
+        exclude: ["updatedAt"],
+      },
+      include: [
+        {
+          model: Brand,
+          where: {
+            name: brand_name,
+          },
+          attributes: ["id", "name"],
+          include: [
+            {
+              model: Series,
+              attributes: ["id", "series_name", "slug"],
+              required: false,
+              on: {
+                id: { [Sequelize.Op.eq]: Sequelize.col("products.series_id") },
+              },
+            },
+          ],
+        },
+        {
+          model: ProductImage,
+          as: "images",
+          attributes: ["id", "file_path"],
+        },
+        {
+          model: Option,
+          as: "options",
+          include: [
+            {
+              model: OptionImage,
+              as: "images",
+              attributes: ["id", "file_path"],
+              required: false,
+            },
+          ],
+          attributes: {
+            include: [
+              "id",
+              "color",
+              "price",
+              [
+                sequelize.literal(
+                  "(SELECT stock FROM stocks WHERE stocks.option_id = options.id LIMIT 1)"
+                ),
+                "stock",
+              ],
+            ],
+          },
+          required: false,
+        },
+        {
+          model: Review,
+          attributes: ["id", "rating", "review", "createdAt"],
+          required: false,
+        },
+      ],
+      distinct: true,
+    });
+
+    if (!products) {
+      res.status(404);
+      return next(new Error("Products not found"));
+    }
+
+    const productIds = products.rows.map((product) => product.id);
+    const reviews = await Review.findAll({
+      where: {
+        product_id: productIds,
+      },
+      attributes: [
+        "product_id",
+        [sequelize.fn("AVG", sequelize.col("rating")), "average_rating"],
+        [sequelize.fn("COUNT", sequelize.col("id")), "total_reviews"],
+      ],
+      group: "product_id",
+    });
+
+    products.rows.forEach((product) => {
+      let review = reviews.find((item) => product.id === item.product_id);
+      if (review != null) {
+        product.dataValues.total_reviews = review.get("total_reviews");
+        product.dataValues.average_rating = review.get("average_rating");
+        // console.log(product);
+      } else {
+        product.dataValues.total_reviews = 0;
+        product.dataValues.average_rating = 0;
+      }
+    });
+
+    const totalItemCount = products.count;
+    const currentItemCount = products.rows.length;
+    const currentPage = page;
+    const totalPages = Math.ceil(totalItemCount / pageSize);
+
+    const pagination = {
+      total_item_count: totalItemCount,
+      current_item_count: currentItemCount,
+      total_pages: totalPages,
+      current_page: currentPage,
+    };
+
+    const series = await Series.findAll({
+      where: {
+        brand_id: products.rows[0].brand_id,
+      },
+      attributes: ["id", "series_name", "slug"],
+    });
+
+    return res.status(200).json({
+      data: {
+        ...pagination,
+        products: products.rows,
+        series: series,
+      },
+      message: `Products under ${brand_name} brand`,
+      success: true,
+    });
+  } catch (err) {
+    res.status(500);
+    return next(err);
+  }
+};
+
+exports.getProductsBySeries = async (req, res, next) => {
+  const { series_name } = req.params;
+  const page = parseInt(req.query.page) || 1;
+  const pageSize = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * pageSize;
+
+  try {
+    const series = await Series.findOne({
+      where: {
+        slug: series_name,
+      },
+      attributes: ["id", "series_name", "slug"],
+    });
+
+    if (!series) {
+      res.status(404);
+      return next(new Error("Series not found"));
+    }
+
+    const products = await Product.findAndCountAll({
+      limit: pageSize,
+      offset: offset,
+      order: [["createdAt", "DESC"]],
+      attributes: {
+        exclude: ["updatedAt"],
+      },
+      where: {
+        series_id: series.id,
+      },
+      include: [
+        {
+          model: Brand,
+          attributes: ["id", "name"],
+          required: false,
+        },
+        {
+          model: ProductImage,
+          as: "images",
+          attributes: ["id", "file_path"],
+        },
+        {
+          model: Option,
+          as: "options",
+          include: [
+            {
+              model: OptionImage,
+              as: "images",
+              attributes: ["id", "file_path"],
+              required: false,
+            },
+          ],
+          attributes: {
+            include: [
+              "id",
+              "color",
+              "price",
+              [
+                sequelize.literal(
+                  "(SELECT stock FROM stocks WHERE stocks.option_id = options.id LIMIT 1)"
+                ),
+                "stock",
+              ],
+            ],
+          },
+          required: false,
+        },
+        {
+          model: Review,
+          attributes: ["id", "rating", "review", "createdAt"],
+          required: false,
+        },
+      ],
+      distinct: true,
+    });
+
+    if (!products) {
+      res.status(404);
+      return next(new Error("Products not found"));
+    }
+
+    const productIds = products.rows.map((product) => product.id);
+    const reviews = await Review.findAll({
+      where: {
+        product_id: productIds,
+      },
+      attributes: [
+        "product_id",
+        [sequelize.fn("AVG", sequelize.col("rating")), "average_rating"],
+        [sequelize.fn("COUNT", sequelize.col("id")), "total_reviews"],
+      ],
+      group: "product_id",
+    });
+
+    products.rows.forEach((product) => {
+      let review = reviews.find((item) => product.id === item.product_id);
+      if (review != null) {
+        product.dataValues.total_reviews = review.get("total_reviews");
+        product.dataValues.average_rating = review.get("average_rating");
+        // console.log(product);
+      } else {
+        product.dataValues.total_reviews = 0;
+        product.dataValues.average_rating = 0;
+      }
+    });
+
+    const totalItemCount = products.count;
+    const currentItemCount = products.rows.length;
+    const currentPage = page;
+    const totalPages = Math.ceil(totalItemCount / pageSize);
+
+    const pagination = {
+      total_item_count: totalItemCount,
+      current_item_count: currentItemCount,
+      total_pages: totalPages,
+      current_page: currentPage,
+    };
+
+    return res.status(200).json({
+      data: {
+        ...pagination,
+        products: products.rows,
+        series: series,
+      },
+      message: `Products under ${series_name} series`,
+      success: true,
+    });
+  } catch (err) {
+    res.status(500);
+    return next(err);
+  }
+};
+
 exports.createReview = async (req, res, next) => {
-  const { rating, review, product_id  } = req.body;
+  const { rating, review, product_id } = req.body;
   const user_id = req.user.id;
   console.log(user_id);
   try {
@@ -1107,5 +1463,5 @@ exports.createReview = async (req, res, next) => {
   } catch (error) {
     res.status(500);
     return next(error);
-  };
-}
+  }
+};

@@ -33,6 +33,7 @@ module.exports = (sequelize, DataTypes) => {
 
   Brand.associate = (models) => {
     Brand.hasMany(models.Product, {foreignKey: 'brand_id', onDelete: 'cascade', onUpdate: 'cascade'});
+    Brand.hasMany(models.Series, {foreignKey: 'brand_id', onDelete: 'cascade', onUpdate: 'cascade'});
   }
 
   return Brand;

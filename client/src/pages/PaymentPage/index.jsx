@@ -71,50 +71,18 @@ function PaymentPage() {
             gap: 2,
             padding: 2,
           }}
-        ></Box>
+        >
+          <Typography level="title-sm">
+
+          </Typography>
+        </Box>
       </Stack>
-      <Typography level="h4">Customer Infomation</Typography>
-      <Link to={"/checkout"}>Checkout</Link>
       <Button
         variant="solid"
         color="primary"
         sx={{ marginTop: 3 }}
         onClick={() => {
-          createOrder(
-            {
-              subtotal,
-              items: cartItems.map((item) => ({
-                product_id: item.product.id,
-                option_id: item.product.options[0].id,
-                quantity: item.quantity,
-                unit_price: item.product.options[0].price,
-              })),
-              address: {
-                city: shippingInfo.city.name_with_type,
-                district: shippingInfo.district.name_with_type,
-                ward: shippingInfo.ward.name_with_type,
-                address: shippingInfo.address,
-              },
-            },
-            {
-              onSuccess: (orderData) => {
-                // console.log("orderData", orderData.order_id);
-                navigate("/checkout", {
-                  state: {
-                    orderId: orderData.order_id,
-                    items: cartItems.map((item) => ({
-                      product_id: item.product.id,
-                      option_id: item.product.options[0].id,
-                      product_name: item.product.product_name,
-                      color: item.product.options[0].color,
-                      quantity: item.quantity,
-                      unit_price: item.product.options[0].price,
-                    })),
-                  },
-                });
-              },
-            }
-          );
+          
         }}
       >
         Checkout

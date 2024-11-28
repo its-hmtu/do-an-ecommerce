@@ -21,7 +21,7 @@ function SearchBox({ value, onChange, searchData, isLoading, isRefetching }) {
           {isLoading ? (
             <Typography level="body-sm">Loading...</Typography>
           ) : (
-            searchData.products.map((item) => (
+            searchData?.products.map((item) => (
               <Box
                 key={item.id}
                 sx={{

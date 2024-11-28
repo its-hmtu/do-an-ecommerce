@@ -1,5 +1,5 @@
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
-import { getProductsApi, searchProductsApi, submitReviewApi } from "api/product";
+import { getProductByBrandApi, getProductsApi, getProductsByCategoryApi, getProductsBySeriesApi, searchProductsApi, submitReviewApi } from "api/product";
 import { queryKeys } from "config";
 import { getProductApi } from "../api/product";
 
@@ -16,6 +16,33 @@ const useProducts = () => {
 
   return query;
 };
+
+const useProductByBrand = (brand) => {
+  const query = useQuery({
+    queryKey: [queryKeys.products, brand],
+    queryFn: () => getProductByBrandApi(brand),
+  });
+
+  return query;
+}
+
+const useProductBySeries = (series) => {
+  const query = useQuery({
+    queryKey: [queryKeys.products, series],
+    queryFn: () => getProductsBySeriesApi(series),
+  });
+
+  return query;
+}
+
+const useProductByCategory = (category) => {
+  const query = useQuery({
+    queryKey: [queryKeys.products, category],
+    queryFn: () => getProductsByCategoryApi(category),
+  });
+
+  return query;
+}
 
 const useProduct = (slug) => {
   const query = useQuery({
@@ -46,4 +73,4 @@ const useSearchProducts = (query) => {
   })
 }
 
-export { useProducts, useProduct, useSubmitReview, useSearchProducts };
+export { useProducts, useProduct, useSubmitReview, useSearchProducts, useProductByBrand, useProductBySeries, useProductByCategory };

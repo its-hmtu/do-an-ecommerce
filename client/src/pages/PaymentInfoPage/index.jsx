@@ -2,9 +2,11 @@ import {
   Autocomplete,
   Box,
   Button,
+  Divider,
   FormControl,
   FormLabel,
   Input,
+  Radio,
   Stack,
   Step,
   StepIndicator,
@@ -25,7 +27,11 @@ function PaymentInfoPage() {
   const { state } = useLocation();
   const { cartItems, subtotal, cartId } = state;
   const { user } = useContext(UserContext);
-  const { mutate: createOrder, isPending: isCreatingOrder, data: orderData } = useCreateOrder();
+  const {
+    mutate: createOrder,
+    isPending: isCreatingOrder,
+    data: orderData,
+  } = useCreateOrder();
   const navigate = useNavigate();
   const [shippingInfo, setShippingInfo] = React.useState({
     city: null,
@@ -95,27 +101,14 @@ function PaymentInfoPage() {
         gap: 2,
       }}
     >
-      <Stepper sx={{ width: "100%" }}>
-        <Step
-          indicator={
-            <StepIndicator variant="solid" color="primary">
-              1
-            </StepIndicator>
-          }
-        >
-          Information
-        </Step>
-        <Step indicator={<StepIndicator variant="outlined">2</StepIndicator>}>
-          Checkout
-        </Step>
-      </Stepper>
       <Typography level="h4">Product Infomation</Typography>
       <Stack
-        gap={3}
+        gap={1}
         sx={{
           backgroundColor: "white",
           boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
           borderRadius: "sm",
+          padding: 2,
         }}
       >
         {cartItems &&
@@ -172,7 +165,104 @@ function PaymentInfoPage() {
               </Box>
             </Box>
           ))}
+        <Stack direction="row" gap={2}>
+          <Input placeholder="Enter discount code" />
+          <Button variant="outlined">Apply</Button>
+        </Stack>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            flexDirection: "column",
+            width: "100%",
+          }}
+        >
+          <Stack
+            direction="row"
+            sx={{
+              justifyContent: "space-between",
+              width: "100%",
+            }}
+          >
+            <Typography level="title-md">Subtotal</Typography>
+            <Typography level="title-md">
+              {new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(subtotal)}
+            </Typography>
+          </Stack>
+
+          <Stack
+            direction="row"
+            sx={{
+              justifyContent: "space-between",
+              width: "100%",
+              marginBottom: 2,
+            }}
+          >
+            <Typography level="title-md">Shipping</Typography>
+            <Typography level="title-md">Free</Typography>
+          </Stack>
+
+          <Divider />
+          <Stack
+            direction="row"
+            sx={{
+              justifyContent: "space-between",
+              width: "100%",
+              marginTop: 2,
+            }}
+          >
+            <Typography level="title-md">
+              Total{" "}
+              <Typography
+                level="body-xs"
+                color="text.secondary"
+                sx={{
+                  fontStyle: "italic",
+                }}
+              >
+                (VAT included)
+              </Typography>
+            </Typography>
+            <Typography level="title-lg">
+              {new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(subtotal)}
+            </Typography>
+          </Stack>
+        </Box>
       </Stack>
+      <Typography level="h4">Payment Method</Typography>
+      <Stack
+        gap={1}
+        sx={{
+          backgroundColor: "white",
+          boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
+          borderRadius: "sm",
+          padding: 2,
+        }}
+      >
+        <Radio
+          value="credit-card"
+          name="payment-method"
+          label="Credit card"
+          checked
+        />
+        <Typography
+          level="body-xs"
+          sx={{
+            fontStyle: "italic",
+            marginTop: 1,
+          }}
+        >
+          (*) Credit card payment is required for orders over 20,000,000 VND
+        </Typography>
+      </Stack>
+
       <Typography level="h4">Customer Infomation</Typography>
       <Stack
         gap={3}
@@ -352,14 +442,44 @@ function PaymentInfoPage() {
         disabled={isCreatingOrder}
         loading={isCreatingOrder}
         onClick={() => {
-          navigate(PATHS.PAYMENT, {
-            state: {
-              cartItems,
+          createOrder(
+            {
               subtotal,
-              cartId,
-              shippingInfo,
+              total: subtotal,
+              items: cartItems.map((item) => ({
+                product_id: item.product.id,
+                option_id: item.product.options[0].id,
+                quantity: item.quantity,
+                unit_price: item.product.options[0].price,
+              })),
+              address: {
+                city: shippingInfo.city.name_with_type,
+                district: shippingInfo.district.name_with_type,
+                ward: shippingInfo.ward.name_with_type,
+                address: shippingInfo.address,
+              },
             },
-          })
+            {
+              onSuccess: (orderData) => {
+                // console.log("orderData", orderData.order_id);
+                navigate("/checkout", {
+                  state: {
+                    orderId: orderData.order_id,
+                    cartId,
+                    items: cartItems.map((item) => ({
+                      id: item.id,
+                      product_id: item.product.id,
+                      option_id: item.product.options[0].id,
+                      product_name: item.product.product_name,
+                      color: item.product.options[0].color,
+                      quantity: item.quantity,
+                      unit_price: item.product.options[0].price,
+                    })),
+                  },
+                });
+              },
+            }
+          );
         }}
       >
         Continue

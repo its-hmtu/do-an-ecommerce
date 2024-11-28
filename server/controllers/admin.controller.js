@@ -40,7 +40,7 @@ exports.login = async (req, res, next) => {
 
     const token = await admin.generateToken();
     const refresh = await admin.generateRefreshToken();
-    res.cookie("da_refresh", refresh, {
+    res.cookie("refresh_token", refresh, {
       httpOnly: true,
       secure: true, // Ensure this is true if using SameSite=None
       sameSite: "None", // Correct value for sameSite

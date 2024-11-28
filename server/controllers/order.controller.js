@@ -7,6 +7,10 @@ const {
   Option,
   sequelize,
   Address,
+  Cart,
+  CartItem,
+  Sequelize,
+  OptionImage,
 } = require("../models");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { Op } = require("sequelize");
@@ -124,7 +128,7 @@ exports.updateOrder = async (req, res, next) => {
 }
  
 exports.createCheckoutSession = async (req, res, next) => {
-  const { orderId, items } = req.body;
+  const { orderId, items, cartId } = req.body;
 
   const lineItems = items.map((item) => ({
     price_data: {
@@ -142,7 +146,7 @@ exports.createCheckoutSession = async (req, res, next) => {
     line_items: lineItems,
     payment_method_types: ["card"],
     ui_mode: "embedded",
-    return_url: `${process.env.CLIENT_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
+    return_url: `${process.env.CLIENT_URL}/return?session_id={CHECKOUT_SESSION_ID}&order_id=${orderId}&cart_id=${cartId}&item_ids=${items.map((item) => item.id).join(",")}`,
   });
 
   await Order.update({
@@ -160,105 +164,55 @@ exports.createCheckoutSession = async (req, res, next) => {
   });
 };
 
-// exports.createCheckoutSession = async (req, res, next) => {
-//   const { order_id, payment_method } = req.body;
-
-//   try {
-//     const order = await Order.findByPk(order_id, {
-//       include: [OrderItem],
-//     });
-
-//     if (!order) {
-//       res.status(404);
-//       return next(new Error("Order not found"));
-//     }
-
-//     const lineItems = order.order_items.map((item) => ({
-//       price_data: {
-//         currency: "vnd",
-//         product_data: {
-//           name: item.product.product_name,
-//         },
-//         unit_amount: item.unit_price * 100,
-//       },
-//       quantity: item.quantity,
-//     }));
-
-//     const session = await stripe.checkout.sessions.create({
-//       mode: "payment",
-//       line_itmes: lineItems,
-//       payment_method_types: ["card"],
-//       ui_mode: "embedded",
-//       success_url: `${process.env.CLIENT_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-//       cancel_url: `${process.env.CLIENT_URL}/checkout/cancel`,
-//     });
-
-//     await Order.update(
-//       {
-//         // payment_intent_id: session.payment_intent,
-//         payment_status: "pending",
-//         payment_method: "credit_card",
-//       },
-//       {
-//         where: {
-//           id: order.id,
-//         },
-//       }
-//     );
-
-//     res
-//       .status(201)
-//       .json({ id: session.id, client_secret: session.client_secret });
-//   } catch (e) {
-//     next(e);
-//   }
-// };
-
-// exports.createCheckoutSession = async (req, res, next) => {
-//   const lineItems = {
-//     price_data: {
-//       currency: "vnd",
-//       product_data: {
-//         name: 'T-shirt',
-//       },
-//       unit_amount: 10000 * 100,
-//     },
-//     quantity: 1,
-//   };
-//   const session = await stripe.checkout.sessions.create({
-//     ui_mode: "embedded",
-//     line_items: [lineItems],
-//     mode: "payment",
-//     return_url: `${process.env.CLIENT_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
-//   });
-
-//   console.log(session);
-
-//   res.send({ client_secret: session.client_secret });
-// };
-
 exports.sessionStatus = async (req, res, next) => {
-  // const { session_id } = req.query;
-  console.log(req.body);
+  const { session_id, order_id, cart_id, item_ids } = req.query;
 
-  // try {
-  //   const session = await stripe.checkout.sessions.retrieve(session_id);
+  try {
+    const session = await stripe.checkout.sessions.retrieve(session_id);
+    if (!session) {
+      res.status(404);
+      return next(new Error("Session not found"));
+    }
+    console.log(session.status)
 
-  //   console.log(session);
+    if (session.status === 'complete') {
+      await Order.update({
+        payment_status: "paid",
+        is_paid: true,
+        payment_date: new Date(session.created * 1000),
+      }, {
+        where: {
+          id: order_id,
+        },
+      });
 
-  //   if (!session) {
-  //     res.status(404);
-  //     return next(new Error("Session not found"));
-  //   }
+      const cart = await Cart.findByPk(cart_id);
+      const itemIds = item_ids.split(",").map((id) => parseInt(id));
 
-  //   res.status(200).json({
-  //     created: new Date(session.created * 1000),
-  //     status: session.status,
-  //     customer_email: session.customer_email,
-  //   });
-  // } catch (e) {
-  //   next(e);
-  // }
+      for (let itemId of itemIds) {
+        const item = await CartItem.findOne({
+          where: {
+            id: itemId,
+            cart_id: cart_id
+          }
+        });
+        
+        const totalItems = cart.total_items - item.quantity;
+        cart.total_items = totalItems < 0 ? 0 : totalItems;
+
+        await item.destroy();
+
+        await cart.save();
+      }
+    }
+
+    res.status(200).json({
+      created: new Date(session.created * 1000),
+      status: session.status,
+    });
+  } catch (e) {
+    next(e);
+  }
 };
 
 // update order after payment is successful
@@ -295,14 +249,47 @@ exports.updateOrderPaid = async (req, res, next) => {
 };
 
 exports.getUserOrders = async (req, res, next) => {
-  const user_id = req.user.id;
-
+  // const user_id = req.user.id;
+  const user_id = 1
   try {
     const orders = await Order.findAndCountAll({
       where: {
         user_id,
       },
-      include: [OrderItem],
+      include: [
+        {
+          model: OrderItem,
+          include: [
+            {
+              model: Product,
+              include: [
+                {
+                  model: ProductImage,
+                  as: "images",
+                  attributes: ["id", "file_path"],
+                  required: false,
+                },
+                {
+                  model: Option,
+                  as: "options",
+                  required: false,
+                  include: [
+                    {
+                      model: OptionImage,
+                      as: "images",
+                      attributes: ["id", "file_path"],
+                      required: false,
+                    },
+                  ],
+                  on: {
+                    id: { [Sequelize.Op.eq]: Sequelize.col("order_items.option_id") },
+                  }
+                },
+              ],
+            },
+          ],
+        },
+      ],
     });
 
     res.status(200).json({
@@ -356,6 +343,9 @@ exports.getOrders = async (req, res, next) => {
                   model: Option,
                   as: "options",
                   required: false,
+                  on: {
+                    id: { [Sequelize.Op.eq]: Sequelize.col('order_items.option_id') },
+                  },
                 },
               ],
             },

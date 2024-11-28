@@ -3,6 +3,7 @@ const router = express.Router();
 const checkCache = require('../middlewares/cache.middleware');
 const {
   getOrders,
+  getUserOrders,
   createOrder,
   updateOrderPaid,
   sessionStatus,
@@ -17,7 +18,7 @@ const {
 
 router.get('/', getOrders);
 // get Orders by status
-
+router.get('/user', getUserOrders);
 router.post('/', createOrder);
 router.get('/status', getOrdersByStatus);
 router.get('/check-status', sessionStatus);

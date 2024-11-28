@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { Suspense, useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Box, Breadcrumbs, Link, Typography, Button } from "@mui/joy";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
@@ -12,8 +12,9 @@ import ToastMessage from "components/ToastMessage";
 import { toast, ToastContainer } from "react-toastify";
 // import OrderList from './components/OrderList';
 // import { OrderTable } from './components/OrderTable';
-import 'react-toastify/dist/ReactToastify.css'; 
+import "react-toastify/dist/ReactToastify.css";
 import PATHS from "constants";
+import Fallback from "components/Fallback";
 
 function MainLayout() {
   const queryClient = useQueryClient();
@@ -62,7 +63,9 @@ function MainLayout() {
             gap: 1,
           }}
         >
-          <Outlet />
+          <Suspense fallback={<Fallback />}>
+            <Outlet />
+          </Suspense>
         </Box>
       </Box>
       <ToastContainer stacked />

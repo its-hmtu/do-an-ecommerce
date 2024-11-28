@@ -33,6 +33,7 @@ function ProductDetail() {
     {
       name: "",
       price: 0,
+      special_price: 0,
       stock: 0,
       image: null,
     },
@@ -88,22 +89,23 @@ function ProductDetail() {
 
   useEffect(() => {
     if (getProduct.isSuccess) {
-      const { product_name, product_description, categories, options, specification, images } = getProduct.data;
+      const { product_name, product_description, categories, options, specification, images } = getProduct?.data;
       setBasic({
         name: product_name,
         description: product_description,
-        category: categories.map(({id}) => id),
+        category: categories?.map(({id}) => id),
       });
 
-      if (options.length >= 1) {
+      if (options?.length >= 1) {
         setIsAddVariation(true);
-      } else if (options.length === 1 && options[0].color === "") {
+      } else if (options?.length === 1 && options[0].color === "") {
         setIsAddVariation(false);
       }
 
-      setVariations(options.map(({ color, price, stock, images }) => ({
+      setVariations(options?.map(({ color, price, special_price, stock, images }) => ({
         name: color,
         price,
+        special_price,
         stock,
         image: images[0],
       })));
@@ -167,6 +169,7 @@ function ProductDetail() {
     const options = variations.map((variation) => ({
       color: variation.name,
       price: variation.price,
+      special_price: variation.special_price,
       stock: variation.stock,
       image_id: variation.image?.id,
     }));
@@ -324,10 +327,9 @@ function ProductDetail() {
     // });
   };
 
-  // useEffect(() => {
-  //   console.log(toBeRemovedImages);
-  //   console.log(variations);
-  // })
+  useEffect(() => {
+    console.log(variations);
+  })
 
   const handleOnConfirm = () => {
     // revert back to the original data
@@ -362,9 +364,10 @@ function ProductDetail() {
     // setFilesCount(originalData.images.length);
     // setIsImagePreview(true);
 
-    const options = originalData?.options.map(({ color, price, stock, images }) => ({
+    const options = originalData?.options.map(({ color, price, special_price, stock, images }) => ({
       color,
       price,
+      special_price,
       stock,
       image_id: images[0]?.id,
     }));

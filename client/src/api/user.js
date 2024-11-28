@@ -130,6 +130,12 @@ const createCheckoutSessionApi = async ({ orderId, items }) => {
   return response.data.clientSecret;
 };
 
+const getUserOrdersApi = async () => {
+  const response = await axiosInstance.get(API_PATHS.USER_ORERS);
+
+  return response.data.data;
+}
+
 export {
   loginApi,
   getUserApi,
@@ -142,4 +148,5 @@ export {
   updateCartSubTotalApi,
   createOrderApi,
   createCheckoutSessionApi,
+  getUserOrdersApi,
 };

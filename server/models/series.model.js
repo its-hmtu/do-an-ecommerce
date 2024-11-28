@@ -15,6 +15,10 @@ module.exports = (sequelize, DataTypes) => {
     slug: {
       type: DataTypes.STRING(50),
       allowNull: false
+    },
+    brand_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false
     }
   }, {
     timestamps: true,
@@ -27,6 +31,12 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'SET NULL',
       onUpdate: 'CASCADE',
       as: 'product_series'
+    });
+
+    Series.belongsTo(models.Brand, {
+      foreignKey: 'brand_id',
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
     });
   };
 

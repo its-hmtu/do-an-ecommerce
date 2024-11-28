@@ -379,13 +379,15 @@ function ProductTable() {
                               justifyItems="center"
                               alignItems="center"
                             >
-                              {mainImage[index] ? (
+                              {(
                                 <img
-                                  src={`${process.env.REACT_APP_API_URL}${mainImage[index]?.file_path}`}
+                                  src={`${process.env.REACT_APP_API_URL}${
+                                    row.images.find(image => image.id === row.main_image_id).file_path
+                                  }`}
                                   alt="product"
                                   style={{ width: 100, height: 100 }}
                                 />
-                              ) : null}
+                              )}
 
                               <Stack>
                                 <Typography

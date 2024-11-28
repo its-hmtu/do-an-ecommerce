@@ -1,70 +1,49 @@
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
 
 const api = axios.create({
   baseURL: "http://localhost:5000/api",
   withCredentials: true,
 })
 
-const handleDecode = () => {
-  let storage = JSON.parse(sessionStorage.getItem("token"));
-  let decoded = {};
-  // console.log("storage called")
-
-  try {
-    if (storage) {
-      decoded = jwtDecode(storage);
-    } else {
-      storage = null;
+api.interceptors.request.use(
+  (config) => {
+    const token = JSON.parse(sessionStorage.getItem("token"));
+    // console.log('Token:', token);
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
-  } catch (error) {
-    console.error(error);
-    sessionStorage.removeItem("token");
-    storage = null;
-  }
 
-  return { decoded, storage };
-}
-
-api.interceptors.request.use(async (config) => {
-  const { decoded, storage } = handleDecode();
-  if (!storage) {
     return config;
-  }
-  const currentTimeInSeconds = Date.now() / 1000;
-
-  if (decoded?.exp && decoded.exp < currentTimeInSeconds) {
-    try {
-      const data = await refresh();
-      sessionStorage.setItem("token", JSON.stringify(data?.token));
-      config.headers.Authorization = `Bearer ${data?.token}`;
-    } catch (e) {
-      console.error("Error refreshing token", e);
-      throw e;
-    }
-  } else {
-    config.headers.Authorization = `Bearer ${storage}`;
-  }
-  return config;
-},
+  } ,
   (error) => {
     return Promise.reject(error);
   }
-);
+)
 
-const refresh = async () => {
-  try {
-    const response = await api.get("/api/refresh", {
-      withCredentials: true,
-    });
-    if (response.data.success === false) {
-      throw new Error(response.data.message);
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    // console.log(error.response.data.message)
+    if (error.response && error.response.data.message === 'Token has expired' && error.response.status === 403) {
+      try {
+        const response = await api.get("/api/refresh", {
+          withCredentials: true,
+        });
+
+        if (response.status === 200) {
+          sessionStorage.setItem("token", JSON.stringify(response.data.token));
+          return api.request(error.config);
+        }
+
+      } catch (e) {
+        console.log(e)
+        // Cookies.remove('access_token');
+        sessionStorage.removeItem('token');
+        window.location.href = '/login';
+      }
     }
-    return response.data;
-  } catch (e) {
-    return e.response.data;
   }
-}
+)
 
 const adminLogin = async ({email, password}) => {
   try {

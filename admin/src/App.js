@@ -5,37 +5,48 @@ import {
 } from "react-router-dom";
 import MainLayout from "layouts/MainLayout";
 import LoginPage from "pages/LoginPage";
-import DashboardPage from "pages/DashboardPage";
+
 import { CssVarsProvider, CssBaseline, GlobalStyles } from "@mui/joy";
-import OrdersPage from "pages/OrdersPage";
-import RolesPage from "pages/RolesPage";
+
 import { useEffect, useCallback, useState, lazy, Suspense } from "react";
-import ProductPage from "pages/ProductPage";
-import ProductTable from "pages/ProductPage/components/ProductTable";
-import ProductDetailsPage from "pages/ProductDetailsPage";
-import CategoryPage from "pages/CategoryPage";
-import CategoryTable from "pages/CategoryPage/components/CategoryTable";
-import CategoryEdit from "pages/CategoryPage/components/CategoryEdit";
-import CategoryCreate from "pages/CategoryPage/components/CategoryCreate";
+
 import ToastMessageProvider from "contexts/ToastMessageContext";
 import { createTheme, ThemeProvider } from "@mui/material";
-import ProductDetail from "pages/ProductPage/components/ProductDetail";
-import ProductCreate from "pages/ProductPage/components/ProductCreate";
+
 import PATHS from "constants";
-import OrderTable from "pages/OrdersPage/components/OrderTable";
-// import React, { useCallback, useState, useEffect } from "react";
-// import { loadStripe } from "@stripe/stripe-js";
-// import {
-//   EmbeddedCheckoutProvider,
-//   EmbeddedCheckout,
-// } from "@stripe/react-stripe-js";
-// import CheckoutForm from "components/CheckoutForm";
-import Return from "components/Return";
+
 import Fallback from "components/Fallback";
-import OrderMassShip from "pages/OrdersPage/components/OrderMassShip";
+
 const OrderDetail = lazy(() =>
   import("pages/OrdersPage/components/OrderDetail")
 );
+const OrderMassShip = lazy(() =>
+  import("pages/OrdersPage/components/OrderMassShip")
+);
+const OrderTable = lazy(() => import("pages/OrdersPage/components/OrderTable"));
+const DashboardPage = lazy(() => import("pages/DashboardPage"));
+const ProductPage = lazy(() => import("pages/ProductPage"));
+const ProductTable = lazy(() =>
+  import("pages/ProductPage/components/ProductTable")
+);
+const ProductDetail = lazy(() =>
+  import("pages/ProductPage/components/ProductDetail")
+);
+const ProductCreate = lazy(() =>
+  import("pages/ProductPage/components/ProductCreate")
+);
+const CategoryPage = lazy(() => import("pages/CategoryPage"));
+const CategoryTable = lazy(() =>
+  import("pages/CategoryPage/components/CategoryTable")
+);
+const CategoryCreate = lazy(() =>
+  import("pages/CategoryPage/components/CategoryCreate")
+);
+const CategoryEdit = lazy(() =>
+  import("pages/CategoryPage/components/CategoryEdit")
+);
+const RolesPage = lazy(() => import("pages/RolesPage"));
+const OrdersPage = lazy(() => import("pages/OrdersPage"));
 
 const router = createBrowserRouter([
   {
@@ -74,19 +85,11 @@ const router = createBrowserRouter([
           },
           {
             path: "/orders/:id",
-            element: (
-              <Suspense fallback={<Fallback />}>
-                <OrderDetail />
-              </Suspense>
-            ),
+            element: <OrderDetail />,
           },
           {
             path: "/orders/mass-ship",
-            element: (
-              <Suspense fallback={<Fallback />}>
-                <OrderMassShip />
-              </Suspense>
-            ),
+            element: <OrderMassShip />,
           },
         ],
       },
@@ -131,15 +134,7 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />,
-  },
-  // {
-  //   path: "/checkout",
-  //   element: <CheckoutForm />,
-  // },
-  // {
-  //   path: "/return",
-  //   element: <Return />,
-  // },
+  }
 ]);
 
 function App() {

@@ -40,14 +40,7 @@ function SalesInfo({
 
       {/* Sales information for each variations */}
 
-      <Stack
-        sx={
-          {
-            // borderBottom: "1px solid #ccc",
-            // paddingBottom: "16px",
-          }
-        }
-      >
+      <Stack>
         <Stack
           direction="row"
           gap={3}
@@ -178,6 +171,7 @@ function SalesInfo({
                 <tr>
                   <th style={{ width: "50px" }}>Variation</th>
                   <th style={{ width: "150px" }}>Price</th>
+                  <th style={{ width: "150px" }}>Special Price</th>
                   <th style={{ width: "150px" }}>Stock</th>
                 </tr>
               </thead>
@@ -280,6 +274,35 @@ function SalesInfo({
                     </td>
                     <td>
                       <Input
+                        placeholder="Please input"
+                        startDecorator={
+                          <Button
+                            color="neutral"
+                            disabled
+                            sx={{
+                              color: "black!important",
+                              fontWeight: "normal",
+                            }}
+                          >
+                            <Typography variant="caption" color="black">
+                              ₫
+                            </Typography>
+                          </Button>
+                        }
+                        // type="number"
+                        onChange={(e) => onVariationChange(e, variationIndex)}
+                        name="special_price"
+                        value={variation.special_price}
+                        slotProps={{
+                          input: {
+                            component: NumbericFormatAdapter,
+                          },
+                        }}
+                        required
+                      />
+                    </td>
+                    <td>
+                      <Input
                         placeholder="Enter stock"
                         type="number"
                         value={variation.stock}
@@ -321,6 +344,41 @@ function SalesInfo({
                 // type="number"
                 name="price"
                 value={variations[0]?.price}
+                required
+                onChange={(e) => onVariationChange(e, 0)}
+                slotProps={{
+                  input: {
+                    component: NumbericFormatAdapter,
+                  },
+                }}
+              />
+            </FormControl>
+            <FormControl>
+              <Tooltip arrow title="Required" placement="top" color="neutral" variant="outlined">
+                <FormLabel>
+                  Special Price
+                  <Typography color="danger">*</Typography>
+                </FormLabel>
+              </Tooltip>
+              <Input
+                placeholder="Enter price"
+                startDecorator={
+                  <Button
+                    color="neutral"
+                    disabled
+                    sx={{
+                      color: "black!important",
+                      fontWeight: "normal",
+                    }}
+                  >
+                    <Typography variant="caption" color="black">
+                      ₫
+                    </Typography>
+                  </Button>
+                }
+                // type="number"
+                name="special_price"
+                value={variations[0]?.special_price}
                 required
                 onChange={(e) => onVariationChange(e, 0)}
                 slotProps={{

@@ -20,7 +20,7 @@ import React from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 
 function TabPanelAll({ orders, pageSize, handleSetPage, handleSetPageSize }) {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   return (
     <>
       <Stack
@@ -32,9 +32,7 @@ function TabPanelAll({ orders, pageSize, handleSetPage, handleSetPageSize }) {
         }}
       >
         <Typography level="h4">
-          {`${orders?.total || 0} ${
-            orders?.total > 1 ? "Orders" : "Order"
-          }`}
+          {`${orders?.total || 0} ${orders?.total > 1 ? "Orders" : "Order"}`}
         </Typography>
         <Button
           size="sm"
@@ -192,18 +190,18 @@ function TabPanelAll({ orders, pageSize, handleSetPage, handleSetPageSize }) {
                                 color: "#757575",
                               }}
                             >
-                              Variation: {}
+                              Variation: {item.product.options[0].color}
+                            </Typography>
+                            <Typography
+                              sx={{
+                                fontSize: 12,
+                                color: "#757575",
+                              }}
+                            >
+                              x{item.quantity}
                             </Typography>
                           </Stack>
                         </Stack>
-                        <Typography
-                          sx={{
-                            fontSize: 12,
-                            color: "#757575",
-                          }}
-                        >
-                          x{item.quantity}
-                        </Typography>
                       </Stack>
                     ))}
                   </Box>
@@ -215,7 +213,14 @@ function TabPanelAll({ orders, pageSize, handleSetPage, handleSetPageSize }) {
                       }).format(row.total)}
                     </Typography>
                   </Box>
-                  <Box sx={{ width: "15%", display: "flex", flexDirection: "column", gap: 1 }}>
+                  <Box
+                    sx={{
+                      width: "15%",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 1,
+                    }}
+                  >
                     <Chip
                       variant="soft"
                       size="md"

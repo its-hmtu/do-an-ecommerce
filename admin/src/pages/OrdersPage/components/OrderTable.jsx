@@ -199,7 +199,7 @@ const OrderTable = () => {
             setPaid(1);
           } else if (value === 2) {
             setStatus("pending");
-            setPaid(null);
+            setPaid(1);
           } else if (value === 3) {
             setStatus("shipped");
             setPaid(null);

@@ -29,6 +29,7 @@ function ProductCreate() {
     {
       name: "",
       price: 0,
+      special_price: 0,
       stock: 0,
       image: null,
     },
@@ -112,6 +113,7 @@ function ProductCreate() {
       const options = variations.map((variation) => ({
         color: variation.name,
         price: variation.price,
+        special_price: variation.special_price,
         stock: variation.stock,
         image_id: variation.image?.id,
       }))

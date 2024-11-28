@@ -14,7 +14,7 @@ const stripePromise = loadStripe("pk_test_51Q60ykRwlNk6yNbqvrPlvgJuAxjrClJULuM4C
 
 const CheckoutPage = () => {
   const {state} = useLocation();
-  const {orderId, items} = state;
+  const {orderId, items, cartId} = state;
   console.log("checkout", state);
   
   const fetchClientSecret = useCallback(() => {
@@ -22,6 +22,7 @@ const CheckoutPage = () => {
     return axiosInstance.post("/api/orders/create-checkout-session", {
       orderId,
       items,
+      cartId
     }).then((res) => res.data.clientSecret);
   }, []);
 

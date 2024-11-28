@@ -11,6 +11,7 @@ import {
   updateCartSubTotalApi,
   createOrderApi,
   createCheckoutSessionApi,
+  getUserOrdersApi,
 } from "api/user";
 import { queryKeys } from "config";
 
@@ -137,6 +138,13 @@ const useCreateCheckoutSession = () => {
   });
 }
 
+const useGetUserOrders = () => {
+  return useQuery({
+    queryKey: [queryKeys.userOrders],
+    queryFn: getUserOrdersApi,
+  })
+}
+
 export {
   useLogin,
   useRegister,
@@ -149,4 +157,5 @@ export {
   useUpdateCartSubtotal,
   useCreateOrder,
   useCreateCheckoutSession,
+  useGetUserOrders,
 };
