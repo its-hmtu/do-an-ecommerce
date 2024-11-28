@@ -7,6 +7,7 @@ import RegisterPage from "pages/RegisterPage";
 
 import { createBrowserRouter } from "react-router-dom";
 import { PATHS } from "config";
+import CheckoutPage from "pages/CheckoutPage";
 
 const HomePage = React.lazy(() => import("pages/HomePage"));
 const ProductPage = React.lazy(() => import("pages/ProductPage"));
@@ -72,4 +73,8 @@ export default createBrowserRouter([
     path: PATHS.REGISTER,
     element: <RegisterPage />,
   },
+  {
+    path: '/checkout',
+    element: <CheckoutPage />
+  }
 ]);

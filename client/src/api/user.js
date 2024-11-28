@@ -104,21 +104,31 @@ const updateCartSubTotalApi = async (subtotal) => {
   });
 
   return response.data;
-}
+};
 
-const createOrderApi = async ({
-  subtotal,
-  items,
-}) => {
+const createOrderApi = async ({ subtotal, items, address }) => {
   const response = await axiosInstance.post(API_PATHS.ORDER, {
     subtotal,
     items,
+    address,
   });
 
   // console.log(response.data.data);
 
-  return response.data.data;
-}
+  return response.data;
+};
+
+const createCheckoutSessionApi = async ({ orderId, items }) => {
+  const response = await axiosInstance.post(
+    `${API_PATHS.CREATE_CHECKOUT_SESSION}`,
+    {
+      orderId,
+      items,
+    }
+  );
+
+  return response.data.clientSecret;
+};
 
 export {
   loginApi,
@@ -131,4 +141,5 @@ export {
   removeFromCartApi,
   updateCartSubTotalApi,
   createOrderApi,
+  createCheckoutSessionApi,
 };

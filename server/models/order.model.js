@@ -26,10 +26,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DECIMAL(20, 2),
       allowNull: false
     },
-    tax: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true
-    },
     shipping: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: true
@@ -41,11 +37,10 @@ module.exports = (sequelize, DataTypes) => {
     status: {
       type: DataTypes.ENUM(
         'pending',
-        'paid',
         'shipped',
         'delivered',
-        'canceled',
-        'processing',
+        'cancelled',
+        'refunded',
         'completed'
       ),
       allowNull: false
@@ -94,27 +89,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false
-    },
-    guest_email: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    guest_first_name: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    guest_last_name: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    guest_phone: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    guest_address: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
+    }
   }, {
     timestamps: true,
     tableName: 'orders'

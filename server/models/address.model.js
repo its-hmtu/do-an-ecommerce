@@ -18,14 +18,14 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: false
     },
-    province: {
-      type: DataTypes.STRING,
+    district: {
+      type: DataTypes.STRING(255),
       allowNull: false
     },
-    postal_code: {
-      type: DataTypes.STRING(10),
+    ward: {
+      type: DataTypes.STRING(255),
       allowNull: false
-    }
+    },
   }, {
     timestamps: true,
     tableName: 'addresses'

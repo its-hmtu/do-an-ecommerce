@@ -16,6 +16,7 @@ const PATHS = {
   ACCOUNT_PAGE: `${BASE_PATH}account/page`,
   PAYMENT_INFO: `${BASE_PATH}cart/payment-info`,
   PAYMENT: `${BASE_PATH}cart/payment`,
+  CHECKOUT: `${BASE_PATH}checkout`,
 }
 
 const API_PATHS = {
@@ -30,6 +31,7 @@ const API_PATHS = {
   SEARCH_PRODUCTS: `${BASE_API_PATH}/products/search`,
   USER_CART: `${BASE_API_PATH}/account/cart`,
   ORDER: `${BASE_API_PATH}/orders`,
+  CREATE_CHECKOUT_SESSION: `${BASE_API_PATH}/orders/create-checkout-session`,
 }
 
 const queryKeys = {

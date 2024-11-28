@@ -29,7 +29,6 @@ function CartPage() {
   const { mutate: updateCartSubtotal, isPending: isUpdatingCartSubtotal } =
     useUpdateCartSubtotal();
 
-  const { mutate: createOrder, isPending: isCreatingOrder, data: orderData } = useCreateOrder();
   const navigate = useNavigate();
 
   React.useEffect(() => {
@@ -85,32 +84,44 @@ function CartPage() {
   };
 
   const handleToOrder = (subtotal) => {
-    createOrder(
-      {
+    // createOrder(
+    //   {
+    //     subtotal,
+    //     items: selected.map((itemId) => {
+    //       const item = cartItems.find((item) => item.id === itemId);
+    //       console.log(item)
+    //       return {
+    //         product_id: item.product.id,
+    //         option_id: item.product.options[0].id,
+    //         quantity: item.quantity,
+    //         cart_id: data.cart.id,
+    //         unit_price: item.product.options[0].price,
+    //         product_name: item.product.product_name,
+    //         color: item.product.options[0].color,
+    //         image: item.product.options[0].images[0].file_path,
+    //       };
+    //     }),
+    //   },
+    //   {
+    //     onSuccess: (orderData) => {
+    //       navigate(PATHS.PAYMENT_INFO, { state: { orderData } });
+    //     },
+    //   }
+    // );
+
+    // updateCartSubtotal(subtotal, {
+    //   onSuccess: () => {
+    //     navigate(PATHS.PAYMENT_INFO);
+    //   }
+    // });
+
+    navigate(PATHS.PAYMENT_INFO, {
+      state: {
+        cartId: data.cart.id,
+        cartItems: cartItems.filter((item) => selected.includes(item.id)),
         subtotal,
-        items: selected.map((itemId) => {
-          const item = cartItems.find((item) => item.id === itemId);
-          console.log(item)
-          return {
-            product_id: item.product.id,
-            option_id: item.product.options[0].id,
-            quantity: item.quantity,
-            cart_id: data.cart.id,
-            unit_price: item.product.options[0].price,
-            product_name: item.product.product_name,
-            color: item.product.options[0].color,
-            image: item.product.options[0].images[0].file_path,
-          };
-        }),
       },
-      {
-        onSuccess: (orderData) => {
-          // Redirect to order page
-          navigate(PATHS.PAYMENT_INFO, { state: { orderData } });
-          // console.log(orderData);
-        },
-      }
-    );
+    });
   };
 
   const subTotal = useMemo(() => {
@@ -381,9 +392,9 @@ function CartPage() {
         <Button
           variant="solid"
           color="primary"
-          disabled={selected.length === 0 || isCreatingOrder}
+          disabled={selected.length === 0}
           onClick={() => handleToOrder(subTotal)}
-          loading={isCreatingOrder}
+          // loading={}
         >
           Order now {` ${selected.length > 0 ? `(${itemsCountToOrder})` : ""}`}
         </Button>

@@ -15,15 +15,75 @@ import { PATHS } from "config";
 import { UserContext } from "contexts/UserContext";
 import React, { useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import citiesData from "utils/cities.json";
+import districtsData from "utils/districts.json";
+import wardsData from "utils/wards.json";
+import { useCreateOrder } from "hooks";
 
 function PaymentInfoPage() {
   // get state from react-router-dom navigate
   const { state } = useLocation();
-  const { orderData } = state;
+  const { cartItems, subtotal, cartId } = state;
   const { user } = useContext(UserContext);
+  const { mutate: createOrder, isPending: isCreatingOrder, data: orderData } = useCreateOrder();
   const navigate = useNavigate();
+  const [shippingInfo, setShippingInfo] = React.useState({
+    city: null,
+    district: null,
+    ward: null,
+    address: "",
+  });
+  // set districts by city selected
+  const [districts, setDistricts] = React.useState([]);
+  const [wards, setWards] = React.useState([]);
 
-  console.log(state);
+  const handleCityChange = (event, value) => {
+    setShippingInfo((prevState) => ({
+      ...prevState,
+      city: value,
+      district: null,
+      ward: null,
+    }));
+
+    if (value) {
+      const selectedCity = citiesData.find((city) => city.name === value.name);
+      if (selectedCity) {
+        const filteredDistricts = districtsData.filter(
+          (district) => district.parent_code === selectedCity.code
+        );
+        setDistricts(filteredDistricts);
+      } else {
+        setDistricts([]);
+      }
+    } else {
+      setDistricts([]);
+    }
+  };
+
+  const handleDistrictChange = (event, value) => {
+    setShippingInfo((prevState) => ({
+      ...prevState,
+      district: value,
+      ward: null,
+    }));
+
+    if (value) {
+      const selectedDistrict = districtsData.find(
+        (district) => district.name === value.name
+      );
+      if (selectedDistrict) {
+        const filteredWards = wardsData.filter(
+          (ward) => ward.parent_code === selectedDistrict.code
+        );
+        setWards(filteredWards);
+      } else {
+        setWards([]);
+      }
+    } else {
+      setWards([]);
+    }
+  };
+
   return (
     <Stack
       sx={{
@@ -58,8 +118,8 @@ function PaymentInfoPage() {
           borderRadius: "sm",
         }}
       >
-        {orderData?.items &&
-          orderData?.items.map((item) => (
+        {cartItems &&
+          cartItems?.map((item) => (
             <Box
               key={item.id}
               sx={{
@@ -72,8 +132,8 @@ function PaymentInfoPage() {
             >
               <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
                 <img
-                  src={`${process.env.REACT_APP_API_URL}${item.image}`}
-                  alt={item.product_name}
+                  src={`${process.env.REACT_APP_API_URL}${item.product.options[0].images[0].file_path}`}
+                  alt={item.product.product_name}
                   style={{
                     width: "100px",
                     height: "100px",
@@ -82,15 +142,17 @@ function PaymentInfoPage() {
                   }}
                 />
                 <Stack gap={1}>
-                  <Typography level="title-md">{item.product_name}</Typography>
+                  <Typography level="title-md">
+                    {item.product.product_name}
+                  </Typography>
                   <Typography level="body-sm" color="text.secondary">
-                    {item.color}
+                    {item.product.options[0].color}
                   </Typography>
                   <Typography level="title-sm" color="danger">
                     {new Intl.NumberFormat("vi-VN", {
                       style: "currency",
                       currency: "VND",
-                    }).format(item.unit_price)}
+                    }).format(item.product.options[0].price)}
                   </Typography>
                 </Stack>
               </Box>
@@ -202,44 +264,83 @@ function PaymentInfoPage() {
               }}
               gap={2}
             >
-              <FormControl sx={{
-                width: { xs: "100%", md: "calc(50% - 8px)" },
-              }}>
-                <FormLabel>City</FormLabel>
+              <FormControl
+                sx={{
+                  width: { xs: "100%", md: "calc(50% - 8px)" },
+                }}
+              >
+                <FormLabel>City/Province</FormLabel>
                 <Autocomplete
-                  options={["Hanoi", "Ho Chi Minh City", "Da Nang"]}
-                  fullWidth
-                  required
-                  id="city"
-                  type="text"
-                  placeholder="Select city"
+                  options={citiesData}
+                  getOptionLabel={(option) => option.name_with_type}
+                  value={shippingInfo.city}
+                  onChange={handleCityChange}
+                  isOptionEqualToValue={(option, value) =>
+                    option.code === value?.code
+                  }
                 />
               </FormControl>
-              <FormControl sx={{
-                width: { xs: "100%", md: "calc(50% - 8px)" },
-              }}>
+              <FormControl
+                sx={{
+                  width: { xs: "100%", md: "calc(50% - 8px)" },
+                }}
+              >
                 <FormLabel>District</FormLabel>
                 <Autocomplete
-                  options={[
-                    "Ba Dinh",
-                    "Cau Giay",
-                    "Dong Da",
-                    "Hai Ba Trung",
-                    "Hoan Kiem",
-                    "Tay Ho",
-                  ]}
-                  fullWidth
+                  options={districts}
+                  getOptionLabel={(option) => option.name_with_type}
+                  value={shippingInfo.district}
+                  onChange={handleDistrictChange}
+                  isOptionEqualToValue={(option, value) =>
+                    option.code === value?.code
+                  }
+                  disabled={!shippingInfo.city}
+                />
+              </FormControl>
+              <FormControl
+                sx={{
+                  width: { xs: "100%", md: "calc(50% - 8px)" },
+                }}
+              >
+                <FormLabel>Ward</FormLabel>
+                <Autocomplete
+                  options={wards}
+                  getOptionLabel={(option) => option.name_with_type}
+                  value={shippingInfo.ward}
+                  onChange={(event, value) =>
+                    setShippingInfo((prevState) => ({
+                      ...prevState,
+                      ward: value,
+                    }))
+                  }
+                  isOptionEqualToValue={(option, value) =>
+                    option.code === value?.code
+                  }
+                  disabled={!shippingInfo.district}
+                />
+              </FormControl>
+              <FormControl
+                sx={{
+                  width: { xs: "100%", md: "calc(50% - 8px)" },
+                }}
+              >
+                <FormLabel>Address</FormLabel>
+                <Input
+                  variant="outlined"
                   required
-                  id="district"
+                  id="address"
                   type="text"
-                  placeholder="Select district"
+                  placeholder="Enter address"
+                  value={shippingInfo.address}
+                  onChange={(e) => {
+                    setShippingInfo({
+                      ...shippingInfo,
+                      address: e.target.value,
+                    });
+                  }}
                 />
               </FormControl>
             </Stack>
-            <FormControl>
-              <FormLabel>Address</FormLabel>
-              <Input variant="outlined" fullWidth required id="address" type="text" placeholder="Enter address" />
-            </FormControl>
           </Stack>
         </Box>
       </Stack>
@@ -248,7 +349,18 @@ function PaymentInfoPage() {
         variant="solid"
         color="primary"
         sx={{ marginTop: 3 }}
-        onClick={() => navigate(PATHS.PAYMENT, { state: state })}
+        disabled={isCreatingOrder}
+        loading={isCreatingOrder}
+        onClick={() => {
+          navigate(PATHS.PAYMENT, {
+            state: {
+              cartItems,
+              subtotal,
+              cartId,
+              shippingInfo,
+            },
+          })
+        }}
       >
         Continue
       </Button>

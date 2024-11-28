@@ -1,5 +1,5 @@
 const { col } = require('sequelize');
-const {User, Role, UserRole, Cart, CartItem, Product, Option, Sequelize, ProductImage, OptionImage} = require('../models');
+const {User, Role, UserRole, Cart, CartItem, Product, Option, Sequelize, ProductImage, OptionImage, Address} = require('../models');
 const Op = require('sequelize').Op;
 const sanitizeInput = require('../utils/sanitize').sanitizeInput;
 
@@ -149,7 +149,22 @@ exports.logout = async (req, res) => {
 }
 
 exports.getUserData = async (req, res, next) => {
-  return res.status(200).json({ user: req.user });
+  const {id} = req.user;
+
+  const user = await User.findOne({
+    where: { id },
+    attributes: {
+      exclude: ['password']
+    },
+    include: [
+      {
+        model: Address,
+        as: 'addresses',
+      }
+    ]
+  });
+
+  return res.status(200).json({ user });
 }
 
 exports.getUserCart = async (req, res, next) => {
@@ -216,7 +231,7 @@ exports.addToCart = async (req, res, next) => {
   // Find or create the cart for the user
   const [cart, created] = await Cart.findOrCreate({
     where: { user_id: id },
-    defaults: { user_id: id },
+    defaults: { user_id: id }
   });
 
   // Find the cart item for the specific product and option

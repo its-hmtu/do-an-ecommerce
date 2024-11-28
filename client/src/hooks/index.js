@@ -10,6 +10,7 @@ import {
   removeFromCartApi,
   updateCartSubTotalApi,
   createOrderApi,
+  createCheckoutSessionApi,
 } from "api/user";
 import { queryKeys } from "config";
 
@@ -113,13 +114,28 @@ const useUpdateCartSubtotal = () => {
 
 const useCreateOrder = () => {
   return useMutation({
-    mutationFn: ({ subtotal, items }) =>
+    mutationFn: ({ subtotal, items, address }) =>
       createOrderApi({
         subtotal,
         items,
+        address,
       }),
   });
 };
+
+const useCreateCheckoutSession = () => {
+  return useMutation({
+    mutationFn: ({
+      orderId,
+      items,
+    }) => createCheckoutSessionApi(
+      {
+        orderId,
+        items,
+      }
+    ),
+  });
+}
 
 export {
   useLogin,
@@ -132,4 +148,5 @@ export {
   useRemoveItemFromCart,
   useUpdateCartSubtotal,
   useCreateOrder,
+  useCreateCheckoutSession,
 };
