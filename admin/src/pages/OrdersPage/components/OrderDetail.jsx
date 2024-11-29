@@ -358,13 +358,13 @@ function OrderDetail() {
                             {new Intl.NumberFormat("vi-VN", {
                               style: "currency",
                               currency: "VND",
-                            }).format(item.product.base_price)}
+                            }).format(item.unit_price)}
                           </td>
                           <td>
                             {new Intl.NumberFormat("vi-VN", {
                               style: "currency",
                               currency: "VND",
-                            }).format(item.product.base_price)}
+                            }).format(item.unit_price * item.quantity)}
                           </td>
                         </tr>
                       ))}
@@ -383,7 +383,7 @@ function OrderDetail() {
                           {new Intl.NumberFormat("vi-VN", {
                             style: "currency",
                             currency: "VND",
-                          }).format(data?.data.total)}
+                          }).format(data?.data.subtotal)}
                         </td>
                       </tr>
                       <tr>
@@ -394,10 +394,33 @@ function OrderDetail() {
                               fontWeight: 600,
                             }}
                           >
-                            VAT
+                            Shipping
                           </Typography>
                         </td>
-                        <td>8%</td>
+                        <td>
+                          {new Intl.NumberFormat("vi-VN", {
+                            style: "currency",
+                            currency: "VND",
+                          }).format(data?.data.shipping)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td colSpan={3}></td>
+                        <td>
+                          <Typography
+                            sx={{
+                              fontWeight: 600,
+                            }}
+                          >
+                            Discount
+                          </Typography>
+                        </td>
+                        <td>
+                          {new Intl.NumberFormat("vi-VN", {
+                            style: "currency",
+                            currency: "VND",
+                          }).format(data?.data.discount)}
+                        </td>
                       </tr>
                       <tr>
                         <td colSpan={3}></td>
@@ -415,7 +438,7 @@ function OrderDetail() {
                             {new Intl.NumberFormat("vi-VN", {
                               style: "currency",
                               currency: "VND",
-                            }).format(data?.data.total * 1.08)}
+                            }).format(data?.data.total)}
                           </Typography>
                         </td>
                       </tr>
@@ -508,9 +531,9 @@ function OrderDetail() {
                           fontWeight: 600,
                         }}
                       >
-                        Phone:{" "}
+                        Phone:{" "}1234567
                       </span>
-                      {data?.data.user.first_name}
+                      {data?.data.user.phone}
                     </Typography>
                   </Stack>
                 </Sheet>
@@ -530,8 +553,8 @@ function OrderDetail() {
                       sx={{
                         fontSize: 14,
                       }}
-                    >{`${data?.data.address.address}, ${data?.data.address.province}, ${data?.data.address.city}`}</Typography>
-                    <Typography
+                    >{`${data?.data.address.address}, ${data?.data.address.ward}, ${data?.data.address.district}, ${data?.data.address.city}`}</Typography>
+                    {/* <Typography
                       sx={{
                         fontSize: 14,
                       }}
@@ -544,7 +567,7 @@ function OrderDetail() {
                         Postal code:{" "}
                       </span>
                       {`${data?.data.address.postal_code}`}
-                    </Typography>
+                    </Typography> */}
                   </Stack>
                 </Sheet>
               </Stack>
