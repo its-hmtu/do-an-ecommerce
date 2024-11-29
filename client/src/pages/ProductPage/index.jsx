@@ -62,7 +62,6 @@ function ProductPage() {
     }
   }, [data]);
 
-
   const settings = {
     dots: true,
     dotsClass: "slick-dots slick-thumb",
@@ -203,7 +202,7 @@ function ProductPage() {
           </div>
 
           <Stack gap={2} sx={{ width: "558px" }}>
-            <Stack direction="row" gap={2}>
+            {/* <Stack direction="row" gap={2}>
               {data?.series_products.map((product) => (
                 <Link
                   key={product.id}
@@ -238,7 +237,7 @@ function ProductPage() {
                   </Button>
                 </Link>
               ))}
-            </Stack>
+            </Stack> */}
 
             <Typography level="title-sm">Color</Typography>
             <Stack
@@ -305,7 +304,7 @@ function ProductPage() {
                           {new Intl.NumberFormat("vi-VN", {
                             style: "currency",
                             currency: "VND",
-                          }).format(option?.price)}
+                          }).format(option?.special_price || option?.price)}
                         </Typography>
                       </Stack>
                     )}
@@ -332,22 +331,26 @@ function ProductPage() {
                   style: "currency",
                   currency: "VND",
                 }).format(
-                  currentOption ? currentOption?.price : data?.base_price
+                  currentOption
+                    ? currentOption?.special_price || currentOption?.price
+                    : data?.special_price || data?.base_price
                 )}
               </Typography>
-              <Typography
-                level="body-sm"
-                sx={{
-                  textDecoration: "line-through",
-                }}
-              >
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(
-                  currentOption ? currentOption?.price : data?.base_price
-                )}
-              </Typography>
+              {data?.special_base_price && (
+                <Typography
+                  level="body-sm"
+                  sx={{
+                    textDecoration: "line-through",
+                  }}
+                >
+                  {new Intl.NumberFormat("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
+                  }).format(
+                    currentOption ? currentOption?.price : data?.base_price
+                  )}
+                </Typography>
+              )}
             </Stack>
 
             <Stack direction="row" gap={2}>

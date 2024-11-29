@@ -121,9 +121,16 @@ function HomePage() {
 
       {/* Featured Mobile Phones */}
       <Box>
-        <Typography level="h3" sx={{ mt: 4 }}>
+        <Stack direction="row" gap={3} sx={{ mt: 4, justifyContent: "space-between" }} >
+        <Typography level="h3">
           Featured Mobile Phones
         </Typography>
+        <Link component={RLink} to={PATHS.MOBILE}>
+          <Typography level="body-lg" endDecorator={<ChevronRightRounded />}>
+            View all
+          </Typography>
+        </Link>
+        </Stack>
         <Stack
           direction="row"
           gap={3}
@@ -140,9 +147,16 @@ function HomePage() {
 
       {/* Featured Tablets */}
       <Box>
-        <Typography level="h3" sx={{ mt: 4 }}>
+      <Stack direction="row" gap={3} sx={{ mt: 4, justifyContent: "space-between" }} >
+        <Typography level="h3">
           Featured Tablets
         </Typography>
+        <Link component={RLink} to={PATHS.TABLET}>
+          <Typography level="body-lg" endDecorator={<ChevronRightRounded />}>
+            View all
+          </Typography>
+        </Link>
+        </Stack>
         <Stack
           direction="row"
           gap={3}
@@ -156,7 +170,7 @@ function HomePage() {
 
       <Box>
         <Typography level="h3" sx={{ mt: 4 }}>
-          All Products
+          You may also like
         </Typography>
         <Stack
           direction="row"

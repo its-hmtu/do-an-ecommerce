@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
   Container,
   Box,
@@ -7,9 +7,14 @@ import {
   Button,
   Divider,
   Grid,
+  Link,
 } from "@mui/joy";
+import { Link as RLink } from "react-router-dom";
+import { PATHS } from "config";
+import { UserContext } from "contexts/UserContext";
 
 function AccountPage() {
+  const {user } = useContext(UserContext);
   return (
     <Container sx={{ py: 4 }}>
       <Box sx={{ display: "flex", gap: 4 }}>
@@ -27,25 +32,17 @@ function AccountPage() {
           <Typography level="h6" sx={{ mb: 2, fontWeight: "bold" }}>
             Manage My Account
           </Typography>
-          <Box sx={{ mb: 2, ml: 3, fontSize: "14px"  }}>
-            <Typography  sx={{ fontWeight: "bold", color: "red" }}>
+          <Box sx={{ mb: 2, pl: 2, fontSize: "14px"  }}>
+            <Typography>
               My Profile
             </Typography>
             <Typography >Address Book</Typography>
             <Typography >My Payment Options</Typography>
           </Box>
 
-          <Typography level="h6" sx={{ mb: 2, fontWeight: "bold" }}>
+          <Link level="h6" sx={{ mb: 2, color: "black", fontWeight: "bold" }} component={RLink} to={PATHS.MY_ORDERS}>
             My Orders
-          </Typography>
-          <Box sx={{ mb: 2, ml: 3, fontSize: "14px"  }}>
-            <Typography level="body2">My Returns</Typography>
-            <Typography level="body2">My Cancellations</Typography>
-          </Box>
-
-          <Typography level="h6" sx={{ mb: 2, fontWeight: "bold" }}>
-            My WishList
-          </Typography>
+          </Link>
         </Box>
 
         {/* Edit Profile Section */}
@@ -58,7 +55,7 @@ function AccountPage() {
             boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
           }}
         >
-          <Typography level="h5" sx={{ mb: 3, color: "red", fontWeight: "bold" }}>
+          <Typography level="h5" sx={{ mb: 3, fontWeight: "bold" }}>
             Edit Your Profile
           </Typography>
 
@@ -69,6 +66,7 @@ function AccountPage() {
                 placeholder="First Name"
                 fullWidth
                 sx={{ mb: 2, backgroundColor: "#f5f5f5" }}
+                value={user?.first_name}
               />
             </Grid>
             <Grid item xs={6}>
@@ -77,6 +75,7 @@ function AccountPage() {
                 placeholder="Last Name"
                 fullWidth
                 sx={{ mb: 2, backgroundColor: "#f5f5f5" }}
+                value={user?.last_name}
               />
             </Grid>
             <Grid item xs={12}>
@@ -85,6 +84,7 @@ function AccountPage() {
                 placeholder="Your Email"
                 fullWidth
                 sx={{ mb: 2, backgroundColor: "#f5f5f5" }}
+                value={user?.email}
               />
             </Grid>
             <Grid item xs={12}>
@@ -93,6 +93,7 @@ function AccountPage() {
                 placeholder="Address"
                 fullWidth
                 sx={{ mb: 2, backgroundColor: "#f5f5f5" }}
+                value={`${user?.addresses[1].address}, ${user?.addresses[1].ward}, ${user?.addresses[1].district}, ${user?.addresses[1].city}`}
               />
             </Grid>
           </Grid>
@@ -126,16 +127,17 @@ function AccountPage() {
             />
           </Box>
 
-          <Box sx={{ display: "flex", gap: 2 }}>
+          <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
             <Button
               variant="plain"
-              sx={{ color: "red", borderColor: "red", borderWidth: 1 }}
+              sx={{ borderColor: "red", borderWidth: 1 }}
+              color="neutral"
             >
               Cancel
             </Button>
             <Button
               variant="solid"
-              color="danger"
+              color="primary"
               sx={{ px: 4 }}
             >
               Save Changes

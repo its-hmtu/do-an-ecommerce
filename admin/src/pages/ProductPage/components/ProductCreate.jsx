@@ -56,7 +56,7 @@ function ProductCreate() {
   const [basic, setBasic] = useState({
     name: "",
     description: "",
-    category: [],
+    category: "",
   });
 
   const { data: brands, isLoading: brandsLoading } = useQuery({
@@ -122,7 +122,7 @@ function ProductCreate() {
       const newSubmitData = {
         product_name: basic.name,
         product_description: basic.description,
-        category_ids: basic.category,
+        category_id: basic.category,
         options,
         specs: specsValue,
         product_images_ids,
@@ -134,8 +134,8 @@ function ProductCreate() {
   };
 
   useEffect(() => {
-    console.log(variations);
-  }, [variations]);
+    console.log(basic);
+  }, [basic]);
 
   const handleOnSpecsChange = (value, key) => {
     setSpecsValue((prevValue) => ({

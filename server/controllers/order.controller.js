@@ -31,24 +31,23 @@ exports.createOrder = async (req, res, next) => {
   const { items, subtotal, address } = req.body;
   const transaction = await sequelize.transaction({ autocommit: false });
   
+  const [newAddress, created] = await Address.findOrCreate({
+    where: {
+      user_id: id,
+      address: address.address,
+      city: address.city,
+      district: address.district,
+      ward: address.ward,
+    },
+    defaults: {
+      user_id: id,
+      address: address.address,
+      city: address.city,
+      district: address.district,
+      ward: address.ward,
+    }
+  });
   try {
-    const [newAddress, created] = await Address.findOrCreate({
-      where: {
-        user_id: id,
-        address: address.address,
-        city: address.city,
-        district: address.district,
-        ward: address.ward,
-      },
-      defaults: {
-        user_id: id,
-        address: address.address,
-        city: address.city,
-        district: address.district,
-        ward: address.ward,
-      },
-      transaction,
-    });
 
     const order = await Order.create({
       id: generateOrderId(),
@@ -56,8 +55,9 @@ exports.createOrder = async (req, res, next) => {
       address_id: newAddress.id,
       subtotal,
       status: "pending",
-      total: 0,  // Make sure to calculate total later based on shipping, tax, and discount
-    }, { transaction });
+      total: subtotal,
+      transaction  // Make sure to calculate total later based on shipping, tax, and discount
+    });
 
     console.log(order);  // Add a log to check the created order
 

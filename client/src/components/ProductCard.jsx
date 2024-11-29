@@ -152,7 +152,7 @@ function ProductCard({ data, showTotalReviews = true }) {
             {new Intl.NumberFormat("vi-VN", {
               style: "currency",
               currency: "VND",
-            }).format(Number(data?.base_price))}
+            }).format(Number(data?.special_base_price || data?.base_price))}
           </Typography>
           {data?.special_base_price && (
             <Typography
@@ -166,7 +166,7 @@ function ProductCard({ data, showTotalReviews = true }) {
               {new Intl.NumberFormat("vi-VN", {
                 style: "currency",
                 currency: "VND",
-              }).format(Number(data?.special_base_price))}
+              }).format(Number(data?.base_price))}
             </Typography>
           )}
         </Stack>
@@ -213,7 +213,8 @@ function ProductCard({ data, showTotalReviews = true }) {
         </Stack>
       </CardContent>
 
-      <div
+      { data?.special_base_price_percentage &&
+        <div
         style={{
           position: "absolute",
           padding: "4px 12px",
@@ -228,8 +229,11 @@ function ProductCard({ data, showTotalReviews = true }) {
           alignItems: "center",
         }}
       >
-        50%
+        {
+          data?.special_base_price_percentage.split(".")[0]
+        }%
       </div>
+      }
     </Card>
   );
 }

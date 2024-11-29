@@ -60,7 +60,7 @@ function ProductDetail() {
   const [basic, setBasic] = useState({
     name: "",
     description: "",
-    category: [],
+    category: "",
   });
 
   const [originalData, setOriginalData] = useState({})
@@ -93,7 +93,7 @@ function ProductDetail() {
       setBasic({
         name: product_name,
         description: product_description,
-        category: categories?.map(({id}) => id),
+        category: categories[0]?.id,
       });
 
       if (options?.length >= 1) {
@@ -178,7 +178,7 @@ function ProductDetail() {
     const newSubmitData = {
       product_name: basic.name,
       product_description: basic.description,
-      category_ids: basic.category,
+      category_id: basic.category,
       options,
       specs: specsValue,
       product_images_ids,

@@ -26,7 +26,7 @@ api.interceptors.response.use(
     // console.log(error.response.data.message)
     if (error.response && error.response.data.message === 'Token has expired' && error.response.status === 403) {
       try {
-        const response = await api.get("/api/refresh", {
+        const response = await api.get("/refresh", {
           withCredentials: true,
         });
 

@@ -32,6 +32,14 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: 0,
       },
+      special_base_price: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: true,
+      },
+      special_base_price_percentage: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: true,
+      },
       total_in_stock: {
         type: DataTypes.INTEGER(11),
         allowNull: false,

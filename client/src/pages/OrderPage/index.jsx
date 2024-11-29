@@ -5,6 +5,7 @@ import {
   Stack,
   Tab,
   tabClasses,
+  Table,
   TabList,
   TabPanel,
   Tabs,
@@ -12,6 +13,64 @@ import {
 } from "@mui/joy";
 import { useGetUserOrders } from "hooks";
 import React from "react";
+
+const renderTable = (userOrders) => {
+  return (<Table 
+    variant="outlined"
+    stripe="odd"
+    sx={{
+      backgroundColor: "white",
+      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+    }}
+  >
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        <th style={{
+          width: "35%",
+        }}>Items</th>
+        <th>Quantity</th>
+        <th>Total</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {userOrders.length > 0 ? (
+        userOrders.map((order) => (
+          <tr key={order.id}>
+            <td>{order.id}</td>
+            <td>
+              {order.order_items.map((item) => (
+                <Typography key={item.id}>
+                  {item.product.product_name} -{" "}
+                  {item.product.options[0].color}
+                </Typography>
+              ))}
+            </td>
+
+            <td>
+              {order.order_items.map((item) => (
+                <Typography key={item.id}>
+                  {item.quantity}
+                </Typography>
+              ))}
+            </td>
+            <td>
+              {new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(order.total)}
+            </td>
+            <td>{order.status}</td>
+          </tr>
+        ))
+      ) : (
+        <Typography>No orders</Typography>
+      )}
+    </tbody>
+  </Table>)
+}
 
 function OrderPage() {
   const { data, isLoading } = useGetUserOrders();
@@ -26,51 +85,61 @@ function OrderPage() {
   return (
     <Box
       sx={{
-        maxWidth: 720,
+        maxWidth: 1280,
         width: "100%",
         margin: "0 auto",
         paddingBlock: 4,
       }}
     >
-      <Typography level="h3">My Order</Typography>
-      <Stack
-        direction="row"
+      <Box
         sx={{
-          mt: 4,
-          padding: 4,
-          backgroundColor: "white",
-          borderRadius: "sm",
-          borderColor: "transparent",
-          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+          width: 720,
+          margin: "0 auto",
         }}
       >
+        <Typography level="h3">My Order</Typography>
         <Stack
-          width={"50%"}
+          direction="row"
           sx={{
-            alignItems: "center",
+            mt: 4,
+            padding: 4,
+            backgroundColor: "white",
+            borderRadius: "sm",
+            borderColor: "transparent",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
           }}
         >
-          <Typography level="h4">{userOrders.length}</Typography>
-          <Typography level="subtitle">Orders</Typography>
+          <Stack
+            width={"50%"}
+            sx={{
+              alignItems: "center",
+            }}
+          >
+            <Typography level="h4">{userOrders.length}</Typography>
+            <Typography level="subtitle">Orders</Typography>
+          </Stack>
+          <Divider orientation="vertical" flexItem />
+          <Stack
+            width={"50%"}
+            sx={{
+              alignItems: "center",
+            }}
+          >
+            <Typography level="h4">
+              {new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(
+                userOrders.reduce(
+                  (acc, order) => acc + parseFloat(order.subtotal),
+                  0
+                )
+              )}
+            </Typography>
+            <Typography level="subtitle">Total Spent</Typography>
+          </Stack>
         </Stack>
-        <Divider orientation="vertical" flexItem />
-        <Stack
-          width={"50%"}
-          sx={{
-            alignItems: "center",
-          }}
-        >
-          <Typography level="h4">
-            {new Intl.NumberFormat("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            }).format(
-              userOrders.reduce((acc, order) => acc + parseFloat(order.subtotal), 0)
-            )}
-          </Typography>
-          <Typography level="subtitle">Total Spent</Typography>
-        </Stack>
-      </Stack>
+      </Box>
 
       <Sheet
         variant="outlined"
@@ -80,6 +149,8 @@ function OrderPage() {
           backgroundColor: "transparent",
           borderRadius: "sm",
           borderColor: "transparent",
+          // width: 1280,
+          // margin: "0 auto",
         }}
       >
         <Tabs
@@ -89,20 +160,20 @@ function OrderPage() {
             borderColor: "transparent",
           }}
           color="primary"
-          
         >
-          <TabList 
-          disableUnderline
-          sx={{
-            p: 0.5,
-            gap: 0.5,
-            borderRadius: 'xl',
-            bgcolor: 'background.level1',
-            [`& .${tabClasses.root}[aria-selected="true"]`]: {
-              boxShadow: 'sm',
-              bgcolor: 'background.surface',
-            },
-          }}
+          <TabList
+            disableUnderline
+            sx={{
+              p: 0.5,
+              gap: 0.5,
+              borderRadius: "xl",
+              bgcolor: "transparent",
+              [`& .${tabClasses.root}[aria-selected="true"]`]: {
+                boxShadow: "sm",
+                bgcolor: "background.surface",
+              },
+              justifyContent: "center",
+            }}
           >
             <Tab disableIndicator>All</Tab>
             <Tab disableIndicator>Pending</Tab>
@@ -114,184 +185,35 @@ function OrderPage() {
             {isLoading ? (
               <Typography>Loading...</Typography>
             ) : (
-              <Stack spacing={4}>
-                {
-                  userOrders.length > 0 ? (
-                    userOrders.map((order) => (
-                      <Stack key={order.id} spacing={1}
-                        sx={{
-                          bgcolor: 'white',
-                          p: 2,
-                          borderRadius: 'sm',
-                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                        }}
-                      >
-                        <Typography level="h5">Order ID: {order.id}</Typography>
-                        <Typography level="subtitle">
-                          Total:{" "}
-                          {new Intl.NumberFormat("vi-VN", {
-                            style: "currency",
-                            currency: "VND",
-                          }).format(order.total)}
-                        </Typography>
-                        <Typography level="subtitle">
-                          Status: {order.status}
-                        </Typography>
-                      </Stack>
-                    ))
-                  ) : (
-                    <Typography>No orders</Typography>
-                  )
-                }
-              </Stack>
+              renderTable(userOrders)
             )}
           </TabPanel>
           <TabPanel value={1}>
             {isLoading ? (
               <Typography>Loading...</Typography>
             ) : (
-              <Stack spacing={4}>
-                {userOrders.filter((order) => order.status === "pending")
-                  .length > 0 ? (
-                  userOrders
-                    .filter((order) => order.status === "pending")
-                    .map((order) => (
-                      <Stack key={order.id} spacing={1}
-                        sx={{
-                          bgcolor: 'white',
-                          p: 2,
-                          borderRadius: 'sm',
-                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                        }}
-                      >
-                        <Typography level="h5">Order ID: {order.id}</Typography>
-                        <Typography level="subtitle">
-                          Total:{" "}
-                          {new Intl.NumberFormat("vi-VN", {
-                            style: "currency",
-                            currency: "VND",
-                          }).format(order.total)}
-                        </Typography>
-                        <Typography level="subtitle">
-                          Status: {order.status}
-                        </Typography>
-                      </Stack>
-                    ))
-                ) : (
-                  <Typography>No pending orders</Typography>
-                )}
-              </Stack>
+              renderTable(userOrders.filter((order) => order.status === "pending"))
             )}
           </TabPanel>
           <TabPanel value={2}>
             {isLoading ? (
               <Typography>Loading...</Typography>
             ) : (
-              <Stack spacing={4}>
-                {userOrders.filter((order) => order.status === "shipped")
-                  .length > 0 ? (
-                  userOrders
-                    .filter((order) => order.status === "shipped")
-                    .map((order) => (
-                      <Stack key={order.id} spacing={1}
-                        sx={{
-                          bgcolor: 'white',
-                          p: 2,
-                          borderRadius: 'sm',
-                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                        }}
-                      >
-                        <Typography level="h5">Order ID: {order.id}</Typography>
-                        <Typography level="subtitle">
-                          Total:{" "}
-                          {new Intl.NumberFormat("vi-VN", {
-                            style: "currency",
-                            currency: "VND",
-                          }).format(order.total)}
-                        </Typography>
-                        <Typography level="subtitle">
-                          Status: {order.status}
-                        </Typography>
-                      </Stack>
-                    ))
-                ) : (
-                  <Typography>No shipping orders</Typography>
-                )}
-              </Stack>
+              renderTable(userOrders.filter((order) => order.status === "shipped"))
             )}
           </TabPanel>
           <TabPanel value={3}>
             {isLoading ? (
               <Typography>Loading...</Typography>
             ) : (
-              <Stack spacing={4}>
-                {userOrders.filter((order) => order.status === "delivered")
-                  .length > 0 ? (
-                  userOrders
-                    .filter((order) => order.status === "delivered")
-                    .map((order) => (
-                      <Stack key={order.id} spacing={1}
-                        sx={{
-                          bgcolor: 'white',
-                          p: 2,
-                          borderRadius: 'sm',
-                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                        }}
-                      >
-                        <Typography level="h5">Order ID: {order.id}</Typography>
-                        <Typography level="subtitle">
-                          Total:{" "}
-                          {new Intl.NumberFormat("vi-VN", {
-                            style: "currency",
-                            currency: "VND",
-                          }).format(order.total)}
-                        </Typography>
-                        <Typography level="subtitle">
-                          Status: {order.status}
-                        </Typography>
-                      </Stack>
-                    ))
-                ) : (
-                  <Typography>No delivered orders</Typography>
-                )}
-              </Stack>
+              renderTable(userOrders.filter((order) => order.status === "delivered"))
             )}
           </TabPanel>
           <TabPanel value={4}>
             {isLoading ? (
               <Typography>Loading...</Typography>
             ) : (
-              <Stack spacing={4}>
-                {userOrders.filter((order) => order.status === "completed")
-                  .length > 0 ? (
-                  userOrders
-                    .filter((order) => order.status === "completed")
-                    .map((order) => (
-                      <Stack key={order.id} spacing={1}
-                        sx={{
-                          bgcolor: 'white',
-                          p: 2,
-                          borderRadius: 'sm',
-                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                        }}
-                      >
-                        <Typography level="h5">Order ID: {order.id}</Typography>
-                        <Typography level="subtitle">
-                          Total:{" "}
-                          {new Intl.NumberFormat("vi-VN", {
-                            style: "currency",
-                            currency: "VND",
-                          }).format(order.total)}
-                        </Typography>
-                        <Typography level="subtitle">
-                          Status: {order.status}
-                        </Typography>
-                      </Stack>
-                    ))
-                ) : (
-                  <Typography>No completed orders</Typography>
-                )}
-              </Stack>
+              renderTable(userOrders.filter((order) => order.status === "completed"))
             )}
           </TabPanel>
         </Tabs>

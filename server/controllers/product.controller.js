@@ -221,7 +221,7 @@ exports.createProduct = async (req, res, next) => {
   const {
     product_name,
     product_description,
-    category_ids,
+    category_id,
     options,
     specs,
     product_images_ids,
@@ -233,7 +233,8 @@ exports.createProduct = async (req, res, next) => {
     // console.log(Array.isArray(options));
     let base_price = 0;
     let total_in_stock = 0;
-
+    let special_base_price = 0;
+    console.log(options);
     if (Array.isArray(options) && options.length > 0) {
       base_price =
         options.length > 1
@@ -243,12 +244,22 @@ exports.createProduct = async (req, res, next) => {
         (acc, variation) => acc + Number(variation.stock),
         0
       );
+      special_base_price =
+        options.length > 1
+          ? Math.min(...options.map((option) => Number(option.special_price)))
+          : Number(options[0].special_price);
     }
+
+    console.log(special_base_price);
 
     const newProduct = await Product.create(
       {
         product_name,
         base_price,
+        special_base_price,
+        special_base_price_percentage:
+          Math.floor((special_base_price / base_price) * 100) -
+          Math.floor((base_price / base_price) * 100),
         product_description,
         total_in_stock,
         brand_id: specs.brand,
@@ -263,16 +274,25 @@ exports.createProduct = async (req, res, next) => {
       newProduct.availability = "out-of-stock";
     }
 
-    if (category_ids != null && category_ids.length > 0) {
-      const categories = await Category.findAll({
-        where: {
-          id: category_ids,
-        },
-        transaction,
-      });
+    // if (category_ids != null && category_ids.length > 0) {
+    //   const categories = await Category.findAll({
+    //     where: {
+    //       id: category_ids,
+    //     },
+    //     transaction,
+    //   });
 
-      await newProduct.addCategories(categories, { transaction });
+    //   await newProduct.addCategories(categories, { transaction });
+    // }
+
+    const category = await Category.findByPk(category_id, { transaction });
+
+    if (!category) {
+      res.status(404);
+      return next(new Error("Category not found"));
     }
+
+    await newProduct.addCategory(category, { transaction });
 
     const images = [];
     for (let i = 0; i < product_images_ids.length; i++) {
@@ -445,7 +465,7 @@ exports.updateProduct = async (req, res, next) => {
   const {
     product_name,
     product_description,
-    category_ids,
+    category_id,
     options,
     specs,
     product_images_ids,
@@ -475,8 +495,6 @@ exports.updateProduct = async (req, res, next) => {
       );
     }
 
-    console.log(req.body);
-
     await product.update({
       product_name: product_name || product.product_name,
       product_description: product_description || product.product_description,
@@ -493,16 +511,14 @@ exports.updateProduct = async (req, res, next) => {
       product.availability = "out-of-stock";
     }
 
-    if (category_ids != null && category_ids.length > 0) {
-      const categories = await Category.findAll({
-        where: {
-          id: category_ids,
-        },
-        transaction,
-      });
+    const category = await Category.findByPk(category_id, { transaction });
 
-      await product.setCategories(categories, { transaction });
+    if (!category) {
+      res.status(404);
+      return next(new Error("Category not found"));
     }
+
+    await product.addCategory(category, { transaction });
 
     // update product images and remove the difference
 
@@ -1063,6 +1079,7 @@ exports.getSingleProductBySlug = async (req, res, next) => {
     const seriesProducts = await Product.findAll({
       where: {
         series_id: product.series_id,
+        brand_id: product.brand_id,
       },
       attributes: [
         "id",
