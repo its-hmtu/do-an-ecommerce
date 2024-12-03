@@ -8,11 +8,13 @@ const {
   addToCart,
   updateCartItem,
   removeFromCart,
-  updateCartSubtotal
+  updateCartSubtotal,
+  emailVerify,
 } = require('../controllers/user.controller');
 const { mustBeAuthenticated } = require('../middlewares/auth.middleware');
 
 router.post('/register', register);
+router.post('/verify-email', emailVerify);
 router.post('/login', login);
 router.get('/logout', mustBeAuthenticated, logout);
 router.get('/me', mustBeAuthenticated, getUserData);

@@ -10,6 +10,8 @@ import { PATHS } from "config";
 import CheckoutPage from "pages/CheckoutPage";
 import ReturnPage from "pages/ReturnPage";
 import { brands } from "config/constants";
+import AccountManage from "pages/AccountPage/component/AccountManage";
+import EmailVerificationPage from "pages/EmailVerificationPage";
 
 const HomePage = React.lazy(() => import("pages/HomePage"));
 const ProductPage = React.lazy(() => import("pages/ProductPage"));
@@ -68,6 +70,16 @@ const routes = [
       {
         path: PATHS.ACCOUNT_PAGE,
         element: <AccountPage />,
+        children: [
+          {
+            path: PATHS.ACCOUNT_PAGE,
+            element: <AccountManage />
+          },
+          {
+            path: PATHS.MY_ORDERS,
+            element: <OrderPage />
+          }
+        ]
       },
       {
         path: PATHS.BROWSE_SERIES,
@@ -81,10 +93,6 @@ const routes = [
         path: PATHS.BROWSE_CATEGORY,
         element: <BrowseCategoryPage />
       },
-      {
-        path: PATHS.MY_ORDERS,
-        element: <OrderPage />
-      }
     ],
   },
   {
@@ -94,6 +102,10 @@ const routes = [
   {
     path: PATHS.REGISTER,
     element: <RegisterPage />,
+  },
+  {
+    path: PATHS.EMAIL_VERIFICATION,
+    element: <EmailVerificationPage />
   },
   {
     path: '/checkout',

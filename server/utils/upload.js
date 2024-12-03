@@ -13,7 +13,7 @@ const storage = multer.diskStorage({
     const parts = file.originalname.split('.');
     const extension = parts[parts.length - 1];
     let fileName = file.fieldname + '-' + Date.now();
-    if (extension === 'png' || extension === 'jpg' || extension === 'jpeg') {
+    if (extension === 'png' || extension === 'jpg' || extension === 'jpeg' || extension === 'webp') {
       fileName += '.' + extension;
     }
 

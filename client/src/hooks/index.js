@@ -12,6 +12,7 @@ import {
   createOrderApi,
   createCheckoutSessionApi,
   getUserOrdersApi,
+  emailVerifyApi,
 } from "api/user";
 import { queryKeys } from "config";
 
@@ -50,6 +51,12 @@ const useRegister = ({
       }),
   });
 };
+
+const useEmailVerify = () => {
+  return useMutation({
+    mutationFn: ({email, code}) => emailVerifyApi({email, code}),
+  });
+}
 
 const useLogout = () => {
   const queryClient = useQueryClient();
@@ -158,4 +165,5 @@ export {
   useCreateOrder,
   useCreateCheckoutSession,
   useGetUserOrders,
+  useEmailVerify,
 };

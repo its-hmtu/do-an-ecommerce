@@ -39,10 +39,8 @@ import { useSearchProducts } from "hooks/product";
 
 function Header() {
   const { user, setUser } = useContext(UserContext);
-  const {data: cartData} = useGetUserCart();
-  const [openModal, setOpenModal] = useState(false);
+  const { data: cartData } = useGetUserCart();
   const [searchValue, setSearchValue] = useState("");
-  const { mutate: logout, isPending } = useLogout();
   const {
     data: searchData,
     isLoading,
@@ -193,65 +191,29 @@ function Header() {
                 <FavoriteBorderIcon />
               </IconButton>
               <IconButton component={RLink} to={PATHS.CART}>
-                <Badge badgeContent={
-                  cartData?.cart.total_items
-                } color="primary" showZero size="sm">
+                <Badge
+                  badgeContent={cartData?.cart.total_items}
+                  color="primary"
+                  showZero
+                  size="sm"
+                >
                   <ShoppingCartOutlinedIcon />
                 </Badge>
               </IconButton>
 
               {user ? (
-                <Dropdown>
-                  <MenuButton
-                    variant="plain"
-                    sx={{ padding: "8px" }}
-                    endDecorator={<ArrowDropDownRounded />}
-                  >
-                    <Avatar
-                      variant="soft"
-                      sx={{ marginRight: "10px" }}
-                      size="sm"
-                    />
-                    {user?.username}
-                  </MenuButton>
-                  <Menu
-                    placement="bottom-end"
-                    sx={{
-                      maxWidth: "200px",
-                      width: "100%",
-                      
-                    }}
-                  >
-                    <MenuItem
-                      onClick={() => navigate(PATHS.ACCOUNT_PAGE)}
-                    >
-                      <ListItemDecorator>
-                        <AccountCircleRounded />
-                      </ListItemDecorator>
-                      Profile
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => navigate(PATHS.MY_ORDERS)}
-                    >
-                      <ListItemDecorator>
-                        <Inventory2Rounded />
-                      </ListItemDecorator>
-                      My Orders
-                    </MenuItem>
-                    <ListDivider sx={{
-                      paddingBottom: 0,
-                    }} />
-                    <MenuItem
-                      // padding="8px"
-                      onClick={() => setOpenModal(true)}
-                    >
-                      <ListItemDecorator color="danger">
-                        <LogoutRounded color="danger" />
-                      </ListItemDecorator>
-                      <Typography color="danger">Sign out</Typography>
-                    </MenuItem>
-                  </Menu>
-                </Dropdown>
+                // <Button variant="plain" color="primary" size="sm"
+                //   onClick={() => navigate(PATHS.ACCOUNT_PAGE)}
+                // >
+
+                // </Button>
+                <Link component={RLink} to={PATHS.ACCOUNT_PAGE}>
+                  <Avatar
+                    variant="soft"
+                    sx={{ marginRight: "10px" }}
+                    size="sm"
+                  />
+                </Link>
               ) : (
                 <>
                   <Button
@@ -259,6 +221,7 @@ function Header() {
                     color="neutral"
                     to={PATHS.LOGIN}
                     component={RLink}
+                    size="sm"
                   >
                     <Typography
                       sx={{
@@ -276,21 +239,6 @@ function Header() {
           </Box>
         </Box>
       </Box>
-      {openModal && (
-        <ConfirmModal
-          open={openModal}
-          title="Are you sure you want to sign out?"
-          confirmText={isPending ? "Signing out..." : "Sign out"}
-          cancelText="Cancel"
-          color="danger"
-          onCancel={() => setOpenModal(false)}
-          onConfirm={() => {
-            logout();
-            setUser(null);
-            setOpenModal(false);
-          }}
-        />
-      )}
     </>
   );
 }

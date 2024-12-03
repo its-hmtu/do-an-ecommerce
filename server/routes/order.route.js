@@ -15,14 +15,18 @@ const {
   getOrdersByStatus,
   exportOrdersToExcel
 } = require('../controllers/order.controller');
+const { mustBeAuthenticated } = require('../middlewares/auth.middleware');
 
 router.get('/', getOrders);
 // get Orders by status
-router.get('/user', getUserOrders);
-router.post('/', createOrder);
+router.post('/', mustBeAuthenticated, createOrder);
+
+router.get('/user', mustBeAuthenticated, getUserOrders);
+
+router.get('/check-status', mustBeAuthenticated, sessionStatus);
+router.post('/create-checkout-session', mustBeAuthenticated, createCheckoutSession);
+
 router.get('/status', getOrdersByStatus);
-router.get('/check-status', sessionStatus);
-router.post('/create-checkout-session', createCheckoutSession);
 
 router.put('/status/:id', updateOrderPaid);
 router.put('/ship-order', shipOrder);

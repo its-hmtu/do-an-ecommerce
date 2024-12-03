@@ -103,7 +103,7 @@ function RegisterPage() {
     ) {
       registerMutate(cred, {
         onSuccess: () => {
-          navigate("/");
+          navigate(PATHS.EMAIL_VERIFICATION, { state: { email: cred.email } });
         },
         onError: (error) => {
           console.log(error);

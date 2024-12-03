@@ -38,7 +38,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false
-    }
+    },
+    email_confirm_code: {
+      type: DataTypes.STRING(6),
+      allowNull: true
+    },
   }, {
     timestamps: true,
     tableName: 'users',
@@ -97,6 +101,18 @@ module.exports = function(sequelize, DataTypes) {
     }, process.env.JWT_REFRESH_SECRET, {
       expiresIn: '7d'
     });
+  }
+
+  User.prototype.generateEmailConfirmCode = function() {
+    // return 6 characters random string in uppercase with numbers and letters
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const charactersLength = characters.length;
+    for (let i = 0; i < 6; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    this.email_confirm_code = result;
+    return result;
   }
 
   return User;

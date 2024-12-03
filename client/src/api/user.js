@@ -53,6 +53,15 @@ const registerApi = async ({
   return response.data;
 };
 
+const emailVerifyApi = async ({ email, code }) => {
+  const response = await axiosInstance.post(API_PATHS.VERIFY_EMAIL, {
+    email,
+    code,
+  });
+
+  return response.data;
+};
+
 const getUserApi = async () => {
   const response = await axiosInstance.get(API_PATHS.USER);
   return response.data.user;
@@ -149,4 +158,5 @@ export {
   createOrderApi,
   createCheckoutSessionApi,
   getUserOrdersApi,
+  emailVerifyApi
 };

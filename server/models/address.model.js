@@ -26,6 +26,10 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING(255),
       allowNull: false
     },
+    is_default: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    }
   }, {
     timestamps: true,
     tableName: 'addresses'

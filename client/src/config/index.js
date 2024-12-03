@@ -6,6 +6,7 @@ const PATHS = {
   LOGIN: `${BASE_PATH}account/login`,
   REGISTER: `${BASE_PATH}account/register`,
   MY_ORDERS: `${BASE_PATH}account/orders`,
+  EMAIL_VERIFICATION: `${BASE_PATH}account/verify-email`,
   MOBILE: `${BASE_PATH}mobile-phones`,
   TABLET: `${BASE_PATH}tablet`,
   ACCESSORIES: `${BASE_PATH}accessories`,
@@ -14,7 +15,7 @@ const PATHS = {
   NOT_FOUND: '*',
   CONTACT: `${BASE_PATH}contact`,
   CART: `${BASE_PATH}cart`,
-  ACCOUNT_PAGE: `${BASE_PATH}account/page`,
+  ACCOUNT_PAGE: `${BASE_PATH}account`,
   PAYMENT_INFO: `${BASE_PATH}cart/payment-info`,
   PAYMENT: `${BASE_PATH}cart/payment`,
   CHECKOUT: `${BASE_PATH}checkout`,
@@ -39,6 +40,7 @@ const API_PATHS = {
   USER_CART: `${BASE_API_PATH}/account/cart`,
   ORDER: `${BASE_API_PATH}/orders`,
   CREATE_CHECKOUT_SESSION: `${BASE_API_PATH}/orders/create-checkout-session`,
+  VERIFY_EMAIL: `${BASE_API_PATH}/account/verify-email`,
 }
 
 const queryKeys = {

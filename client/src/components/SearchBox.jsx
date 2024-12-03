@@ -6,7 +6,7 @@ import { PATHS } from "config";
 
 function SearchBox({ value, onChange, searchData, isLoading, isRefetching }) {
   const [open, setOpen] = React.useState(false);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   return (
     <Tooltip
       arrow
@@ -38,11 +38,9 @@ function SearchBox({ value, onChange, searchData, isLoading, isRefetching }) {
                   },
                   cursor: "pointer",
                 }}
-                onClick={
-                  () => {
-                    navigate(`${PATHS.PRODUCT.replace(":path", item.slug)}`)
-                  }
-                }
+                onClick={() => {
+                  navigate(`${PATHS.PRODUCT.replace(":path", item.slug)}`);
+                }}
               >
                 <img
                   src={`${process.env.REACT_APP_API_URL}${
@@ -62,40 +60,33 @@ function SearchBox({ value, onChange, searchData, isLoading, isRefetching }) {
         </Box>
       }
     >
-      <Box
+      <Input
+        type="text"
+        variant="soft"
+        placeholder={
+          open ? "What are you looking for?" : "Search"
+        }
         sx={{
-          display: "flex",
-          alignItems: "center",
-          backgroundColor: "#f0f0f0",
-          borderRadius: "4px",
-          padding: "0 8px",
-          height: "36px",
+          border: "none",
+          outline: "none",
+          backgroundColor: "transparent",
+          padding: "0 5px",
+          fontSize: "14px",
+          flexGrow: 1,
+          width: open ? "250px" : "175px",
+          background: "#f0f0f0",
+          transition: "width 0.3s ease",
         }}
-      >
-        <Input
-          type="text"
-          variant="soft"
-          placeholder="What are you looking for?"
-          sx={{
-            border: "none",
-            outline: "none",
-            backgroundColor: "transparent",
-            padding: "0 5px",
-            fontSize: "14px",
-            flexGrow: 1,
-            width: "180px",
-          }}
-          value={value}
-          onChange={onChange}
-          onFocus={() => setOpen(true)}
-          onBlur={() => {
-            setTimeout(() => {
-              setOpen(false);
-            }, 200);
-          }}
-        />
-        <SearchIcon style={{ color: "#888" }} />
-      </Box>
+        value={value}
+        onChange={onChange}
+        onFocus={() => setOpen(true)}
+        onBlur={() => {
+          setTimeout(() => {
+            setOpen(false);
+          }, 200);
+        }}
+        endDecorator={<SearchIcon style={{ color: "#888" }} />}
+      />
     </Tooltip>
   );
 }

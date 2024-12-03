@@ -26,9 +26,9 @@ const moment = require("moment");
 const { generateOrderId } = require("../utils/helper");
 
 exports.createOrder = async (req, res, next) => {
-  // const { id } = req.user;
-  const id = 1;
-  const { items, subtotal, address } = req.body;
+  const { id } = req.user;
+  // const id = 1;
+  const { items, subtotal, address, total, payment_method } = req.body;
   const transaction = await sequelize.transaction({ autocommit: false });
   
   const [newAddress, created] = await Address.findOrCreate({
@@ -48,18 +48,17 @@ exports.createOrder = async (req, res, next) => {
     }
   });
   try {
-
     const order = await Order.create({
       id: generateOrderId(),
       user_id: id,
       address_id: newAddress.id,
       subtotal,
       status: "pending",
-      total: subtotal,
+      total,
+      payment_method,
+      payment_status: "pending",
       transaction  // Make sure to calculate total later based on shipping, tax, and discount
     });
-
-    console.log(order);  // Add a log to check the created order
 
     for (let item of items) {
       const product = await Product.findByPk(item.product_id);
@@ -147,15 +146,6 @@ exports.createCheckoutSession = async (req, res, next) => {
     payment_method_types: ["card"],
     ui_mode: "embedded",
     return_url: `${process.env.CLIENT_URL}/return?session_id={CHECKOUT_SESSION_ID}&order_id=${orderId}&cart_id=${cartId}&item_ids=${items.map((item) => item.id).join(",")}`,
-  });
-
-  await Order.update({
-    payment_method: "credit_card",
-    payment_status: "pending",
-  }, {
-    where: {
-      id: orderId,
-    },
   });
 
   res.status(201).json({
@@ -249,12 +239,12 @@ exports.updateOrderPaid = async (req, res, next) => {
 };
 
 exports.getUserOrders = async (req, res, next) => {
-  // const user_id = req.user.id;
-  const user_id = 1
+  const {id}= req.user;
+  
   try {
     const orders = await Order.findAndCountAll({
       where: {
-        user_id,
+        user_id: id,
       },
       include: [
         {
@@ -268,6 +258,9 @@ exports.getUserOrders = async (req, res, next) => {
                   as: "images",
                   attributes: ["id", "file_path"],
                   required: false,
+                  where: {
+                    id: { [Sequelize.Op.eq]: Sequelize.col("order_items.product.main_image_id") },
+                  }
                 },
                 {
                   model: Option,

@@ -48,14 +48,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
-      product_colors: {
-        type: DataTypes.JSON,
-        allowNull: true,
-      },
-      product_sizes: {
-        type: DataTypes.JSON,
-        allowNull: true,
-      },
       availability: {
         type: DataTypes.ENUM("in-stock", "out-of-stock"),
         allowNull: false,
@@ -99,22 +91,6 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   Product.associate = (models) => {
-    // Product.addScope('defaultScope', {
-    //   include: [
-    //     {
-    //       required: false,
-    //       model: models.ProductImage,
-    //       as: 'images',
-    //       attributes: ['id', 'file_path'],
-    //       where: {
-    //         product_id: {
-    //           [Op.ne]: null
-    //         }
-    //       }
-    //     }
-    //   ]
-    // }, { override: true });
-
     Product.hasMany(models.Review, {
       foreignKey: "product_id",
       onDelete: "RESTRICT",

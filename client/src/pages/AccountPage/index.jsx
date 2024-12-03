@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import {
   Container,
   Box,
@@ -8,144 +8,144 @@ import {
   Divider,
   Grid,
   Link,
+  Stack,
 } from "@mui/joy";
-import { Link as RLink } from "react-router-dom";
+import { Outlet, Link as RLink, useNavigate } from "react-router-dom";
 import { PATHS } from "config";
+import { Tabs, TabList, TabPanel, Tab } from "@mui/joy";
+import AccountManage from "./component/AccountManage";
+import OrderPage from "pages/OrderPage";
+import { useLogout } from "hooks";
+import ConfirmModal from "components/Modal/ConfirmModal";
 import { UserContext } from "contexts/UserContext";
+import { LogoutRounded } from "@mui/icons-material";
+import AddressBook from "./component/AddressBook";
 
 function AccountPage() {
-  const {user } = useContext(UserContext);
+  const { mutate: logout, isPending } = useLogout();
+  const [openModal, setOpenModal] = useState(false);
+  const { setUser } = useContext(UserContext);
+  const navigate = useNavigate();
   return (
-    <Container sx={{ py: 4 }}>
-      <Box sx={{ display: "flex", gap: 4 }}>
-        {/* Sidebar */}
-        <Box
+    <>
+      <Box sx={{ width: 1280, margin: "0 auto", paddingBlock: 4 }}>
+        <Tabs
+          defaultValue={0}
+          orientation="vertical"
           sx={{
-            flex: 1,
-            backgroundColor: "#f9f9f9",
-            padding: 3,
-            borderRadius: "8px",
-            boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
-            minWidth: "200px",
+            backgroundColor: "transparent",
           }}
         >
-          <Typography level="h6" sx={{ mb: 2, fontWeight: "bold" }}>
-            Manage My Account
-          </Typography>
-          <Box sx={{ mb: 2, pl: 2, fontSize: "14px"  }}>
-            <Typography>
-              My Profile
+          <Stack
+            sx={{
+              // backgroundColor: "#fff",
+              // padding: 3,
+              // borderRadius: "8px",
+              // boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
+              width: "250px",
+            }}
+          >
+            <Typography level="h6" sx={{ mb: 2, fontWeight: "bold" }}>
+              Manage Account
             </Typography>
-            <Typography >Address Book</Typography>
-            <Typography >My Payment Options</Typography>
-          </Box>
+            <TabList disableUnderline>
+              <Tab
+                value={0}
+                sx={{
+                  maxWidth: 200,
+                }}
+              >
+                My profile
+              </Tab>
+              <Tab
+                value={1}
+                sx={{
+                  maxWidth: 200,
+                }}
+              >
+                My addresses
+              </Tab>
+              <Tab
+                value={2}
+                sx={{
+                  maxWidth: 200,
+                }}
+              >
+                My orders
+              </Tab>
+            </TabList>
 
-          <Link level="h6" sx={{ mb: 2, color: "black", fontWeight: "bold" }} component={RLink} to={PATHS.MY_ORDERS}>
-            My Orders
-          </Link>
-        </Box>
-
-        {/* Edit Profile Section */}
-        <Box
-          sx={{
-            flex: 3,
-            backgroundColor: "#ffffff",
-            padding: 4,
-            borderRadius: "8px",
-            boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          <Typography level="h5" sx={{ mb: 3, fontWeight: "bold" }}>
-            Edit Your Profile
-          </Typography>
-
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
-              <Textarea
-                label="First Name"
-                placeholder="First Name"
-                fullWidth
-                sx={{ mb: 2, backgroundColor: "#f5f5f5" }}
-                value={user?.first_name}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <Textarea
-                label="Last Name"
-                placeholder="Last Name"
-                fullWidth
-                sx={{ mb: 2, backgroundColor: "#f5f5f5" }}
-                value={user?.last_name}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Textarea
-                label="Email"
-                placeholder="Your Email"
-                fullWidth
-                sx={{ mb: 2, backgroundColor: "#f5f5f5" }}
-                value={user?.email}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Textarea
-                label="Address"
-                placeholder="Address"
-                fullWidth
-                sx={{ mb: 2, backgroundColor: "#f5f5f5" }}
-                value={`${user?.addresses[1].address}, ${user?.addresses[1].ward}, ${user?.addresses[1].district}, ${user?.addresses[1].city}`}
-              />
-            </Grid>
-          </Grid>
-
-          <Divider sx={{ my: 3 }} />
-
-          <Typography level="h6" sx={{ mb: 2, fontWeight: "bold" }}>
-            Password Changes
-          </Typography>
-          <Box sx={{ mb: 2 }}>
-            <Textarea
-              label="Current Password"
-              placeholder="Current Password"
-              type="password"
-              fullWidth
-              sx={{ mb: 2, backgroundColor: "#f5f5f5" }}
-            />
-            <Textarea
-              label="New Password"
-              placeholder="New Password"
-              type="password"
-              fullWidth
-              sx={{ mb: 2, backgroundColor: "#f5f5f5" }}
-            />
-            <Textarea
-              label="Confirm New Password"
-              placeholder="Confirm New Password"
-              type="password"
-              fullWidth
-              sx={{ mb: 2, backgroundColor: "#f5f5f5" }}
-            />
-          </Box>
-
-          <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
-            <Button
-              variant="plain"
-              sx={{ borderColor: "red", borderWidth: 1 }}
-              color="neutral"
+            <Box
+              sx={{
+                width: "200px",
+              }}
             >
-              Cancel
-            </Button>
-            <Button
-              variant="solid"
-              color="primary"
-              sx={{ px: 4 }}
-            >
-              Save Changes
-            </Button>
-          </Box>
-        </Box>
+              <Divider sx={{ my: 2 }} />
+              <Button
+                variant="plain"
+                color="danger"
+                onClick={() => setOpenModal(true)}
+                disabled={isPending}
+                startDecorator={<LogoutRounded />}
+                sx={{
+                  textAlign: "left",
+                  width: "100%",
+                  justifyContent: "flex-start"
+                }}
+              >
+                Sign out
+              </Button>
+            </Box>
+          </Stack>
+
+          <TabPanel
+            value={0}
+            sx={{
+              padding: 0,
+              maxWidth: 1012,
+            }}
+          >
+            <AccountManage />
+          </TabPanel>
+
+          <TabPanel
+           value={1}
+            sx={{
+              padding: 0,
+              maxWidth: 1012,
+            }}
+           >
+            <AddressBook />
+           </TabPanel>
+
+          <TabPanel
+            value={2}
+            sx={{
+              padding: 0,
+              maxWidth: 1012,
+            }}
+          >
+            <OrderPage />
+          </TabPanel>
+        </Tabs>
       </Box>
-    </Container>
+      {openModal && (
+        <ConfirmModal
+          open={openModal}
+          title="Are you sure you want to sign out?"
+          confirmText={isPending ? "Signing out..." : "Sign out"}
+          cancelText="Cancel"
+          color="danger"
+          onCancel={() => setOpenModal(false)}
+          onConfirm={() => {
+            logout();
+            setUser(null);
+            setOpenModal(false);
+            navigate(PATHS.HOME, {replace: true});
+          }}
+        />
+      )}
+    </>
   );
 }
 
