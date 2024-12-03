@@ -7,15 +7,35 @@ import { PATHS } from "config";
 function SearchBox({ value, onChange, searchData, isLoading, isRefetching }) {
   const [open, setOpen] = React.useState(false);
   const navigate = useNavigate();
+
   return (
     <Tooltip
       arrow
       variant="outlined"
-      open={open}
+      open={open && value}
       placement="bottom"
+      sx={{
+        backgroundColor: "#fff",
+        padding: 0,
+      }}
       title={
-        <Box sx={{ fontSize: "12px", width: "500px" }}>
-          <Typography level="title-sm" sx={{ marginBottom: "8px" }}>
+        <Box
+          sx={{
+            fontSize: "12px",
+            width: "500px",
+            height: "300px",
+            overflowY: "auto",
+            backgroundColor: "#fff",
+            padding: "10px",
+            paddingTop: "0",
+            boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
+            position: "relative",
+          }}
+        >
+          <Typography
+            level="title-sm"
+            sx={{ marginBottom: "8px", position: "sticky", top: 0, padding: "10px", backgroundColor: "#fff", zIndex: 1 }}
+          >
             Search results
           </Typography>
           {isLoading ? (
@@ -37,6 +57,7 @@ function SearchBox({ value, onChange, searchData, isLoading, isRefetching }) {
                     backgroundColor: "#f0f0f0",
                   },
                   cursor: "pointer",
+                  borderRadius: "8px",
                 }}
                 onClick={() => {
                   navigate(`${PATHS.PRODUCT.replace(":path", item.slug)}`);
@@ -63,9 +84,7 @@ function SearchBox({ value, onChange, searchData, isLoading, isRefetching }) {
       <Input
         type="text"
         variant="soft"
-        placeholder={
-          open ? "What are you looking for?" : "Search"
-        }
+        placeholder={open ? "What are you looking for?" : "Search"}
         sx={{
           border: "none",
           outline: "none",
@@ -85,6 +104,13 @@ function SearchBox({ value, onChange, searchData, isLoading, isRefetching }) {
             setOpen(false);
           }, 200);
         }}
+        onKeyDown={
+          (e) => {
+            if (e.key === "Enter") {
+              navigate(PATHS.SEARCH_RESULTS, { state: { value } });
+            }
+          }
+        }
         endDecorator={<SearchIcon style={{ color: "#888" }} />}
       />
     </Tooltip>

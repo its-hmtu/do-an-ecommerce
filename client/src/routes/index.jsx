@@ -12,6 +12,7 @@ import ReturnPage from "pages/ReturnPage";
 import { brands } from "config/constants";
 import AccountManage from "pages/AccountPage/component/AccountManage";
 import EmailVerificationPage from "pages/EmailVerificationPage";
+import SearchResultPage from "pages/SearchResultPage";
 
 const HomePage = React.lazy(() => import("pages/HomePage"));
 const ProductPage = React.lazy(() => import("pages/ProductPage"));
@@ -93,6 +94,10 @@ const routes = [
         path: PATHS.BROWSE_CATEGORY,
         element: <BrowseCategoryPage />
       },
+      {
+        path: PATHS.SEARCH_RESULTS,
+        element: <SearchResultPage />
+      }
     ],
   },
   {

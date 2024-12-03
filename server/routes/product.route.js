@@ -20,6 +20,7 @@ const {
   createReview,
   getProductsBySeries
 } = require('../controllers/product.controller');
+const { trackUniqueViews } = require('../middlewares/product.middleware');
 // const checkCache = require('../middlewares/cache.middleware');
 
 router.get("/", getProducts) 
@@ -35,7 +36,7 @@ router.get('/category/:category_name', getProductsByCategory);
 
 router.get('/search', getProductsBySearch);
 
-router.get('/slug/:slug', getSingleProductBySlug);
+router.get('/slug/:slug', trackUniqueViews, getSingleProductBySlug);
 
 router.get('/brand/:brand_name', getProductsByBrand);
 

@@ -70,6 +70,7 @@ const useSearchProducts = (query) => {
   return useQuery({
     queryKey: [queryKeys.products, "search", query],
     queryFn: () => searchProductsApi(query),
+    enabled: query !== "",
   })
 }
 

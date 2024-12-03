@@ -74,6 +74,7 @@ db.Address = require('./address.model')(sequelize, Sequelize);
 db.Upload = require('./upload.model')(sequelize, Sequelize);
 db.ProductImage = require('./product_image.model')(sequelize, Sequelize);
 db.OptionImage = require('./option_image.model')(sequelize, Sequelize);
+db.ProductView = require('./product_view.model')(sequelize, Sequelize);
 db.Brand = require('./brand.model')(sequelize, Sequelize);
 db.Specification = require('./specification.model')(sequelize, Sequelize);
 db.Discount = require('./discount.model')(sequelize, Sequelize);
@@ -101,6 +102,7 @@ db.Address.associate(db);
 db.Upload.associate(db);
 db.ProductImage.associate(db);
 db.OptionImage.associate(db);
+db.ProductView.associate(db);
 db.Brand.associate(db);
 db.Specification.associate(db);
 

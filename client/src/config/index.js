@@ -21,6 +21,7 @@ const PATHS = {
   CHECKOUT: `${BASE_PATH}checkout`,
   BROWSE_SERIES: `${BASE_PATH}series/:series`,
   BROWSE_BRAND: `${BASE_PATH}brands/:brand`,
+  SEARCH_RESULTS: `${BASE_PATH}search-results`,
 }
 
 const API_PATHS = {
