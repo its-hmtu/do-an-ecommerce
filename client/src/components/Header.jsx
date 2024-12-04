@@ -25,20 +25,15 @@ import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { PATHS } from "config";
 import { UserContext } from "contexts/UserContext";
-import {
-  AccountCircleRounded,
-  ArrowDropDownRounded,
-  Inventory2Rounded,
-  LogoutRounded,
-  ProductionQuantityLimitsRounded,
-} from "@mui/icons-material";
 import { useGetUserCart, useLogout } from "hooks";
 import ConfirmModal from "./Modal/ConfirmModal";
 import SearchBox from "./SearchBox";
 import { useSearchProducts } from "hooks/product";
+import LoginModal from "./Modal/LoginModal";
 
 function Header() {
   const { user, setUser } = useContext(UserContext);
+  const [openLoginModal, setOpenLoginModal] = useState(false)
   const { data: cartData } = useGetUserCart();
   const [searchValue, setSearchValue] = useState("");
   const {
@@ -46,17 +41,25 @@ function Header() {
     isLoading,
     refetch,
   } = useSearchProducts(searchValue);
+  const navigate = useNavigate()
 
   const handleSearchChange = (e) => {
     setSearchValue(e.target.value);
   };
 
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (searchValue === "") return;
     refetch();
   }, [searchValue, refetch]);
+
+  const handleMustLogin = (to) => {
+    if (user) {
+      navigate(to)
+    } else {
+      setOpenLoginModal(true)
+    }
+  }
 
   return (
     <>
@@ -187,10 +190,14 @@ function Header() {
                 isLoading={isLoading}
               />
 
-              <IconButton>
+              <IconButton 
+                onClick={() => handleMustLogin(PATHS.FAVORITES)}
+              >
                 <FavoriteBorderIcon />
               </IconButton>
-              <IconButton component={RLink} to={PATHS.CART}>
+              <IconButton 
+                onClick={() => handleMustLogin(PATHS.CART)}
+              >
                 <Badge
                   badgeContent={cartData?.cart.total_items}
                   color="primary"
@@ -239,6 +246,15 @@ function Header() {
           </Box>
         </Box>
       </Box>
+
+      {
+        openLoginModal && (
+          <LoginModal
+           open={openLoginModal}
+           onCancel={() => setOpenLoginModal(false)}
+          />
+        )
+      }
     </>
   );
 }

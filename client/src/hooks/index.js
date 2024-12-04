@@ -13,6 +13,12 @@ import {
   createCheckoutSessionApi,
   getUserOrdersApi,
   emailVerifyApi,
+  updateAddressSetDefaultApi,
+  updateAdrressApi,
+  createAddressApi,
+  deleteAddressApi,
+  updateUserApi,
+  changePasswordApi,
 } from "api/user";
 import { queryKeys } from "config";
 
@@ -76,6 +82,22 @@ const useGetUserCart = () => {
     refetchOnWindowFocus: localStorage.getItem("access_token") ? true : false,
   });
 };
+
+const useUpdateUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => updateUserApi(data),
+    onSuccess: () => queryClient.invalidateQueries([queryKeys.user]),
+  });
+}
+
+const useChangePassword = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => changePasswordApi(data),
+    onSuccess: () => queryClient.invalidateQueries([queryKeys.user]),
+  });
+}
 
 const useUpdateUserCart = () => {
   const queryClient = useQueryClient();
@@ -152,10 +174,50 @@ const useGetUserOrders = () => {
   })
 }
 
+const useSetDefaultAddress = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => updateAddressSetDefaultApi(id),
+    onSuccess: () => queryClient.invalidateQueries([queryKeys.user]),
+  })
+}
+
+const useUpdateAddress = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      data
+    }) => updateAdrressApi({
+      id,
+      data
+    }),
+    onSuccess: () => queryClient.invalidateQueries([queryKeys.user]),
+  })
+}
+
+const useCreateAddress = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({data}) => createAddressApi({data}),
+    onSuccess: () => queryClient.invalidateQueries([queryKeys.user]),
+  })
+}
+
+const useDeleteAddress = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({id}) => deleteAddressApi(id),
+    onSuccess: () => queryClient.invalidateQueries([queryKeys.user]),
+  })
+}
+
 export {
   useLogin,
   useRegister,
   useGetUser,
+  useUpdateUser,
+  useChangePassword,
   useLogout,
   useGetUserCart,
   useUpdateUserCart,
@@ -166,4 +228,8 @@ export {
   useCreateCheckoutSession,
   useGetUserOrders,
   useEmailVerify,
+  useSetDefaultAddress,
+  useUpdateAddress,
+  useCreateAddress,
+  useDeleteAddress,
 };

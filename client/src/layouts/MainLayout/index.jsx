@@ -52,7 +52,7 @@ const MainLayout = () => {
                 position: "fixed",
                 right: "50px",
                 bottom: "50px",
-                zIndex: 9999,
+                zIndex: 1299,
                 borderRadius: "50%",
                 padding: "10px",
                 // color: "white",

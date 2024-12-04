@@ -4,7 +4,7 @@ const UserContext = createContext();
 
 const UserProvider = ({children}) => {
   const [user, setUser] = useState(null);
-  const { data } = useGetUser();
+  const { data, isLoading } = useGetUser();
 
   useEffect(() => {
     if (data) {
@@ -15,7 +15,7 @@ const UserProvider = ({children}) => {
   }, [data]);
 
   return (
-    <UserContext.Provider value={{user, setUser}}>
+    <UserContext.Provider value={{user, setUser, isLoading}}>
       {children}
     </UserContext.Provider>
   )

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Container,
   Box,
@@ -10,7 +10,12 @@ import {
   Link,
   Stack,
 } from "@mui/joy";
-import { Outlet, Link as RLink, useNavigate } from "react-router-dom";
+import {
+  Outlet,
+  Link as RLink,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import { PATHS } from "config";
 import { Tabs, TabList, TabPanel, Tab } from "@mui/joy";
 import AccountManage from "./component/AccountManage";
@@ -26,14 +31,26 @@ function AccountPage() {
   const [openModal, setOpenModal] = useState(false);
   const { setUser } = useContext(UserContext);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const key = searchParams.get("tab");
+
+  useEffect(() => {
+    if (!key) {
+      setSearchParams({ tab: "my-profile" });
+    }
+  }, [key, setSearchParams]);
+
   return (
     <>
       <Box sx={{ width: 1280, margin: "0 auto", paddingBlock: 4 }}>
         <Tabs
-          defaultValue={0}
+          defaultValue={key ? key : "my-profile"}
           orientation="vertical"
           sx={{
             backgroundColor: "transparent",
+          }}
+          onChange={(e, value) => {
+            setSearchParams({ tab: value });
           }}
         >
           <Stack
@@ -50,7 +67,7 @@ function AccountPage() {
             </Typography>
             <TabList disableUnderline>
               <Tab
-                value={0}
+                value={"my-profile"}
                 sx={{
                   maxWidth: 200,
                 }}
@@ -58,7 +75,7 @@ function AccountPage() {
                 My profile
               </Tab>
               <Tab
-                value={1}
+                value={"my-addresses"}
                 sx={{
                   maxWidth: 200,
                 }}
@@ -66,7 +83,7 @@ function AccountPage() {
                 My addresses
               </Tab>
               <Tab
-                value={2}
+                value={"my-orders"}
                 sx={{
                   maxWidth: 200,
                 }}
@@ -90,7 +107,7 @@ function AccountPage() {
                 sx={{
                   textAlign: "left",
                   width: "100%",
-                  justifyContent: "flex-start"
+                  justifyContent: "flex-start",
                 }}
               >
                 Sign out
@@ -99,7 +116,7 @@ function AccountPage() {
           </Stack>
 
           <TabPanel
-            value={0}
+            value={"my-profile"}
             sx={{
               padding: 0,
               maxWidth: 1012,
@@ -109,17 +126,17 @@ function AccountPage() {
           </TabPanel>
 
           <TabPanel
-           value={1}
+            value={"my-addresses"}
             sx={{
               padding: 0,
               maxWidth: 1012,
             }}
-           >
+          >
             <AddressBook />
-           </TabPanel>
+          </TabPanel>
 
           <TabPanel
-            value={2}
+            value={"my-orders"}
             sx={{
               padding: 0,
               maxWidth: 1012,
@@ -141,8 +158,10 @@ function AccountPage() {
             logout();
             setUser(null);
             setOpenModal(false);
-            navigate(PATHS.HOME, {replace: true});
+            navigate(PATHS.HOME, { replace: true });
           }}
+          loading={isPending}
+          disabled={isPending}
         />
       )}
     </>

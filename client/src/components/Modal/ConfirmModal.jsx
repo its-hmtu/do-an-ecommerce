@@ -19,6 +19,8 @@ function ConfirmModal({
   color,
   confirmText,
   cancelText,
+  loading = false,
+  disabled = false,
 }) {
   return (
     <Modal onClose={onCancel} open={open} sx={{}}>
@@ -31,10 +33,18 @@ function ConfirmModal({
         <Divider />
         <DialogContent>{title}</DialogContent>
         <DialogActions>
-          <Button variant="solid" color={color} onClick={onConfirm}>
+          <Button
+            variant="solid"
+            color={color}
+            onClick={onConfirm}
+            loading={loading}
+            disabled={disabled}
+          >
             {confirmText}
           </Button>
-          <Button variant="plain" color="neutral" onClick={onCancel}>
+          <Button variant="plain" color="neutral" onClick={onCancel}
+            disabled={loading}
+          >
             {cancelText}
           </Button>
         </DialogActions>

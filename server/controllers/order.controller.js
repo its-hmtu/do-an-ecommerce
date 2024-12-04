@@ -282,6 +282,10 @@ exports.getUserOrders = async (req, res, next) => {
             },
           ],
         },
+        {
+          model: Address,
+          required: false,
+        }
       ],
     });
 

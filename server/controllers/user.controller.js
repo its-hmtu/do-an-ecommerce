@@ -17,11 +17,10 @@ const Op = require("sequelize").Op;
 const sanitizeInput = require("../utils/sanitize").sanitizeInput;
 const nodemailer = require("nodemailer");
 
-
 exports.register = async (req, res, next) => {
   const { email, password, confirm_password, username, first_name, last_name } =
     req.body;
-    const transaction = await sequelize.transaction();
+  const transaction = await sequelize.transaction();
   const emailRegex =
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
@@ -118,13 +117,16 @@ exports.register = async (req, res, next) => {
       <p>Your Company Name</p>`,
     };
 
-
     const info = await transporter.sendMail(mailOptions);
     console.log("Preview URL:", nodemailer.getTestMessageUrl(info));
 
     return res
       .status(201)
-      .json({ message: "User created successfully", success: true, email: newUser.email });
+      .json({
+        message: "User created successfully",
+        success: true,
+        email: newUser.email,
+      });
   } catch (e) {
     await transaction.rollback();
     return next(e);
@@ -161,7 +163,7 @@ exports.emailVerify = async (req, res, next) => {
   await user.save();
 
   return res.status(200).json({ message: "Email verified", success: true });
-}
+};
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
@@ -205,11 +207,14 @@ exports.login = async (req, res) => {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 
+  res.clearCookie("session_id");
+
   return res.status(200).json({ message: "Login successful", token });
 };
 
 exports.logout = async (req, res) => {
   res.clearCookie("refresh_token");
+  res.clearCookie("session_id");
   return res.status(200).json({ message: "Logout successful" });
 };
 
@@ -231,6 +236,107 @@ exports.getUserData = async (req, res, next) => {
 
   return res.status(200).json({ user });
 };
+
+exports.changeUserInfo = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+  const { first_name, last_name, email, phone, username } = req.body;
+
+  const user = await User.findOne({
+    where: { id },
+  });
+
+  if (!user) {
+    res.status(404);
+    return next(new Error("User not found"));
+  }
+
+  // email is currently cannot be changed
+  if (username) {
+    const existing = await User.findOne({
+      where: { username, id: { [Op.ne]: id } },
+    });
+
+    if (existing) {
+      res.status(400);
+      return next(new Error("Username already exists"));
+    }
+
+  }
+
+  await user.update({
+    first_name: first_name || user.first_name,
+    last_name: last_name || user.last_name,
+    phone: phone || user.phone,
+    username: username || user.username,
+  });
+  
+  return res.status(200).json({ message: "User info updated", success: true });
+  } catch (e) {
+    next(e);
+  }
+
+}
+
+exports.changePassword = async (req, res, next) => {
+  try {
+    const {id} = req.user;
+    const {old_password, new_password, confirm_password} = req.body;
+
+    if (!old_password || old_password.trim() === "") {
+      res.status(400);
+      return next(new Error("Old password is required"));
+    }
+
+    if (!new_password || new_password.trim() === "") {
+      res.status(400);
+      return next(new Error("New password is required"));
+    }
+
+    if (!confirm_password || confirm_password.trim() === "") {
+      res.status(400);
+      return next(new Error("Confirm password is required"));
+    }
+
+    if (new_password !== confirm_password) {
+      res.status(400);
+      return next(new Error("Passwords do not match"));
+    }
+
+    if (new_password.length < 6) {
+      res.status(400);
+      return next(new Error("Password must be at least 6 characters"));
+    }
+
+    if (new_password === old_password) {
+      res.status(400);
+      return next(new Error("New password must be different from the old password"));
+    }
+
+    const user = await User.findByPk(id);
+
+    if (!user) {
+      res.status(404);
+      return next(new Error("User not found"));
+    }
+
+    const isValidPassword = await user.isValidPassword(old_password);
+
+    if (!isValidPassword) {
+      res.status(401);
+      return next(new Error("Invalid password"));
+    }
+
+    const hash = await user.encryptePassword(new_password);
+    
+    user.password = hash;
+    await user.save();
+
+    return res.status(200).json({ message: "Password changed", success: true });
+  } catch (e) {
+    next(e)
+  }
+}
 
 exports.getUserCart = async (req, res, next) => {
   // const {id} = req.user;
@@ -459,3 +565,214 @@ exports.removeFromCart = async (req, res, next) => {
   await cart.save();
   return res.status(200).json({ message: "Cart item removed" });
 };
+
+exports.addAddress = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+    const { address, city, district, ward, is_default } = req.body;
+
+    if (!address || address.trim() === "") {
+      res.status(400);
+      return next(new Error("Address is required"));
+    }
+
+    if (!city || city.trim() === "") {
+      res.status(400);
+      return next(new Error("City is required"));
+    }
+
+    if (!district || district.trim() === "") {
+      res.status(400);
+      return next(new Error("District is required"));
+    }
+
+    if (!ward || ward.trim() === "") {
+      res.status(400);
+      return next(new Error("Ward is required"));
+    }
+
+    const newAddress = await Address.create({
+      user_id: id,
+      address,
+      city,
+      district,
+      ward,
+      is_default,
+    });
+
+    if (is_default) {
+      const otherAddresses = await Address.findAll({
+        where: { user_id: id, id: { [Op.ne]: newAddress.id } },
+      });
+
+      await Promise.all(
+        otherAddresses.map((address) => {
+          address.is_default = false;
+          return address.save();
+        })
+      );
+    }
+
+    return res
+      .status(201)
+      .json({ message: "Address created", success: true });
+  } catch (e) {
+    next(e);
+  }
+}
+
+exports.setDefaultAddress = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+    const { addressId } = req.params;
+
+    const address = await Address.findOne(
+      {
+        where: { id: addressId, user_id: id },
+      },
+    );
+
+    if (!address) {
+      res.status(404);
+      return next(new Error("Address not found"));
+    }
+
+    await address.update(
+      {
+        is_default: true,
+      },
+    );
+
+    const otherAddresses = await Address.findAll(
+      {
+        where: { user_id: id, id: { [Op.ne]: addressId } },
+      },
+    );
+
+    await Promise.all(
+      otherAddresses.map((address) => {
+        address.is_default = false;
+        return address.save();
+      })
+    );
+
+    return res
+      .status(200)
+      .json({ message: "Default address set", success: true });
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.updateAddress = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+    const { addressId } = req.params;
+    const { address, city, district, ward, is_default } = req.body;
+
+    const addressInstance = await Address.findOne(
+      {
+        where: { id: addressId, user_id: id },
+      },
+    );
+
+    if (!addressInstance) {
+      res.status(404);
+      return next(new Error("Address not found"));
+    }
+
+    await addressInstance.update(
+      {
+        address,
+        city,
+        district,
+        ward,
+        is_default,
+      },
+    );
+
+    const otherAddresses = await Address.findAll(
+      {
+        where: { user_id: id, id: { [Op.ne]: addressId } },
+      },
+    );
+
+    if (is_default) {
+      await Promise.all(
+        otherAddresses.map((address) => {
+          address.is_default = false;
+          return address.save();
+        })
+      );
+    } else {
+      // If the address is not set as default, check if there are no default addresses
+      const defaultAddress = otherAddresses.find((address) => address.is_default);
+      if (!defaultAddress) {
+        const newDefaultAddress = otherAddresses[0];
+        newDefaultAddress.is_default = true;
+        await newDefaultAddress.save();
+      }
+    }
+
+    return res.status(200).json({ message: "Address updated", success: true });
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.deleteAddress = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+    const { addressId } = req.params;
+
+    const address = await Address.findOne({
+      where: { id: addressId, user_id: id },
+    });
+
+    if (!address) {
+      res.status(404);
+      return next(new Error("Address not found"));
+    }
+
+    if (address.is_default) {
+      const otherAddresses = await Address.findAll({
+        where: { user_id: id, id: { [Op.ne]: addressId } },
+      });
+
+      if (otherAddresses.length > 0) {
+        const newDefaultAddress = otherAddresses[0];
+        newDefaultAddress.is_default = true;
+        await newDefaultAddress.save();
+      }
+    }
+
+    await address.destroy();
+
+    return res.status(200).json({ message: "Address deleted", success: true });
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.passwordReset = async (req, res, next) => {
+  const { email } = req.query;
+
+  if (!email || email.trim() === "") {
+    res.status(400);
+    return next(new Error("Email is required"));
+  }
+
+  const user = await User.findOne({
+    where: { email: sanitizeInput(email) },
+  });
+
+  let password = "admin123"
+
+  const hash = await user.encryptePassword(password)
+
+  user.password = hash
+  await user.save()
+
+  res.status(200).json({ message: "Password reset", password });
+}
+

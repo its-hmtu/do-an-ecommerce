@@ -12,7 +12,9 @@ function SuspenseFallBack() {
         // maxWidth: 1280,
       }}
     >
-      <LinearProgress />
+      <LinearProgress
+        size="sm"
+      />
     </Box>
   );
 }

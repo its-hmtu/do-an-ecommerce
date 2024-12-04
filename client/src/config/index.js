@@ -19,6 +19,7 @@ const PATHS = {
   PAYMENT_INFO: `${BASE_PATH}cart/payment-info`,
   PAYMENT: `${BASE_PATH}cart/payment`,
   CHECKOUT: `${BASE_PATH}checkout`,
+  RETURN: `${BASE_PATH}return`,
   BROWSE_SERIES: `${BASE_PATH}series/:series`,
   BROWSE_BRAND: `${BASE_PATH}brands/:brand`,
   SEARCH_RESULTS: `${BASE_PATH}search-results`,
@@ -29,6 +30,7 @@ const API_PATHS = {
   REGISTER: `${BASE_API_PATH}/account/register`,
   LOGOUT: `${BASE_API_PATH}/account/logout`,
   USER: `${BASE_API_PATH}/account/me`,
+  USER_PASSWORD: `${BASE_API_PATH}/account/me/password`,
   USER_ORERS: `${BASE_API_PATH}/orders/user`,
   REFRESH: `${BASE_API_PATH}/refresh`,
   PRODUCTS: `${BASE_API_PATH}/products`,
@@ -42,6 +44,8 @@ const API_PATHS = {
   ORDER: `${BASE_API_PATH}/orders`,
   CREATE_CHECKOUT_SESSION: `${BASE_API_PATH}/orders/create-checkout-session`,
   VERIFY_EMAIL: `${BASE_API_PATH}/account/verify-email`,
+  ADDRESS: `${BASE_API_PATH}/account/address`,
+  ADDRESS_SET_DEFAULT: `${BASE_API_PATH}/account/address/default/:id`,
 }
 
 const queryKeys = {

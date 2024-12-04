@@ -124,9 +124,10 @@ function ProductCard({ data, showTotalReviews = true }) {
 
       <CardContent>
         <Typography
-          level="title-lg"
+          level="title-md"
           sx={{
             fontWeight: "bold",
+            height: "40px",
           }}
           component={Link}
           to={PATHS.PRODUCT.replace(":path", data?.slug)}

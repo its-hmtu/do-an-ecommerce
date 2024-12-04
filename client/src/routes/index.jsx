@@ -70,17 +70,7 @@ const routes = [
       },
       {
         path: PATHS.ACCOUNT_PAGE,
-        element: <AccountPage />,
-        children: [
-          {
-            path: PATHS.ACCOUNT_PAGE,
-            element: <AccountManage />
-          },
-          {
-            path: PATHS.MY_ORDERS,
-            element: <OrderPage />
-          }
-        ]
+        element: <AccountPage />
       },
       {
         path: PATHS.BROWSE_SERIES,
@@ -113,11 +103,11 @@ const routes = [
     element: <EmailVerificationPage />
   },
   {
-    path: '/checkout',
+    path: PATHS.CHECKOUT,
     element: <CheckoutPage />
   },
   {
-    path: '/return',
+    path: PATHS.RETURN,
     element: <ReturnPage />
   }
 ]

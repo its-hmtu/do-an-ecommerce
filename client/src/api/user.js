@@ -67,6 +67,18 @@ const getUserApi = async () => {
   return response.data.user;
 };
 
+const updateUserApi = async (data) => {
+  const response = await axiosInstance.put(API_PATHS.USER, data);
+
+  return response.data;
+}
+
+const changePasswordApi = async (data) => {
+  const response = await axiosInstance.put(API_PATHS.USER_PASSWORD, data);
+
+  return response.data;
+}
+
 const getUserCartApi = async () => {
   const response = await axiosInstance.get(API_PATHS.USER_CART);
   return response.data;
@@ -145,12 +157,51 @@ const getUserOrdersApi = async () => {
   return response.data.data;
 }
 
+const updateAddressSetDefaultApi =  async (addressId) => {
+  const response = await axiosInstance.put(
+    `${API_PATHS.ADDRESS_SET_DEFAULT.replace(":id", addressId)}`
+  )
+
+  return response.data
+}
+
+const updateAdrressApi = async ({
+  id: addressId,
+  data
+}) => {
+  const response = await axiosInstance.put(
+    `${API_PATHS.ADDRESS}/${addressId}`,
+    data
+  )
+
+  return response.data
+}
+
+const createAddressApi = async ({data}) => {
+  const response = await axiosInstance.post(
+    `${API_PATHS.ADDRESS}`,
+    data
+  )
+
+  return response.data
+}
+
+const deleteAddressApi = async (addressId) => {
+  const response = await axiosInstance.delete(
+    `${API_PATHS.ADDRESS}/${addressId}`
+  )
+
+  return response.data
+}
+
 export {
   loginApi,
   getUserApi,
   registerApi,
   logoutApi,
   getUserCartApi,
+  updateUserApi,
+  changePasswordApi,
   updateUserCartApi,
   addItemToCartApi,
   removeFromCartApi,
@@ -158,5 +209,9 @@ export {
   createOrderApi,
   createCheckoutSessionApi,
   getUserOrdersApi,
-  emailVerifyApi
+  emailVerifyApi,
+  updateAddressSetDefaultApi,
+  updateAdrressApi,
+  createAddressApi,
+  deleteAddressApi
 };

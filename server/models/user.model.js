@@ -65,13 +65,19 @@ module.exports = function(sequelize, DataTypes) {
   };
 
   User.beforeCreate(user => {
-    console.log(user)
 
     const salt = bcrypt.genSaltSync(10);
     const hash = bcrypt.hashSync(user.password, salt);
 
     user.password = hash;
   })
+
+  User.prototype.encryptePassword = function(password) {
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(password, salt);
+
+    return hash;
+  }
 
   User.prototype.isValidPassword = function(password) {
     return bcrypt.compareSync(password, this.password);

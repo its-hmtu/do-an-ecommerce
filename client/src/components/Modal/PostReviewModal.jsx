@@ -13,9 +13,10 @@ import {
 } from "@mui/joy";
 import { Rate, Input } from "antd";
 import { useSubmitReview } from "hooks/product";
+import { toast } from "react-toastify";
 const TextArea = Input.TextArea;
 
-function PostReviewModal({ open, onCancel, color, productId }) {
+function PostReviewModal({ open, onCancel, productId }) {
   const [reviewData, setReviewData] = React.useState({
     rating: 0,
     review: "",
@@ -28,7 +29,6 @@ function PostReviewModal({ open, onCancel, color, productId }) {
     <Modal onClose={onCancel} open={open} sx={{}}>
       <ModalDialog variant="outlined">
         <ModalClose />
-
         <DialogTitle>Post a Review</DialogTitle>
         <Divider />
         <Box
@@ -53,6 +53,7 @@ function PostReviewModal({ open, onCancel, color, productId }) {
                 setReviewData({ ...reviewData, rating: value })
               }
               tooltips={["Terrible", "Bad", "Normal", "Good", "Wonderful"]}
+              disabled={isPending}
             />
             <span
               style={{
@@ -69,7 +70,7 @@ function PostReviewModal({ open, onCancel, color, productId }) {
               }
             </span>
             <TextArea
-              placeholder="Please write your review here... (min 25 characters)"
+              placeholder="Please write your review here... (min 15 characters)"
               autoSize={{ minRows: 3, maxRows: 5 }}
               style={{
                 marginTop: "16px",
@@ -78,23 +79,31 @@ function PostReviewModal({ open, onCancel, color, productId }) {
               onChange={(e) =>
                 setReviewData({ ...reviewData, review: e.target.value })
               }
+              disabled={isPending}
             />
           </DialogContent>
           <DialogActions>
             <Button
               variant="solid"
-              color={color}
+              color="primary"
               onClick={() => {
-                if (reviewData.review.length < 25) {
+                if (reviewData.review.length < 15) {
                   alert("Review must be at least 25 characters long");
                   return;
                 }
-                mutate(reviewData);
-                onCancel();
+                mutate(reviewData, {
+                  onSuccess: () => {
+                    toast.success("Review submitted successfully! Thank you!");
+                    onCancel();
+                  },
+                  onError: (error) => {
+                    toast.error("Failed to submit review");
+                  },
+                });
               }}
               disabled={
                 isPending ||
-                reviewData.review.length < 25 ||
+                reviewData.review.length < 15 ||
                 reviewData.rating === 0 ||
                 reviewData.rating === null ||
                 reviewData.review === "" ||
@@ -103,6 +112,7 @@ function PostReviewModal({ open, onCancel, color, productId }) {
                 reviewData.product_id === null ||
                 reviewData.product_id === 0
               }
+              loading={isPending}
             >
               Submit Review
             </Button>
