@@ -531,7 +531,7 @@ function OrderDetail() {
                           fontWeight: 600,
                         }}
                       >
-                        Phone:{" "}1234567
+                        Phone:{" "}
                       </span>
                       {data?.data.user.phone}
                     </Typography>

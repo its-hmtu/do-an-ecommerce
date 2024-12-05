@@ -39,7 +39,6 @@ import { getOrdersByStatus } from "api/orders.api";
 import { adminLogout } from "api";
 import ConfirmModal from "components/ConfirmModal";
 
-
 function Sidebar({ user }) {
   const navigate = useNavigate();
   const location = useLocation().pathname;
@@ -54,252 +53,242 @@ function Sidebar({ user }) {
   const {
     data: orders,
     isLoading,
-    refetch
+    refetch,
   } = useQuery({
     queryKey: ["orders", { status: "pending" }],
-    queryFn: () =>
-      getOrdersByStatus("pending"),
+    queryFn: () => getOrdersByStatus("pending"),
   });
 
-  const {mutate: logoutMutation, isPending} = useMutation({
+  const { mutate: logoutMutation, isPending } = useMutation({
     mutationFn: adminLogout,
     onSuccess: () => {
       sessionStorage.removeItem("token");
       navigate("/login");
-    }
-  })
+    },
+  });
 
   return (
     <>
-    <Sheet
-      className="Sidebar"
-      sx={{
-        position: { xs: "fixed", md: "sticky" },
-        transform: {
-          xs: "translateX(calc(100% * (var(--SideNavigation-slideIn, 0) - 1)))",
-          md: "none",
-        },
-        transition: "transform 0.4s, width 0.4s",
-        zIndex: 1299,
-        height: "100vh",
-        width: "var(--Sidebar-width)",
-        top: 0,
-        padding: "16px 8px",
-        flexShrink: 0,
-        display: "flex",
-        flexDirection: "column",
-        gap: 2,
-        borderRight: "1px solid",
-        borderColor: "divider",
-      }}
-    >
-      <GlobalStyles
-        styles={(theme) => ({
-          ":root": {
-            "--Sidebar-width": "220px",
-            [theme.breakpoints.up("lg")]: {
-              "--Sidebar-width": "240px",
-            },
-          },
-        })}
-      />
-      <Box
-        className="Sidebar-overlay"
+      <Sheet
+        className="Sidebar"
         sx={{
-          position: "fixed",
-          zIndex: 9998,
-          top: 0,
-          left: 0,
-          width: "100vw",
-          height: "100vh",
-          opacity: "var(--SideNavigation-slideIn)",
-          backgroundColor: "var(--joy-palette-background-backdrop)",
-          transition: "opacity 0.4s",
+          position: { xs: "fixed", md: "sticky" },
           transform: {
-            xs: "translateX(calc(100% * (var(--SideNavigation-slideIn, 0) - 1) + var(--SideNavigation-slideIn, 0) * var(--Sidebar-width, 0px)))",
-            lg: "translateX(-100%)",
+            xs: "translateX(calc(100% * (var(--SideNavigation-slideIn, 0) - 1)))",
+            md: "none",
           },
-        }}
-        onClick={() => closeSidebar()}
-      />
-      <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-        <IconButton variant="soft" color="primary" size="sm">
-          <BrightnessAutoRoundedIcon />
-        </IconButton>
-        <Typography level="title-lg">Acme Co.</Typography>
-        <ColorSchemeToggle sx={{ ml: "auto" }} />
-      </Box>
-      <Input
-        size="sm"
-        startDecorator={<SearchRoundedIcon />}
-        placeholder="Search"
-      />
-      <Box
-        sx={{
-          minHeight: 0,
-          overflow: "hidden auto",
-          flexGrow: 1,
+          transition: "transform 0.4s, width 0.4s",
+          zIndex: 1299,
+          height: "100vh",
+          width: "var(--Sidebar-width)",
+          top: 0,
+          padding: "16px 8px",
+          flexShrink: 0,
           display: "flex",
           flexDirection: "column",
-          [`& .${listItemButtonClasses.root}`]: {
-            gap: 1.5,
-          },
+          gap: 2,
+          borderRight: "1px solid",
+          borderColor: "divider",
         }}
       >
-        <List
-          size="sm"
+        <GlobalStyles
+          styles={(theme) => ({
+            ":root": {
+              "--Sidebar-width": "220px",
+              [theme.breakpoints.up("lg")]: {
+                "--Sidebar-width": "240px",
+              },
+            },
+          })}
+        />
+        <Box
+          className="Sidebar-overlay"
           sx={{
-            gap: 1,
-            "--List-nestedInsetStart": "30px",
-            "--ListItem-radius": (theme) => theme.vars.radius.sm,
+            position: "fixed",
+            zIndex: 9998,
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            opacity: "var(--SideNavigation-slideIn)",
+            backgroundColor: "var(--joy-palette-background-backdrop)",
+            transition: "opacity 0.4s",
+            transform: {
+              xs: "translateX(calc(100% * (var(--SideNavigation-slideIn, 0) - 1) + var(--SideNavigation-slideIn, 0) * var(--Sidebar-width, 0px)))",
+              lg: "translateX(-100%)",
+            },
+          }}
+          onClick={() => closeSidebar()}
+        />
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+          <IconButton variant="soft" color="primary" size="sm">
+            <BrightnessAutoRoundedIcon />
+          </IconButton>
+          <Typography level="title-lg">Acme Co.</Typography>
+          <ColorSchemeToggle sx={{ ml: "auto" }} />
+        </Box>
+        <Input
+          size="sm"
+          startDecorator={<SearchRoundedIcon />}
+          placeholder="Search"
+        />
+        <Box
+          sx={{
+            minHeight: 0,
+            overflow: "hidden auto",
+            flexGrow: 1,
+            display: "flex",
+            flexDirection: "column",
+            [`& .${listItemButtonClasses.root}`]: {
+              gap: 1.5,
+            },
           }}
         >
-          <ListItem>
-            <NavLink to="/dashboard">
-              <ListItemButton selected={selected === "/dashboard"}>
-                <DashboardRoundedIcon />
+          <List
+            size="sm"
+            sx={{
+              gap: 1,
+              "--List-nestedInsetStart": "30px",
+              "--ListItem-radius": (theme) => theme.vars.radius.sm,
+            }}
+          >
+            <ListItem>
+              <NavLink to="/dashboard">
+                <ListItemButton selected={selected === "/dashboard"}>
+                  <DashboardRoundedIcon />
+                  <ListItemContent>
+                    <Typography level="title-sm">Dashboard</Typography>
+                  </ListItemContent>
+                </ListItemButton>
+              </NavLink>
+            </ListItem>
+            <ListItem>
+              <NavLink to="/products">
+                <ListItemButton selected={selected === "/products"}>
+                  <InventoryIcon />
+                  <ListItemContent>
+                    <Typography level="title-sm">Products</Typography>
+                  </ListItemContent>
+                </ListItemButton>
+              </NavLink>
+            </ListItem>
+            <ListItem>
+              <NavLink to="/orders">
+                <ListItemButton selected={selected === "/orders"}>
+                  <ShoppingCartRoundedIcon />
+                  <ListItemContent>
+                    <Typography level="title-sm">Orders</Typography>
+                  </ListItemContent>
+                  {orders?.total > 0 && (
+                    <Chip size="sm" color="primary" variant="solid">
+                      {orders?.total}
+                    </Chip>
+                  )}
+                </ListItemButton>
+              </NavLink>
+            </ListItem>
+            <ListItem>
+              <NavLink to="/categories">
+                <ListItemButton selected={selected === "/categories"}>
+                  <CategoryRounded />
+                  <ListItemContent>
+                    <Typography level="title-sm">Categories</Typography>
+                  </ListItemContent>
+                </ListItemButton>
+              </NavLink>
+            </ListItem>
+            <ListItem>
+              <NavLink to="/users">
+                <ListItemButton selected={selected === "/users"}>
+                  <GroupRoundedIcon />
+                  <ListItemContent>
+                    <Typography level="title-sm">Users</Typography>
+                  </ListItemContent>
+                </ListItemButton>
+              </NavLink>
+            </ListItem>
+            <ListItem>
+              <NavLink to="/roles">
+                <ListItemButton selected={selected === "/roles"}>
+                  <AdminPanelSettings />
+                  <ListItemContent>
+                    <Typography level="title-sm">
+                      Roles and Permissions
+                    </Typography>
+                  </ListItemContent>
+                </ListItemButton>
+              </NavLink>
+            </ListItem>
+            <ListItem>
+              <ListItemButton role="menuitem" component="a">
+                <QuestionAnswerRoundedIcon />
                 <ListItemContent>
-                  <Typography level="title-sm">Dashboard</Typography>
-                </ListItemContent>
-              </ListItemButton>
-            </NavLink>
-          </ListItem>
-          <ListItem>
-            <NavLink to="/products">
-              <ListItemButton selected={selected === "/products"}>
-                <InventoryIcon />
-                <ListItemContent>
-                  <Typography level="title-sm">Products</Typography>
-                </ListItemContent>
-              </ListItemButton>
-            </NavLink>
-          </ListItem>
-          <ListItem>
-            <NavLink to="/orders">
-              <ListItemButton selected={selected === "/orders"}>
-                <ShoppingCartRoundedIcon />
-                <ListItemContent>
-                  <Typography level="title-sm"
-                  >Orders</Typography>
+                  <Typography level="title-sm">Messages</Typography>
                 </ListItemContent>
                 <Chip size="sm" color="primary" variant="solid">
-                {orders?.total}
-              </Chip>
+                  4
+                </Chip>
               </ListItemButton>
-            </NavLink>
-          </ListItem>
-          <ListItem>
-            <NavLink to="/categories">
-              <ListItemButton selected={selected === "/categories"}>
-                <CategoryRounded />
-                <ListItemContent>
-                  <Typography level="title-sm">Categories</Typography>
-                </ListItemContent>
+            </ListItem>
+          </List>
+          <List
+            size="sm"
+            sx={{
+              mt: "auto",
+              flexGrow: 0,
+              "--ListItem-radius": (theme) => theme.vars.radius.sm,
+              "--List-gap": "8px",
+              mb: 2,
+            }}
+          >
+            <ListItem>
+              <ListItemButton>
+                <SupportRoundedIcon />
+                Support
               </ListItemButton>
-            </NavLink>
-          </ListItem>
-          <ListItem>
-            <NavLink to="/users">
-              <ListItemButton selected={selected === "/users"}>
-                <GroupRoundedIcon />
-                <ListItemContent>
-                  <Typography level="title-sm">Users</Typography>
-                </ListItemContent>
+            </ListItem>
+            <ListItem>
+              <ListItemButton>
+                <SettingsRoundedIcon />
+                Settings
               </ListItemButton>
-            </NavLink>
-          </ListItem>
-          <ListItem>
-            <NavLink to="/roles">
-              <ListItemButton
-                selected={selected === "/roles"}
-              >
-                <AdminPanelSettings />
-                <ListItemContent>
-                  <Typography level="title-sm">
-                    Roles and Permissions
-                  </Typography>
-                </ListItemContent>
-              </ListItemButton>
-            </NavLink>
-          </ListItem>
-          <ListItem>
-            <ListItemButton role="menuitem" component="a">
-              <QuestionAnswerRoundedIcon />
-              <ListItemContent>
-                <Typography level="title-sm">Messages</Typography>
-              </ListItemContent>
-              <Chip size="sm" color="primary" variant="solid">
-                4
-              </Chip>
-            </ListItemButton>
-          </ListItem>
-        </List>
-        <List
-          size="sm"
-          sx={{
-            mt: "auto",
-            flexGrow: 0,
-            "--ListItem-radius": (theme) => theme.vars.radius.sm,
-            "--List-gap": "8px",
-            mb: 2,
-          }}
-        >
-          <ListItem>
-            <ListItemButton>
-              <SupportRoundedIcon />
-              Support
-            </ListItemButton>
-          </ListItem>
-          <ListItem>
-            <ListItemButton>
-              <SettingsRoundedIcon />
-              Settings
-            </ListItemButton>
-          </ListItem>
+            </ListItem>
 
-          <ListItem>
-            <ListItemButton color="danger"
-              onClick={() => setOpenModal(true)}
-            >
-              <LogoutRoundedIcon color="danger" />
-              Logout
-            </ListItemButton>
-          </ListItem>
-        </List>
-      </Box>
-      <Divider />
-      <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-        <Avatar
-          variant="soft"
-          size="sm"
-          alt={user?.first_name}
-          color="primary"
-        />
-        <Box sx={{ minWidth: 200, flex: 1 }}>
-          <Typography level="title-sm">
-            {user?.first_name + " " + user?.last_name}
-          </Typography>
-          <Typography level="body-xs">{user?.email}</Typography>
+            <ListItem>
+              <ListItemButton color="danger" onClick={() => setOpenModal(true)}>
+                <LogoutRoundedIcon color="danger" />
+                Logout
+              </ListItemButton>
+            </ListItem>
+          </List>
         </Box>
-      </Box>
-    </Sheet>
-    <ConfirmModal 
-      open={openModal}
-      title="Log out"
-      description={
-        "Are you sure you want to log out?"
-      }
-      onClose={
-        () => setOpenModal(false)
-      }
-      onConfirm={
-        () => {
+        <Divider />
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+          <Avatar
+            variant="soft"
+            size="sm"
+            alt={user?.first_name}
+            color="primary"
+          />
+          <Box sx={{ minWidth: 200, flex: 1 }}>
+            <Typography level="title-sm">
+              {user?.first_name + " " + user?.last_name}
+            </Typography>
+            <Typography level="body-xs">{user?.email}</Typography>
+          </Box>
+        </Box>
+      </Sheet>
+      <ConfirmModal
+        open={openModal}
+        title="Log out"
+        description={"Are you sure you want to log out?"}
+        onClose={() => setOpenModal(false)}
+        onConfirm={() => {
           logoutMutation();
           setOpenModal(false);
-        }
-      }
-      confirmText="Log out"
-    />
+        }}
+        confirmText="Log out"
+      />
     </>
   );
 }

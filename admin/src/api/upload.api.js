@@ -1,11 +1,9 @@
 import api from "api";
 
-const uploadFile = async (files, cb) => {
+const uploadFile = async (file, cb) => {
   try {
     const formData = new FormData();
-    files.forEach((file) => {
-      formData.append("images", file);
-    })
+    formData.append("images", file);
 
     const response = await api.post("/upload", formData, {
       headers: {
@@ -16,7 +14,8 @@ const uploadFile = async (files, cb) => {
           (progressEvent.loaded * 100) / progressEvent.total
         );
         cb(percentCompleted);
-      },
+        console.log(cb(percentCompleted));
+      }
     });
 
     if (response.data.success === false) {

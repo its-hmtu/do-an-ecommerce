@@ -5,10 +5,10 @@ import React from "react";
 function Filter({
   isStatusVisible = false,
   isCategoryVisible = false,
-  isCustomerVisible = false,
   categoryData,
   categoryValue,
-  onChange
+  onChange,
+  disabled,
 }) {
   return (
     <React.Fragment>
@@ -33,6 +33,7 @@ function Filter({
           <Select size="sm" placeholder="All" 
             onChange={onChange}
             value={categoryValue}
+            disabled={disabled}
             {...(
               categoryValue
               && {
@@ -44,24 +45,10 @@ function Filter({
             })}
           >
             {categoryData?.map((category) => (
-              <Option key={category.id} value={category.name}>
+              <Option key={category.id} value={category.id}>
                 {category.name}
               </Option>
             ))}
-          </Select>
-        </FormControl>
-      )}
-      {isCustomerVisible && (
-        <FormControl size="sm">
-          <FormLabel>Customer</FormLabel>
-          <Select size="sm" placeholder="All">
-            <Option value="all">All</Option>
-            <Option value="olivia">Olivia Rhye</Option>
-            <Option value="steve">Steve Hampton</Option>
-            <Option value="ciaran">Ciaran Murray</Option>
-            <Option value="marina">Marina Macdonald</Option>
-            <Option value="charles">Charles Fulton</Option>
-            <Option value="jay">Jay Hoper</Option>
           </Select>
         </FormControl>
       )}

@@ -29,13 +29,23 @@ function BasicInfo({
   progress,
   uploadedFiles,
   coverImageCount,
+  previewFiles,
   filesCount,
   onDrop,
   handleRemoveImage,
   handleOnChange,
   handleOnCategoryChange,
-  focusRef
 }) {
+  const quillRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (quillRef.current) {
+      quillRef.current.getEditor().root.innerHTML = data.description;
+    }
+  });
+
+
+  
   return (
     <Stack
       gap={2}
@@ -78,15 +88,10 @@ function BasicInfo({
           onChange={(e) => handleOnChange(e)}
         /> */}
         <ReactQuill
-        style={{
-          "ql-container": {
-            height: "100%"
-          }
-        }} 
           theme="snow" 
           value={data.description}
           onChange={(value) => handleOnChange({target: {name: "description", value}})}
-          ref={focusRef}
+          ref={quillRef}
         />
       </FormControl>
       <Stack
@@ -138,34 +143,7 @@ function BasicInfo({
           </Select>
         </FormControl>
       </Stack>
-      <FormControl>
-        <Tooltip
-          arrow
-          title="Required - Select at least 1 image"
-          placement="top"
-          color="neutral"
-          variant="outlined"
-        >
-          <FormLabel>
-            Product images
-            <Typography color="danger">*</Typography>
-          </FormLabel>
-        </Tooltip>
-        <DropZone
-          onDrop={onDrop}
-          maxWidth={"25%"}
-          filesCount={filesCount}
-          maxFiles={6}
-        />
-      </FormControl>
-      {isImagePreview && (
-        <PreviewTable
-          upload={upload}
-          progress={progress}
-          handleRemoveImage={(id) => handleRemoveImage(id)}
-          uploadedFiles={uploadedFiles}
-        />
-      )}
+      
       <FormControl>
         <Tooltip arrow title="Required" placement="top" color="neutral" variant="outlined">
           <FormLabel>
@@ -173,37 +151,6 @@ function BasicInfo({
             <Typography color="danger">*</Typography>
           </FormLabel>
         </Tooltip>
-        {isImagePreview ? (
-          upload.isPending ? (
-            <CircularProgress />
-          ) : (
-            <img
-              src={`${process.env.REACT_APP_API_URL}${uploadedFiles[0].file_path}`}
-              alt={uploadedFiles[0].original_name}
-              style={{ width: "100px" }}
-            />
-          )
-        ) : (
-          <DropZone
-            onDrop={onDrop}
-            maxWidth={"100px"}
-            minHeight={"100px"}
-            filesCount={0}
-            maxFiles={1}
-            disabled
-            component={
-              <>
-                <AddRounded
-                  color="primary"
-                  sx={{
-                    fontSize: 40,
-                  }}
-                />
-                <span>0 / 1</span>
-              </>
-            }
-          />
-        )}
       </FormControl>
     </Stack>
   );

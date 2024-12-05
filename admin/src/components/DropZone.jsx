@@ -19,9 +19,10 @@ function DropZone({
         "image/jpeg": [],
         "image/png": [],
         "image/webp": [],
+        "image/ipg": [],
       }}
       minSize={1024}
-      maxSize={3072000}
+      maxSize={30720000}
       maxFiles={maxFiles}
       noClick={disabled}
       noKeyboard={disabled}
@@ -70,7 +71,7 @@ function DropZone({
                   justifyContent: "center",
                   gap: 1,
                   height: "100%",
-                  "& span:first-child": {
+                  "& span:first-of-type": {
                     fontSize: 16,
                     fontWeight: 600,
                     color: "#0b6bcb",

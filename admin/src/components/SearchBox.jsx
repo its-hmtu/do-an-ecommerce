@@ -2,7 +2,7 @@ import { Search } from "@mui/icons-material";
 import { FormControl, Input } from "@mui/joy";
 import React from "react";
 
-function SearchBox({width, onChange, value}) {
+function SearchBox({width, onChange, value, disabled}) {
   return (
     <FormControl size="sm">
       {/* <FormLabel></FormLabel> */}
@@ -14,6 +14,7 @@ function SearchBox({width, onChange, value}) {
         name="search"
         value={value}
         onChange={onChange}
+        disabled={disabled}
       />
     </FormControl>
   );

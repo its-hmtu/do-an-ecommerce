@@ -42,15 +42,7 @@ exports.getProducts = async (req, res, next) => {
       {
         model: Category,
         attributes: ["id", "name"],
-        through: {
-          attributes: [],
-        },
-        where: {
-          name: {
-            [Op.like]: `%${category}%`,
-          },
-        },
-        required: false,
+        required: true,
       },
       {
         model: ProductImage,
@@ -112,8 +104,169 @@ exports.getProducts = async (req, res, next) => {
     ];
 
     if (category) {
-      include[0].where = { name: category };
+      include[0].where = { id: category };
     }
+
+    const products = await Product.findAndCountAll({
+      limit: pageSize,
+      offset: offset,
+      order: [[sort, order.toUpperCase()]],
+      where: whereCondition,
+      attributes: {
+        exclude: ["updatedAt"],
+      },
+      include: include,
+      distinct: true,
+    });
+
+    if (!products) {
+      res.status(404);
+      return next(new Error("Products not found"));
+    }
+
+    // GET REVIEWS FOR EACH PRODUCT
+    const productIds = products.rows.map((product) => product.id);
+    const reviews = await Review.findAll({
+      where: {
+        product_id: productIds,
+      },
+      attributes: [
+        "product_id",
+        [sequelize.fn("AVG", sequelize.col("rating")), "average_rating"],
+        [sequelize.fn("COUNT", sequelize.col("id")), "total_reviews"],
+      ],
+      group: "product_id",
+    });
+
+    products.rows.forEach((product) => {
+      let review = reviews.find((item) => product.id === item.product_id);
+      if (review != null) {
+        product.dataValues.total_reviews = review.get("total_reviews");
+        product.dataValues.average_rating = review.get("average_rating");
+      } else {
+        product.dataValues.total_reviews = 0;
+        product.dataValues.average_rating = 0;
+      }
+
+      let main_image = product.images.find(item => item.id === product.main_image_id);
+      if (main_image != null) {
+        product.dataValues.main_image = main_image
+      }
+    });
+
+    const totalItemCount = products.count;
+    const currentItemCount = products.rows.length;
+    const currentPage = page;
+    const totalPages = Math.ceil(totalItemCount / pageSize);
+
+    const pagination = {
+      total_item_count: totalItemCount,
+      current_item_count: currentItemCount,
+      total_pages: totalPages,
+      current_page: currentPage,
+    };
+
+    // await redisClient.setEx(
+    //   `products:${page}:${pageSize}:${q}:${category}:${sort}:${order}`,
+    //   REDIS_CACHE_5_MINUTES,
+    //   JSON.stringify({
+    //     ...pagination,
+    //     products: products.rows,
+    //   })
+    // )
+
+    return res.status(200).json({
+      data: {
+        ...pagination,
+        products: products.rows,
+      },
+    });
+  } catch (e) {
+    res.status(500);
+    return next(e);
+  }
+};
+
+exports.getFeaturedProducts = async (req, res, next) => {
+  const page = parseInt(req.query.page) || 1;
+  const pageSize = parseInt(req.query.limit) || 10;
+  const order = req.query.order || "DESC";
+  const q = req.query.q || "";
+  const sort = req.query.sort || "createdAt";
+  const offset = (page - 1) * pageSize;
+  const brand = req.query.brand || "";
+
+  try {
+    const whereCondition = {
+      product_name: {
+        [Op.like]: `%${q.replace("%20", " ")}%`,
+      },
+    };
+
+    const include = [
+      {
+        model: Category,
+        attributes: ["id", "name"],
+        required: false,
+      },
+      {
+        model: ProductImage,
+        as: "images",
+        attributes: ["id", "file_path"],
+        required: false,
+      },
+      {
+        model: Option,
+        as: "options",
+        include: [
+          {
+            model: OptionImage,
+            as: "images",
+            attributes: ["id", "file_path"],
+            required: false,
+          },
+        ],
+        attributes: {
+          include: [
+            "id",
+            "color",
+            "price",
+            [
+              sequelize.literal(
+                "(SELECT stock FROM stocks WHERE stocks.option_id = options.id LIMIT 1)"
+              ),
+              "stock",
+            ],
+          ],
+        },
+        required: false,
+      },
+      {
+        model: Specification,
+        as: "specification",
+        attributes: {
+          exclude: ["createdAt", "updatedAt"],
+        },
+        required: false,
+      },
+      {
+        model: Brand,
+        attributes: ["id", "name"],
+        where: {
+          name: {
+            [Op.like]: `%${brand}%`,
+          },
+        },
+        include: [
+          {
+            model: Series,
+            attributes: ["id", "series_name", "slug"],
+            required: false,
+          },
+        ],
+        required: false,
+      },
+    ];
 
     const products = await Product.findAndCountAll({
       limit: pageSize,
@@ -156,6 +309,11 @@ exports.getProducts = async (req, res, next) => {
         product.dataValues.total_reviews = 0;
         product.dataValues.average_rating = 0;
       }
+
+      let main_image = product.images.find(item => item.id === product.main_image_id);
+      if (main_image != null) {
+        product.dataValues.main_image = main_image
+      }
     });
 
     let featuredProducts = [];
@@ -182,7 +340,7 @@ exports.getProducts = async (req, res, next) => {
         featuredProducts[index].products.push(product);
       }
     }
-
+    
     const totalItemCount = products.count;
     const currentItemCount = products.rows.length;
     const currentPage = page;
@@ -215,7 +373,7 @@ exports.getProducts = async (req, res, next) => {
     res.status(500);
     return next(e);
   }
-};
+}
 
 exports.createProduct = async (req, res, next) => {
   const {

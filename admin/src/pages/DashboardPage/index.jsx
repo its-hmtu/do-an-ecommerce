@@ -422,7 +422,7 @@ function DashboardPage() {
         ))}
       </Card>
       <Typography level="h4" component="h2">
-        Trend Chart of Each Metric
+        Trend Chart
       </Typography>
       <ResponsiveContainer
         width="100%"

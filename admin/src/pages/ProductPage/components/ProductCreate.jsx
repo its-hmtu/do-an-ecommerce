@@ -1,11 +1,10 @@
 import { ChevronRightRounded } from "@mui/icons-material";
-import { Box, Breadcrumbs, Button, Divider, Link, Typography } from "@mui/joy";
+import { Box, Breadcrumbs, Button, Divider, Link, Typography, FormControl, Tooltip, FormLabel } from "@mui/joy";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getBrands } from "api/brands.api";
 import { createCategory, getAllCategories } from "api/categories.api";
 import { uploadFile, removeImage, uploadSingleFile } from "api/upload.api";
 import ConfirmModal from "components/ConfirmModal";
-import { ToastMessageContext } from "contexts/ToastMessageContext";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BasicInfo from "./BasicInfo";
@@ -13,15 +12,15 @@ import SalesInfo from "./SalesInfo";
 import SpecsInfo from "./SpecsInfo";
 import { toast } from "react-toastify";
 import { createProduct } from "api/products.api";
+import DropZone from "components/DropZone";
+import PreviewTable from "components/PreviewTable";
 
 function ProductCreate() {
   const [isImagePreview, setIsImagePreview] = useState(false);
   const navigate = useNavigate();
-  const [submitData, setSubmitData] = useState({});
   const [open, setOpen] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [uploadedFile, setUploadedFile] = useState({});
+  const [previewFiles, setPreviewFiles] = useState([]);
   const [isAddVariation, setIsAddVariation] = useState(false);
   const [filesCount, setFilesCount] = useState(0);
   const [isCoverImageSet, setIsCoverImageSet] = useState(false);
@@ -69,73 +68,62 @@ function ProductCreate() {
     queryFn: getAllCategories,
   });
 
-  const mutate = useMutation({
-    mutationFn: (data) => createProduct(data),
-    onSuccess: () => {
-      toast.success("Product created successfully!");
-      navigate("/products", { replace: true });
-    },
-    onError: (error) => {
-      console.log(error);
-      toast.error("Something went wrong");
+  const { mutate: upload, isPending } = useMutation({
+    mutationFn: (file, progress) => uploadFile(file, progress),
+  });
+
+  const validate = () => {
+    if (Object.values(basic).some((v) => !v)) {
+      // toast.error("Please fill in all required fields");
+      return false;
+    } else if (!specsValue.brand) {
+      // toast.error("Please select a brand");
+      return false;
+    } else if (Object.values(variations).some((v) => !v.price || !v.stock)) {
+      // toast.error("Please fill in all color fields");
+      return false;
+    } else if (filesCount < 1 || !isCoverImageSet) {
+      // toast.error("Please upload at least 1 image");
+      return false;
     }
-  });
 
-  const upload = useMutation({
-    mutationFn: (files) => uploadFile(files, setProgress),
-    onSuccess: (data) => {
-      toast.success("Upload successfully!");
-      setUploadedFiles((prevFiles) => [...prevFiles, ...data]);
-      // console.log(data);
-    },
-  });
-
-  const uploadSingle = useMutation({
-    mutationFn: (file) => uploadSingleFile(file, setProgress),
-    onSuccess: (data) => {
-      toast.success("Upload successfully!");
-      setUploadedFile(data[0]);
-      // console.log(data[0]);
-    },
-  });
-
-  const remove = useMutation({
-    mutationFn: (id) => removeImage(id)
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const validation = validate();
-
-    if (!validation) return;
-
-    else {
-      const options = variations.map((variation) => ({
-        color: variation.name,
-        price: variation.price,
-        special_price: variation.special_price,
-        stock: variation.stock,
-        image_id: variation.image?.id,
-      }))
-  
-      const product_images_ids = uploadedFiles.map((file) => file.id);
-      const newSubmitData = {
-        product_name: basic.name,
-        product_description: basic.description,
-        category_id: basic.category,
-        options,
-        specs: specsValue,
-        product_images_ids,
-      }
-      setSubmitData(newSubmitData);
-      mutate.mutate(newSubmitData);
-
-    }
+    return true;
   };
 
-  useEffect(() => {
-    console.log(basic);
-  }, [basic]);
+  const handleUploadFile = async (acceptedFiles) => {
+    const filesWithProgress = Array.from(acceptedFiles).map((file) => ({
+      file,
+      progress: 0, // Initial progress
+    }));
+
+    setPreviewFiles((prevFiles) => [...prevFiles, ...filesWithProgress]);
+
+    filesWithProgress.forEach(async (file) => {
+      const { file: uploadedFile } = await upload.mutateAsync(file.file, (progress) => {
+        const fileIndex = previewFiles.findIndex((f) => f.file === file.file);
+        const newFiles = [...previewFiles];
+        newFiles[fileIndex] = {
+          ...newFiles[fileIndex],
+          progress,
+        };
+
+        setPreviewFiles(newFiles);
+      });
+
+      setUploadedFiles((prevFiles) => [...prevFiles, uploadedFile]);
+      // const fileIndex = previewFiles.findIndex((f) => f.file === file.file);
+      // const newFiles = [...previewFiles];
+      // newFiles[fileIndex] = {
+      //   ...newFiles[fileIndex],
+      //   progress: 100,
+      // };
+
+      // setPreviewFiles(newFiles);
+      setIsImagePreview(true);
+      setFilesCount((prevCount) => prevCount + 1);
+      
+    });
+  };
 
   const handleOnSpecsChange = (value, key) => {
     setSpecsValue((prevValue) => ({
@@ -158,8 +146,6 @@ function ProductCreate() {
       ...prevBasic,
       [name]: value,
     }));
-
-    console.log(basic);
   };
 
   const handleCloseVariation = (variationIndex) => {
@@ -189,91 +175,6 @@ function ProductCreate() {
     setIsAddVariation(true);
     setVariations([{}]);
   };
-
-  const onDropMultiple = useCallback(
-    (acceptedFiles) => {
-      const files = acceptedFiles;
-      console.log(files);
-
-      if (files.length > 6) {
-        toast.error("You can only upload up to 6 images");
-        return;
-      }
-
-      setFilesCount((prevCount) => prevCount + files.length);
-      setIsCoverImageSet(true);
-      upload.mutate(files);
-
-      setIsImagePreview(true);
-    },
-    [upload]
-  );
-
-  const onDropSingle = useCallback(
-    (acceptedFiles, variationIndex) => {
-      const file = acceptedFiles[0];
-
-      if (file) {
-        uploadSingle.mutate(file, {
-          onSuccess: (data) => {
-            setVariations((prevVariations) =>
-              prevVariations.map((variation, index) =>
-                index === variationIndex
-                  ? { ...variation, image: data[0] }
-                  : variation
-              )
-            );
-            console.log(variations);
-          },
-        });
-      }
-    },
-    [uploadSingle, variations]
-  );
-
-  const handleRemoveImage = (id) => {
-    remove.mutate(id);
-
-    setUploadedFiles((prevFiles) => prevFiles.filter((file) => file.id !== id));
-    setFilesCount((prevCount) => prevCount - 1);
-
-
-    if (filesCount === 1) {
-      setIsImagePreview(false);
-    } else if (filesCount === 0) {
-      setIsCoverImageSet(false);
-    }
-  };
-
-  const handleRemoveSingleImage = (id, variationIndex) => {
-    remove.mutate(id, {
-      onSuccess: () => {
-        setVariations((prevVariations) =>
-          prevVariations.map((variation, index) =>
-            index === variationIndex ? { ...variation, image: null } : variation
-          )
-        );
-      },
-    });
-  };
-
-  const validate = () => {
-    if (Object.values(basic).some((v) => !v)) {
-      // toast.error("Please fill in all required fields");
-      return false;
-    } else if (!specsValue.brand) {
-      // toast.error("Please select a brand");
-      return false;
-    } else if (Object.values(variations).some((v) => !v.price || !v.stock)) {
-      // toast.error("Please fill in all color fields");
-      return false;
-    } else if (filesCount < 1 || !isCoverImageSet) {
-      // toast.error("Please upload at least 1 image");
-      return false;
-    }
-
-    return true;
-  }
 
   return (
     <>
@@ -331,42 +232,63 @@ function ProductCreate() {
           mt: 2,
         }}
       >
-        <BasicInfo
+        {/* <BasicInfo
           data={basic}
           categories={categories}
           isImagePreview={isImagePreview}
-          upload={upload}
-          progress={progress}
           uploadedFiles={uploadedFiles}
           filesCount={filesCount}
-          // coverImageCount={coverImageCount}
+          previewFiles={previewFiles}
           handleOnChange={handleOnBasicChange}
           handleOnCategoryChange={handleOnSpecsChange}
-          onDrop={onDropMultiple}
-          handleRemoveImage={handleRemoveImage}
-        />
+        /> */}
+        <FormControl>
+          <Tooltip
+            arrow
+            title="Required - Select at least 1 image"
+            placement="top"
+            color="neutral"
+            variant="outlined"
+          >
+            <FormLabel>
+              Product images
+              <Typography color="danger">*</Typography>
+            </FormLabel>
+          </Tooltip>
+          <DropZone
+            onDrop={handleUploadFile} 
+            maxWidth={"25%"}
+            filesCount={filesCount}
+            maxFiles={6}
+          />
+        </FormControl>
+        {isImagePreview && (
+          <PreviewTable
+            upload={upload}
+            uploadedFiles={uploadedFiles}
+            previewFiles={previewFiles}
+          />
+        )}
 
         <Divider />
 
-        <SpecsInfo
+        {/* <SpecsInfo
           brands={brands}
           specsValue={specsValue}
           onClick={handleOnSpecsChange}
-        />
+        /> */}
 
         <Divider />
 
-        <SalesInfo
+        {/* <SalesInfo
           variations={variations}
           isAddVariation={isAddVariation}
           // uploadedFile={uploadedFile[0]}
           handleCloseVariation={handleCloseVariation}
-          handleRemoveImage={handleRemoveSingleImage}
           onVariationChange={handleOnVariationChange}
           onClickAddMoreVariation={onClickAddMoreVariation}
           onClickEnableAddVariation={onClickEnableAddVariation}
-          onDrop={onDropSingle}
-        />
+        /> */}
 
         <Divider />
 
@@ -388,7 +310,7 @@ function ProductCreate() {
           >
             Cancel
           </Button>
-          <Button
+          {/* <Button
             variant="solid"
             color="primary"
             type="submit"
@@ -403,7 +325,7 @@ function ProductCreate() {
             }}
           >
             {mutate.isPending ? "Creating..." : "Create"}
-          </Button>
+          </Button> */}
         </Box>
       </Box>
 

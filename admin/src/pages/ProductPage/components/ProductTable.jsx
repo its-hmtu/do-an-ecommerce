@@ -17,6 +17,7 @@ import {
   CircularProgress,
   Breadcrumbs,
   Stack,
+  Skeleton,
 } from "@mui/joy";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import SearchIcon from "@mui/icons-material/Search";
@@ -88,10 +89,6 @@ function ProductTable() {
 
   const [open, setOpen] = React.useState(false);
 
-  const mainImage = data?.products?.map((row) =>
-    row.images.find((image) => image.id === row.main_image_id)
-  );
-
   useEffect(() => {
     console.log(selected);
   }, [selected]);
@@ -102,6 +99,14 @@ function ProductTable() {
 
   const handleDeleteSelected = async () => {
     await deleteMultipleProductsMutation.mutateAsync(selected);
+  };
+
+  const handleSelectAll = () => {
+    if (selected.length === data?.products?.length) {
+      setSelected([]);
+    } else {
+      setSelected(data?.products?.map((row) => row.id));
+    }
   };
 
   return (
@@ -216,12 +221,14 @@ function ProductTable() {
           width={300}
           onChange={(e) => setQ(e.target.value)}
           value={q}
+          disabled={isLoading}
         />
         <Filter
           isCategoryVisible
           categoryData={categoryData}
           categoryValue={category}
           onChange={(e, value) => setCategory(value)}
+          disabled={isLoading}
         />
 
         <IconButton
@@ -238,11 +245,16 @@ function ProductTable() {
       </Box>
 
       <>
-        <Typography level="h4">
-          {`${data?.total_item_count || 0} ${
-            data?.total_item_count > 1 ? "Products" : "Product"
-          }`}
-        </Typography>
+        {isLoading ? (
+          // <Skeleton variant="text" />
+          null
+        ) : (
+          <Typography level="h4">
+            {`${data?.total_item_count || 0} ${
+              data?.total_item_count > 1 ? "Products" : "Product"
+            }`}
+          </Typography>
+        )}
         <Sheet
           className="OrderTableContainer"
           variant="outlined"
@@ -258,13 +270,10 @@ function ProductTable() {
           <Table
             aria-labelledby="tableTitle"
             stickyHeader
-            hoverRow
             sx={{
               "--TableCell-headBackground":
                 "var(--joy-palette-background-level1)",
               "--Table-headerUnderlineThickness": "1px",
-              "--TableRow-hoverBackground":
-                "var(--joy-palette-background-level1)",
               "--TableCell-paddingY": "16px",
               "--TableCell-paddingX": "8px",
             }}
@@ -273,7 +282,7 @@ function ProductTable() {
               <tr>
                 <th
                   style={{
-                    width: 30,
+                    width: 20,
                     textAlign: "center",
                     padding: "12px 6px",
                   }}
@@ -302,8 +311,7 @@ function ProductTable() {
                   />
                 </th>
 
-                {/* <th style={{ width: 100, padding: "12px 6px" }}> </th> */}
-                <th style={{ width: 160, padding: "12px 6px" }}>
+                <th style={{ width: 120, padding: "12px 6px" }}>
                   <Link
                     underline="none"
                     color="primary"
@@ -329,16 +337,93 @@ function ProductTable() {
                     Product(s)
                   </Link>
                 </th>
-                {/* <th style={{ width: 140, padding: "12px 6px" }}>Name</th> */}
-                <th style={{ width: 60, padding: "12px 24px" }}>Sales</th>
-                <th style={{ width: 80, padding: "12px 16px" }}>Price</th>
-                <th style={{ width: 80, padding: "12px 6px" }}>Stock</th>
-                <th style={{ width: 80, padding: "12px 6px" }}>Created at</th>
-                <th style={{ width: 30, padding: "12px 6px" }}> </th>
+                <th
+                  style={{
+                    width: 40,
+                    padding: "12px 6px",
+                    textAlign: "center",
+                  }}
+                >
+                  Category
+                </th>
+                <th
+                  style={{
+                    width: 30,
+                    padding: "12px 6px",
+                    textAlign: "center",
+                  }}
+                >
+                  Views
+                </th>
+                <th
+                  style={{
+                    width: 30,
+                    padding: "12px 6px",
+                    textAlign: "center",
+                  }}
+                >
+                  Sales
+                </th>
+                <th
+                  style={{
+                    width: 30,
+                    padding: "12px 6px",
+                    textAlign: "center",
+                  }}
+                >
+                  Price
+                </th>
+                <th
+                  style={{
+                    width: 30,
+                    padding: "12px 6px",
+                    textAlign: "center",
+                  }}
+                >
+                  Special Price
+                </th>
+                <th
+                  style={{
+                    width: 30,
+                    padding: "12px 6px",
+                    textAlign: "center",
+                  }}
+                >
+                  Stock
+                </th>
+                <th
+                  style={{
+                    width: 30,
+                    padding: "12px 6px",
+                    textAlign: "center",
+                  }}
+                >
+                  Featured
+                </th>
+                <th
+                  style={{
+                    width: 40,
+                    padding: "12px 6px",
+                    textAlign: "center",
+                  }}
+                >
+                  Created at
+                </th>
+                <th
+                  style={{
+                    width: 30,
+                    padding: "12px 6px",
+                    textAlign: "center",
+                  }}
+                >
+                  {" "}
+                </th>
               </tr>
             </thead>
             <tbody>
-              {data?.products.length > 0 ? (
+              {isLoading ? (
+                <Loading />
+              ) : data?.products.length > 0 ? (
                 data?.products
                   ?.sort(getComparator(order, "name"))
                   ?.map((row, index) => (
@@ -379,15 +464,13 @@ function ProductTable() {
                               justifyItems="center"
                               alignItems="center"
                             >
-                              {(
+                              {
                                 <img
-                                  src={`${process.env.REACT_APP_API_URL}${
-                                    row.images.find(image => image.id === row.main_image_id).file_path
-                                  }`}
+                                  src={`${process.env.REACT_APP_API_URL}${row.main_image.file_path}`}
                                   alt="product"
-                                  style={{ width: 100, height: 100 }}
+                                  style={{ width: 70, height: 70 }}
                                 />
-                              )}
+                              }
 
                               <Stack>
                                 <Typography
@@ -410,20 +493,23 @@ function ProductTable() {
                           </RouterLink>
                         </Typography>
                       </td>
-                      <td
-                        style={{
-                          padding: "12px 24px",
-                        }}
-                      >
+                      <td style={{ textAlign: "center" }}>
+                        <Typography level="body-xs">
+                          {row?.categories[0].name || "Uncategorized"}
+                        </Typography>
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        <Typography level="body-xs">
+                          {row.views || 0}
+                        </Typography>
+                      </td>
+                      <td style={{ textAlign: "center" }}>
                         <Typography level="body-xs">
                           {row.total_sold || 0}
                         </Typography>
                       </td>
-                      <td
-                        style={{
-                          padding: "12px 16px",
-                        }}
-                      >
+
+                      <td style={{ textAlign: "center" }}>
                         <Typography level="body-xs">
                           {new Intl.NumberFormat("vi-VN", {
                             style: "currency",
@@ -431,12 +517,34 @@ function ProductTable() {
                           }).format(row.base_price)}
                         </Typography>
                       </td>
-                      <td>
+                      <td style={{ textAlign: "center" }}>
+                        <Typography level="body-xs">
+                          {new Intl.NumberFormat("vi-VN", {
+                            style: "currency",
+                            currency: "VND",
+                          }).format(row.special_base_price || 0)}
+                        </Typography>
+                      </td>
+                      <td style={{ textAlign: "center" }}>
                         <Typography level="body-xs">
                           {row.total_in_stock}
                         </Typography>
                       </td>
-                      <td>
+                      <td style={{ textAlign: "center" }}>
+                        <Checkbox
+                          checked={row.featured}
+                          disabled
+                          size="sm"
+                          sx={{
+                            "&.Mui-disabled": {
+                              "& svg": {
+                                color: "#0b6bcb",
+                              },
+                            },
+                          }}
+                        />
+                      </td>
+                      <td style={{ textAlign: "center" }}>
                         <Typography level="body-xs">
                           {new Date(row.createdAt).toLocaleString("en-US", {
                             month: "short",
@@ -470,7 +578,7 @@ function ProductTable() {
                   ))
               ) : (
                 <tr>
-                  <td colSpan={7}>
+                  <td colSpan={8}>
                     <Box
                       sx={{
                         display: "flex",
@@ -523,11 +631,11 @@ function ProductTable() {
                           color="neutral"
                           variant="outlined"
                           size="sm"
-                          onClick={() => {
-                            setSelected(data?.products?.map((row) => row.id));
-                          }}
+                          onClick={handleSelectAll}
                         >
-                          Select all
+                          {selected.length === data?.products?.length
+                            ? "Deselect all"
+                            : "Select all"}
                         </Button>
 
                         <Button
@@ -608,5 +716,26 @@ function ProductTable() {
     </React.Fragment>
   );
 }
+
+const Loading = () => {
+  return (
+    <tr>
+      <td colSpan={11}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column",
+            gap: 1,
+            alignItems: "center",
+            height: 200,
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      </td>
+    </tr>
+  );
+};
 
 export default ProductTable;

@@ -6,6 +6,7 @@ function PreviewTable({
   progress,
   handleRemoveImage,
   uploadedFiles,
+  previewFiles,
 }) {
   return (
     <Table
@@ -26,40 +27,22 @@ function PreviewTable({
         </tr>
       </thead>
       <tbody>
-        {uploadedFiles?.map((file) => (
+        {previewFiles?.map((file, index) => (
           <tr>
             <td>
-              { upload.isPending ? (
-                <CircularProgress />
-              ) : (
-                <img
-                src={`${process.env.REACT_APP_API_URL}${file.file_path}`}
-                alt={file.original_name}
+              <img
+                src={file.preview}
+                alt={file.id}
                 style={{ width: "100px" }}
               />
-              )}
             </td>
-            <td>
-              {
-                upload.isPending ? (
-                  <LinearProgress
-                    variant="determinate"
-                    value={progress}
-                    sx={{ width: "100%" }}
-                  />
-                ) : (
-                  (file.file_size / 1024).toFixed(2) + " KB"
-                )
-              }
-            </td>
-            <td>
-              {upload.isPending ? (
-                <LinearProgress
-                  variant="determinate"
-                  value={progress}
+            <td><LinearProgress
+                  determinate
+                  value={file.progress}
                   sx={{ width: "100%" }}
-                />
-              ) : (
+                /></td>
+            <td>
+              
                 <Button
                   variant="soft"
                   color="neutral"
@@ -67,7 +50,7 @@ function PreviewTable({
                 >
                   Remove
                 </Button>
-              )}
+             
             </td>
           </tr>
         ))}
