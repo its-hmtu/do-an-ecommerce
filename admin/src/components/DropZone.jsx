@@ -22,7 +22,9 @@ function DropZone({
         "image/ipg": [],
       }}
       minSize={1024}
-      maxSize={30720000}
+      maxSize={
+        1024 * 1024 * 5 // 5MB
+      }
       maxFiles={maxFiles}
       noClick={disabled}
       noKeyboard={disabled}

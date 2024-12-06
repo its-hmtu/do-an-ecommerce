@@ -1,5 +1,15 @@
 import { ChevronRightRounded } from "@mui/icons-material";
-import { Box, Breadcrumbs, Button, Divider, Link, Typography, FormControl, Tooltip, FormLabel } from "@mui/joy";
+import {
+  Box,
+  Breadcrumbs,
+  Button,
+  Divider,
+  Link,
+  Typography,
+  FormControl,
+  Tooltip,
+  FormLabel,
+} from "@mui/joy";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getBrands } from "api/brands.api";
 import { createCategory, getAllCategories } from "api/categories.api";
@@ -14,6 +24,7 @@ import { toast } from "react-toastify";
 import { createProduct } from "api/products.api";
 import DropZone from "components/DropZone";
 import PreviewTable from "components/PreviewTable";
+import { set } from "date-fns";
 
 function ProductCreate() {
   const [isImagePreview, setIsImagePreview] = useState(false);
@@ -68,8 +79,12 @@ function ProductCreate() {
     queryFn: getAllCategories,
   });
 
-  const { mutate: upload, isPending } = useMutation({
-    mutationFn: (file, progress) => uploadFile(file, progress),
+  const {
+    mutate: upload,
+    mutateAsync: uploadAsync,
+    isPending,
+  } = useMutation({
+    mutationFn: ({ file, progress = () => {} }) => uploadFile(file, progress),
   });
 
   const validate = () => {
@@ -93,37 +108,59 @@ function ProductCreate() {
   const handleUploadFile = async (acceptedFiles) => {
     const filesWithProgress = Array.from(acceptedFiles).map((file) => ({
       file,
+      id: `${file.name}-${file.size}-${Date.now()}`,
       progress: 0, // Initial progress
+      uploaded: false, // Upload status
+      preview: URL.createObjectURL(file), // Generate preview
     }));
-
+  
+    // Add new files to the current state
     setPreviewFiles((prevFiles) => [...prevFiles, ...filesWithProgress]);
+    setFilesCount((prevCount) => prevCount + filesWithProgress.length);
+    setIsImagePreview(true);
+    // Upload all files concurrently
+    const uploadPromises = filesWithProgress.map((currentFile) =>
+      uploadFile(currentFile.file, (progress) => {
+        setPreviewFiles((prev) =>
+          prev.map((item) =>
+            item.file === currentFile.file ? { ...item, progress } : item
+          )
+        );
+      }).then((data) => {
+        // Mark file as uploaded after completion
+        setPreviewFiles((prev) =>
+          prev.map((item) =>
+            item.file === currentFile.file ? { ...item, uploaded: true } : item
+          )
+        );
 
-    filesWithProgress.forEach(async (file) => {
-      const { file: uploadedFile } = await upload.mutateAsync(file.file, (progress) => {
-        const fileIndex = previewFiles.findIndex((f) => f.file === file.file);
-        const newFiles = [...previewFiles];
-        newFiles[fileIndex] = {
-          ...newFiles[fileIndex],
-          progress,
-        };
-
-        setPreviewFiles(newFiles);
-      });
-
-      setUploadedFiles((prevFiles) => [...prevFiles, uploadedFile]);
-      // const fileIndex = previewFiles.findIndex((f) => f.file === file.file);
-      // const newFiles = [...previewFiles];
-      // newFiles[fileIndex] = {
-      //   ...newFiles[fileIndex],
-      //   progress: 100,
-      // };
-
-      // setPreviewFiles(newFiles);
-      setIsImagePreview(true);
-      setFilesCount((prevCount) => prevCount + 1);
-      
-    });
+        setUploadedFiles((prev) => [...prev, {
+          id: currentFile.id,
+          data: data[0]
+        }]);
+      })
+    );
+  
+    // Wait for all uploads to finish
+    await Promise.all(uploadPromises);
   };
+
+  const handleRemoveImage = (id = "") => {
+    if (!id) return;
+
+    setPreviewFiles((prev) => prev.filter((item) => item.id !== id));
+    setUploadedFiles((prev) => prev.filter((item) => item.id !== id));
+    setFilesCount((prev) => prev - 1);
+    if (previewFiles.length === 1) {
+      setIsImagePreview(false);
+    }
+  }
+
+  useEffect(() => {
+    console.log("previewFiles", previewFiles);
+    console.log("uploadedFiles", uploadedFiles);
+  }, [previewFiles, uploadedFiles]);
+
 
   const handleOnSpecsChange = (value, key) => {
     setSpecsValue((prevValue) => ({
@@ -232,16 +269,12 @@ function ProductCreate() {
           mt: 2,
         }}
       >
-        {/* <BasicInfo
+        <BasicInfo
           data={basic}
           categories={categories}
-          isImagePreview={isImagePreview}
-          uploadedFiles={uploadedFiles}
-          filesCount={filesCount}
-          previewFiles={previewFiles}
           handleOnChange={handleOnBasicChange}
           handleOnCategoryChange={handleOnSpecsChange}
-        /> */}
+        />
         <FormControl>
           <Tooltip
             arrow
@@ -256,10 +289,11 @@ function ProductCreate() {
             </FormLabel>
           </Tooltip>
           <DropZone
-            onDrop={handleUploadFile} 
-            maxWidth={"25%"}
+            onDrop={handleUploadFile}
+            maxWidth={"100%"}
             filesCount={filesCount}
             maxFiles={6}
+            disabled={filesCount >= 6}
           />
         </FormControl>
         {isImagePreview && (
@@ -267,28 +301,28 @@ function ProductCreate() {
             upload={upload}
             uploadedFiles={uploadedFiles}
             previewFiles={previewFiles}
+            handleRemoveImage={handleRemoveImage}
           />
         )}
 
         <Divider />
 
-        {/* <SpecsInfo
+        <SpecsInfo
           brands={brands}
           specsValue={specsValue}
           onClick={handleOnSpecsChange}
-        /> */}
+        />
 
         <Divider />
 
-        {/* <SalesInfo
+        <SalesInfo
           variations={variations}
           isAddVariation={isAddVariation}
-          // uploadedFile={uploadedFile[0]}
           handleCloseVariation={handleCloseVariation}
           onVariationChange={handleOnVariationChange}
           onClickAddMoreVariation={onClickAddMoreVariation}
           onClickEnableAddVariation={onClickEnableAddVariation}
-        /> */}
+        />
 
         <Divider />
 

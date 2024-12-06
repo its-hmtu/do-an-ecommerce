@@ -1,5 +1,6 @@
 import React from "react";
-import { Table, Button, CircularProgress, LinearProgress } from "@mui/joy";
+import { Table, Button, CircularProgress, LinearProgress, Box, Typography } from "@mui/joy";
+import { CheckRounded } from "@mui/icons-material";
 
 function PreviewTable({
   upload,
@@ -23,37 +24,57 @@ function PreviewTable({
           <th style={{ padding: "12px 6px", textAlign: "center" }}>
             File size
           </th>
+          <th style={{ padding: "12px 6px", textAlign: "center" }}>Status</th>
           <th style={{ padding: "12px 6px", textAlign: "center" }}>Action</th>
         </tr>
       </thead>
       <tbody>
-        {previewFiles?.map((file, index) => (
-          <tr>
-            <td>
-              <img
-                src={file.preview}
-                alt={file.id}
-                style={{ width: "100px" }}
-              />
-            </td>
-            <td><LinearProgress
-                  determinate
-                  value={file.progress}
-                  sx={{ width: "100%" }}
-                /></td>
-            <td>
-              
+        {previewFiles?.map((item, index) => {
+          return (
+            <tr>
+              <td>
+                <img
+                  src={item.preview}
+                  alt={item.file.name}
+                  style={{ width: "100px" }}
+                />
+              </td>
+              <td>
+                {
+                  // Display the file size in KB
+                  (item.file.size / 1024).toFixed(2) + " KB"
+                }
+              </td>
+              <td>
+                {item.progress === 100 ? (
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Typography level="title-sm">Done</Typography>
+                  </Box>
+                ) : (
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <LinearProgress
+                      determinate
+                      value={item.progress}
+                      sx={{ width: "100px" }}
+                    />
+                  </Box>
+                )}
+              </td>
+              <td>
                 <Button
                   variant="soft"
                   color="neutral"
-                  onClick={() => handleRemoveImage(file.id)}
+                  onClick={() => handleRemoveImage(
+                    item.id
+                  )}
+                  disabled={item.progress !== 100 && item.progress !== 0}
                 >
                   Remove
                 </Button>
-             
-            </td>
-          </tr>
-        ))}
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </Table>
   );

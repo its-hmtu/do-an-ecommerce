@@ -24,15 +24,6 @@ function BasicInfo({
   data,
   categories,
   brands,
-  isImagePreview,
-  upload,
-  progress,
-  uploadedFiles,
-  coverImageCount,
-  previewFiles,
-  filesCount,
-  onDrop,
-  handleRemoveImage,
   handleOnChange,
   handleOnCategoryChange,
 }) {
@@ -44,8 +35,6 @@ function BasicInfo({
     }
   });
 
-
-  
   return (
     <Stack
       gap={2}
