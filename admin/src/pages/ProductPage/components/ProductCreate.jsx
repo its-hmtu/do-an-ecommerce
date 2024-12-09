@@ -9,6 +9,7 @@ import {
   FormControl,
   Tooltip,
   FormLabel,
+  Stack,
 } from "@mui/joy";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getBrands } from "api/brands.api";
@@ -25,6 +26,7 @@ import { createProduct } from "api/products.api";
 import DropZone from "components/DropZone";
 import PreviewTable from "components/PreviewTable";
 import { set } from "date-fns";
+import BreadCrumbs from "components/BreadCrumbs";
 
 function ProductCreate() {
   const [isImagePreview, setIsImagePreview] = useState(false);
@@ -113,7 +115,7 @@ function ProductCreate() {
       uploaded: false, // Upload status
       preview: URL.createObjectURL(file), // Generate preview
     }));
-  
+
     // Add new files to the current state
     setPreviewFiles((prevFiles) => [...prevFiles, ...filesWithProgress]);
     setFilesCount((prevCount) => prevCount + filesWithProgress.length);
@@ -134,13 +136,16 @@ function ProductCreate() {
           )
         );
 
-        setUploadedFiles((prev) => [...prev, {
-          id: currentFile.id,
-          data: data[0]
-        }]);
+        setUploadedFiles((prev) => [
+          ...prev,
+          {
+            id: currentFile.id,
+            data: data[0],
+          },
+        ]);
       })
     );
-  
+
     // Wait for all uploads to finish
     await Promise.all(uploadPromises);
   };
@@ -154,13 +159,12 @@ function ProductCreate() {
     if (previewFiles.length === 1) {
       setIsImagePreview(false);
     }
-  }
+  };
 
   useEffect(() => {
     console.log("previewFiles", previewFiles);
     console.log("uploadedFiles", uploadedFiles);
   }, [previewFiles, uploadedFiles]);
-
 
   const handleOnSpecsChange = (value, key) => {
     setSpecsValue((prevValue) => ({
@@ -206,6 +210,48 @@ function ProductCreate() {
     });
   };
 
+  const handleVariationUpload = async (files, variationIndex) => {
+    uploadFile(files[0], (progress) => {
+      setVariations((prevVariations) => {
+        const newVariations = [...prevVariations];
+        newVariations[variationIndex] = {
+          ...newVariations[variationIndex],
+          image: {
+            preview: URL.createObjectURL(files[0]),
+          },
+          progress,
+        };
+
+        return newVariations;
+      });
+    }).then((data) => {
+      setVariations((prevVariations) => {
+        const newVariations = [...prevVariations];
+        newVariations[variationIndex] = {
+          ...newVariations[variationIndex],
+          image: {
+            ...newVariations[variationIndex].image,
+            data: data[0],
+          },
+        };
+
+        return newVariations;
+      });
+    })
+  }
+
+  const handleVariationRemove = (variationIndex) => {
+    setVariations((prevVariations) => {
+      const newVariations = [...prevVariations];
+      newVariations[variationIndex] = {
+        ...newVariations[variationIndex],
+        image: null,
+      };
+
+      return newVariations;
+    });
+  }
+
   const onClickAddMoreVariation = () => setVariations([...variations, {}]);
 
   const onClickEnableAddVariation = () => {
@@ -213,36 +259,19 @@ function ProductCreate() {
     setVariations([{}]);
   };
 
+  useEffect(() => {
+    console.log("variations", variations);
+  }, [variations]);
+
   return (
     <>
-      <Box sx={{ display: "flex", alignItems: "center" }}>
-        <Breadcrumbs
-          size="sm"
-          aria-label="breadcrumbs"
-          separator={<ChevronRightRounded fontSize="sm" />}
-          sx={{ pl: 0 }}
-        >
-          <Link
-            underline="hover"
-            color="neutral"
-            sx={{ fontSize: 12, fontWeight: 500 }}
-            onClick={() => navigate("/dashboard")}
-          >
-            Dashboard
-          </Link>
-          <Link
-            underline="hover"
-            color="neutral"
-            sx={{ fontSize: 12, fontWeight: 500 }}
-            onClick={() => setOpen(true)}
-          >
-            Products
-          </Link>
-          <Typography color="primary" sx={{ fontWeight: 500, fontSize: 12 }}>
-            Create product
-          </Typography>
-        </Breadcrumbs>
-      </Box>
+      <BreadCrumbs
+        links={[
+          { label: "Dashboard", onClick: () => navigate("/dashboard") },
+          { label: "Products", onClick: () => setOpen(true) },
+        ]}
+        nonLinkLabel={"Create product"}
+      />
       <Box
         sx={{
           display: "flex",
@@ -297,12 +326,27 @@ function ProductCreate() {
           />
         </FormControl>
         {isImagePreview && (
-          <PreviewTable
-            upload={upload}
-            uploadedFiles={uploadedFiles}
-            previewFiles={previewFiles}
-            handleRemoveImage={handleRemoveImage}
-          />
+          <Stack direction="row" gap={2}>
+            <div style={{
+              width: "60%"
+            }}>
+              <PreviewTable
+                upload={upload}
+                uploadedFiles={uploadedFiles}
+                previewFiles={previewFiles}
+                handleRemoveImage={handleRemoveImage}
+              />
+            </div>
+            <ul style={{
+              width: "40%"
+            }}>
+              <li>
+                <Typography level="body-sm">
+                  The first image will be set as the cover image
+                </Typography>
+              </li>
+            </ul>
+          </Stack>
         )}
 
         <Divider />
@@ -322,6 +366,8 @@ function ProductCreate() {
           onVariationChange={handleOnVariationChange}
           onClickAddMoreVariation={onClickAddMoreVariation}
           onClickEnableAddVariation={onClickEnableAddVariation}
+          onDrop={handleVariationUpload}
+          handleRemoveImage={handleVariationRemove}
         />
 
         <Divider />

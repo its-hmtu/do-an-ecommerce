@@ -15,7 +15,7 @@ function PreviewTable({
         border: "2px dashed #ccc",
         borderRadius: 4,
         textAlign: "center",
-        width: "50%",
+        width: "100%",
       }}
     >
       <thead>

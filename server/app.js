@@ -10,6 +10,7 @@ const {
   orderToDeliveredUpdater,
   orderToCompleteUpdater
 } = require('./jobs/orderStatusUpdater');
+const autoClearImage = require('./jobs/autoClearImage');
 var app = express();
 
 const allowedOrigins = [
@@ -37,6 +38,7 @@ app.use(cors(
 connectDB();
 // orderToDeliveredUpdater.start();
 // orderToCompleteUpdater.start();
+autoClearImage();
 viewConfig(app);
 utilitiesConfig(app);
 routesConfig(app);

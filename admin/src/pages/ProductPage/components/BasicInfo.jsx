@@ -132,15 +132,6 @@ function BasicInfo({
           </Select>
         </FormControl>
       </Stack>
-      
-      <FormControl>
-        <Tooltip arrow title="Required" placement="top" color="neutral" variant="outlined">
-          <FormLabel>
-            Cover image
-            <Typography color="danger">*</Typography>
-          </FormLabel>
-        </Tooltip>
-      </FormControl>
     </Stack>
   );
 }

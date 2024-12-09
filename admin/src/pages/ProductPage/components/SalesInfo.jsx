@@ -204,7 +204,7 @@ function SalesInfo({
                             }}
                           >
                             <img
-                              src={`${process.env.REACT_APP_API_URL}${variation?.image?.file_path}`}
+                              src={variation.image.preview}
                               alt="variation"
                               style={{ width: "100px", height: "100px", objectFit: "contain" }}
                             />
@@ -215,7 +215,6 @@ function SalesInfo({
                               sx={{}}
                               onClick={() =>
                                 handleRemoveImage(
-                                  variation?.image?.id,
                                   variationIndex
                                 )
                               }
