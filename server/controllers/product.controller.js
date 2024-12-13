@@ -187,7 +187,7 @@ exports.getProducts = async (req, res, next) => {
   }
 };
 
-exports.getFeaturedProducts = async (req, res, next) => {
+exports.getProductsWithFeatured = async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   const pageSize = parseInt(req.query.limit) || 10;
   const order = req.query.order || "DESC";

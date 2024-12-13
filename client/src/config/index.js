@@ -35,6 +35,7 @@ const API_PATHS = {
   REFRESH: `${BASE_API_PATH}/refresh`,
   PRODUCTS: `${BASE_API_PATH}/products`,
   PRODUCT: `${BASE_API_PATH}/products/slug`,
+  PRODUCTS_WITH_FEATURED: `${BASE_API_PATH}/products/featured`,
   PRODUCTS_BY_BRAND: `${BASE_API_PATH}/products/brand`,
   PRODUCTS_BY_SERIES: `${BASE_API_PATH}/products/series`,
   PRODUCTS_BY_CATEGORY: `${BASE_API_PATH}/products/category`,

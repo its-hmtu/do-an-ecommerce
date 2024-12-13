@@ -52,10 +52,10 @@ function HomePage() {
 
   React.useEffect(() => {
     if (data) {
-      const categoryMobile = data?.featured.find((product) => product.category === "Mobile phone");
+      const categoryMobile = data?.featured?.find((product) => product.category === "Mobile phone");
       setFeaturedMobile(categoryMobile?.products);
 
-      const categoryTablet = data?.featured.find(product => product.category === "Tablet")
+      const categoryTablet = data?.featured?.find(product => product.category === "Tablet")
       setFeaturedTablet(categoryTablet?.products);
     }
   }, [data]);

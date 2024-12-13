@@ -3,7 +3,7 @@ import axios from "axios";
 import { API_PATHS } from "config";
 
 const getProductsApi = async () => {
-  const response = await axiosInstance.get(`${API_PATHS.PRODUCTS}`, {
+  const response = await axiosInstance.get(`${API_PATHS.PRODUCTS_WITH_FEATURED}`, {
     params: {
       limit: 10,
       page: 1,

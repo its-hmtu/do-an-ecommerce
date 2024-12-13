@@ -164,7 +164,8 @@ function ProductCreate() {
   useEffect(() => {
     console.log("previewFiles", previewFiles);
     console.log("uploadedFiles", uploadedFiles);
-  }, [previewFiles, uploadedFiles]);
+    console.log("basic", basic);
+  }, [previewFiles, uploadedFiles, basic]);
 
   const handleOnSpecsChange = (value, key) => {
     setSpecsValue((prevValue) => ({
